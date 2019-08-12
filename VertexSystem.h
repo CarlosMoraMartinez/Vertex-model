@@ -132,12 +132,12 @@ class Tissue{
 		int newEdge();
 
 		void make_t1(Rearrangement& r);
-		void make_t1_at_border_inwards(Rearrangement& r);
+		void make_t1_at_border_inwards(Rearrangement& r); 
 		void make_t1_at_border_outwards(Rearrangement& r);
 		void make_t2(Rearrangement& r);
 		void make_divide_cell(Rearrangement& r);
-		void make_edge_division(Rearrangement& r);
-		void make_join_limit_edges(Rearrangement& r);
+		void make_edge_division(Rearrangement& r); //this will be removed
+		void make_join_limit_edges(Rearrangement& r); //this will be removed
 		
 		int addVertex(Vertex v); //Only used for testing
 		int addCell(Cell c); //Only used for testing
@@ -164,7 +164,7 @@ class Tissue{
 		std::queue<int> dead_cells;
 		std::queue<int> dead_edges;	
 		rearrangement_q rearrangements_needed;
-		int counter_move_trials, counter_moves_accepted, counter_t1, counter_t1_abortions, counter_divisions, counter_t2;
+		int counter_move_trials, counter_moves_accepted, counter_t1, counter_t1_abortions, counter_divisions, counter_t2, counter_t1_outwards, counter_t1_inwards;
 		int max_accepted_movements, write_every_N_moves;
 
 		//Methods used by constructors

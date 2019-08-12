@@ -14,12 +14,12 @@
 using namespace std;
 
 //Empty constructor useful to debug
-Tissue::Tissue() : num_cells(0), num_vertices(0), num_edges(0), counter_move_trials(0), counter_moves_accepted(0), counter_t1(0), counter_t1_abortions(0), counter_divisions(0), counter_t2(0){
+Tissue::Tissue() : num_cells(0), num_vertices(0), num_edges(0), counter_move_trials(0), counter_moves_accepted(0), counter_t1(0), counter_t1_abortions(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0){
 	//Do nothing
 }
 
 //Constructor that reads vertex positions and cells from two different files, and initializes all variables using constants defined in VertexSystem.h
-Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  int write_every_N_moves) : num_cells(0), num_vertices(0), num_edges(0),  counter_move_trials(0), counter_moves_accepted(0), counter_t1(0), counter_t1_abortions(0), counter_divisions(0), counter_t2(0), simname(starting_tissue_file), max_accepted_movements(max_accepted_movements), write_every_N_moves(write_every_N_moves){
+Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  int write_every_N_moves) : num_cells(0), num_vertices(0), num_edges(0),  counter_move_trials(0), counter_moves_accepted(0), counter_t1(0), counter_t1_abortions(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0), simname(starting_tissue_file), max_accepted_movements(max_accepted_movements), write_every_N_moves(write_every_N_moves){
 	//Read file of vertices (indicates coordinates for each vertex)
 	string vertexfile = starting_tissue_file + VERTEX_FILE_EXTENSION;
 	std::ifstream fin_vertex;
@@ -526,7 +526,7 @@ void Tissue::detectChangesAfterMove(int vertex_moved){
 				for(int j = 0; j < CELLS_PER_VERTEX; j++) if(v2->cells[j] == EMPTY_CONNECTION) empty_connections++;
 				if(empty_connections == 0 && cells[ee->cells[0]].num_vertices > 3 && cells[ee->cells[1]].num_vertices > 3 ){
 					rearrangements_needed.push(Rearrangement{ee->ind, RearrangementType::t1});
-				}else if(empty_connections == 1){
+				}else if(empty_connections == 1 && cells[ee->cells[0]].num_vertices > 3 && cells[ee->cells[1]].num_vertices > 3){
 					rearrangements_needed.push(Rearrangement{vertices[vertex_moved].edges[i], RearrangementType::t1_at_border_outwards});
 				}/*else if(empty_comnnections == 2){
 					rearrangements_needed.push(Rearrangement{vertices[vertex_moved].edges[i], RearrangementType::rotate_outwards});
@@ -542,7 +542,7 @@ void Tissue::detectChangesAfterMove(int vertex_moved){
 					if(v1->edges[j] != EMPTY_CONNECTION && !contains(v1->edges[j], v2->edges, CELLS_PER_VERTEX)) edgenum++;
 				}
 				if(edgenum<=4){  //If There 3 or less edges touched by both vertices (including the one to be removed), just remove one of the vertices and the edge
-					rearrangements_needed.push(Rearrangement{vertices[vertex_moved].edges[i], RearrangementType::join_limit_edges});
+					rearrangements_needed.push(Rearrangement{vertices[vertex_moved].edges[i], RearrangementType::join_limit_edges}); //THIS WILL BE REMOVED
 				} else{ //Otherwise, a t1 transition taking border into account is needed
 					rearrangements_needed.push(Rearrangement{vertices[vertex_moved].edges[i], RearrangementType::t1_at_border_inwards});
 				}
@@ -575,13 +575,13 @@ void Tissue::performRearrangements(){
 		rearrangements_needed.pop();
 		switch (r.type){
 			case RearrangementType::t1:
-				make_t1(r);
+				//make_t1(r);
 				break;
 			case RearrangementType::t2:
-				make_t2(r);
+				//make_t2(r);
 				break;
 			case RearrangementType::divide_cell:
-				make_divide_cell(r);
+				//make_divide_cell(r);
 				break;
 			case RearrangementType::divide_edge:
 				break;
@@ -589,6 +589,7 @@ void Tissue::performRearrangements(){
 				//make_join_limit_edges(r);
 				break;
 			case RearrangementType::t1_at_border_outwards:
+					make_t1_at_border_outwards(r);
 				break;
 			case RearrangementType::t1_at_border_inwards:
 				break;
@@ -601,6 +602,134 @@ void Tissue::performRearrangements(){
 }
 		
 
+void Tissue::make_t1_at_border_inwards(Rearrangement& r){
+	int edge = r.element_index;
+
+
+}
+
+void Tissue::make_t1_at_border_outwards(Rearrangement& r){
+	
+	int edge = r.element_index;
+	if(edges[edge].length > T1_TRANSITION_CRITICAL_DISTANCE) return; //Check that condition is still true (other rearrangements could have taken place since detection)
+
+	Vertex* v1 = &vertices[ edges[edge].vertices[0] ];	//INSIDE CELL
+	Vertex* v2 = &vertices[ edges[edge].vertices[1] ];	//IN BORDER OF CELL
+
+	//Check which of the two vertices is facing outwards. The one facing outwards will be v2. Assumes that all vertices inside tissue contact with three cells
+	if(! contains(EMPTY_CONNECTION, v2->cells, CELLS_PER_VERTEX)){
+		if(contains(EMPTY_CONNECTION, v1->cells, CELLS_PER_VERTEX)){
+			v1 = &vertices[ edges[edge].vertices[1] ];
+			v2 = &vertices[ edges[edge].vertices[0] ];
+		}else{
+			return; //No vertex in border, no adequate transition
+		}
+	}
+
+	double old_x1 = v1->x, old_x2 = v2->x, old_y1 = v1->y, old_y2 = v2->y, old_length = edges[edge].length;
+
+	//Get the 2 cells that are common to both vertices and cell that is exclusive to v1
+	int common_cell1 =  -1, common_cell2 = -1, only_v1 = -1, only_v2 = -1; //, only_v1_indv1 = -1, only_v2_indv2 = -1;
+	t1_getCellRelationships(v1, v2, common_cell1, common_cell2, only_v1, only_v2); //now only_v2 will be EMPTY_CONNECTION 
+	Cell* cc1 = &this->cells[common_cell1]; //These pointers to Cell structures will be used later
+	Cell* cc2 = &this->cells[common_cell2];
+	Cell* sp1 = &this->cells[only_v1];
+	//Cell* sp2 = &this->cells[only_v2];
+
+	if(cc1->num_vertices < 4 || cc2->num_vertices < 4) return; //One of the cells can't lose any other vertex
+	//t1_rotate_edge(v1, v2, edge, cc1, cc2, sp1, sp2);
+	t1_rotate_edge90degrees(v1, v2, edge);
+
+	//Determine which cell goes with which point. Compare new point locations of v1 and v2 with all the neighbours of v1 and v2. 
+
+	double dist1 = t1_get_dist_sum(v1, v2, cc1, cc2, sp1, sp1);	//Not very efficient: to check for edge collisions will examine twice sp1
+	double dist2 = t1_get_dist_sum(v1, v2, cc2, cc1, sp1, sp1);
+
+
+	if(dist2 > 0 && (dist2 < dist1 || dist1 < 0)){
+		int aux = common_cell1;
+		common_cell1 = common_cell2;
+		common_cell2 = aux;
+		cc1 = &this->cells[common_cell1]; 
+		cc2 = &this->cells[common_cell2];
+	}else if(dist2 < 0 && dist1 < 0){//edges always cross
+		//cout << "Edges always cross \n" << endl;
+		v1->x = old_x1;
+		v2->x = old_x2;
+		v1->y = old_y1;
+		v2->y = old_y2;
+		edges[edge].length = old_length;
+		counter_t1_abortions++;
+		return;		
+	}
+	ofstream ff;
+	
+	if(REPORT_T1){
+		ff.open("T1_REPORT_outwards_" + std::to_string(counter_move_trials) + "_" + std::to_string(counter_moves_accepted) + ".txt");
+
+		ff << "\nBEFORE\n\n";
+		ff << "edge: " << edge << "\n\n";
+		ff << VERTEX_HEADER << *v1 << "\n" << *v2 << "\n\n";
+		ff << CELL_HEADER << *cc1 << "\tcommon_cell1\n"<< *cc2 << "\tcommon_cell2\n"<< *sp1 << "\tsp1\n\n";
+		ff << getStats();
+
+		ff << "\n\nDist when cell " << cc1->ind << " goes with vertex " << v1->ind << ": " << dist1 << "\n";
+		ff << "Dist when cell " << cc1->ind << " goes with vertex " << v2->ind << ": " << dist2 << "\n";
+	}
+
+	//Now we know that v1 is closest to common_cell1, and v2 should be closer to common_cell2. Time to update everything
+	//1) Cell exclussive of v1 is going to touch v2, and cell exclussive of v2 is going to touch v1
+	v1->cells[ which(common_cell2, v1->cells, CELLS_PER_VERTEX) ] = EMPTY_CONNECTION;
+	v2->cells[ which(common_cell1, v2->cells, CELLS_PER_VERTEX) ] = only_v1;
+
+	//2)Remove edge from cells that were common to both vertices
+	for(int i = which(edge, cc1->edges, MAX_SIDES_PER_CELL); i < cc1->num_vertices; i++) cc1->edges[i] = i == MAX_SIDES_PER_CELL-1 ? EMPTY_CONNECTION : cc1->edges[i+1];
+	for(int i = which(edge, cc2->edges, MAX_SIDES_PER_CELL); i < cc2->num_vertices; i++) cc2->edges[i] = i == MAX_SIDES_PER_CELL-1 ? EMPTY_CONNECTION : cc2->edges[i+1];
+
+	//3) Remove one of the vertices from each of the cells that were common to both vertices
+	for(int i = which(v2->ind, cc1->vertices, cc1->num_vertices); i < cc1->num_vertices; i++) cc1->vertices[i] = i == MAX_SIDES_PER_CELL-1 ? EMPTY_CONNECTION : cc1->vertices[i+1];
+	cc1->num_vertices--;
+	for(int i = which(v1->ind, cc2->vertices, cc2->num_vertices); i < cc2->num_vertices; i++) cc2->vertices[i] = i == MAX_SIDES_PER_CELL-1 ? EMPTY_CONNECTION : cc2->vertices[i+1];
+	cc2->num_vertices--;
+
+	//4) Add edge to cells that were touched only by one of the vertices
+	sp1->edges[sp1->num_vertices] = edge;
+	//sp2->edges[sp2->num_vertices] = edge;
+
+	//5) Update neighbours 
+	int remove_from_v1, remove_from_v2;
+	t1_update_neighbours(v1, v2, edge, common_cell1, common_cell2, only_v1, only_v2, remove_from_v1, remove_from_v2);
+
+	//6) Update edges
+	int e_remove_from_v1 = -1, e_remove_from_v2 = -1;
+	t1_update_edges(v1, v2, edge, remove_from_v1, remove_from_v2, e_remove_from_v1, e_remove_from_v2); //Careful! after update edges, number of vertices still not updated
+	
+
+	//7) Add v1 to cell that was specific to v2, and v2 to cell that was specific to v1. 
+	//t1_add_vertices_to_cells(v1, v2, sp2, remove_from_v2);
+	t1_add_vertices_to_cells(v2, v1, sp1, remove_from_v1);
+
+	//8)Update edge lengths and areas.
+	t1_update_sizes(v1, v2, edge);
+
+	//9) Update cells in edge
+	edges[edge].cells[0] = sp1->ind;
+	edges[edge].cells[1] = EMPTY_CONNECTION;
+	edges[edge].tension = LINE_TENSION_TISSUE_BOUNDARY;
+	edges[edge].type = EdgeType::tissue_boundary;
+	this->counter_t1_outwards++;
+
+	cout << "T1 transition outwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 out: " << counter_t1_outwards <<endl;
+
+	if(REPORT_T1){
+		ff << "\n\nAFTER\n\n";
+		ff << VERTEX_HEADER << *v1 << "\n" << *v2 << "\n\n";
+		ff << CELL_HEADER << *cc1 << "\tcommon_cell1\n"<< *cc2 << "\tcommon_cell2\n"<< *sp1 << "\tsp1\n\n";
+		ff << getStats();
+		ff.close();
+	}
+
+}/// End make_t1_outwards
 
 void Tissue::make_divide_cell(Rearrangement& r){
 	int cell = r.element_index;
@@ -943,10 +1072,14 @@ void Tissue::t1_update_sizes(Vertex* v1, Vertex* v2, int edge){
 	}
 
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
-		this->cells[v1->cells[i]].area = calculateCellArea(this->cells[v1->cells[i]]);
-		this->cells[v1->cells[i]].perimeter = calculateCellPerimeter(this->cells[v1->cells[i]]);
-		this->cells[v2->cells[i]].area = calculateCellArea(this->cells[v2->cells[i]]);
-		this->cells[v2->cells[i]].perimeter =calculateCellPerimeter(this->cells[v2->cells[i]]);
+		if(v1->cells[i] != EMPTY_CONNECTION){
+			this->cells[v1->cells[i]].area = calculateCellArea(this->cells[v1->cells[i]]);
+			this->cells[v1->cells[i]].perimeter = calculateCellPerimeter(this->cells[v1->cells[i]]);
+		}
+	if(v2->cells[i] != EMPTY_CONNECTION){
+			this->cells[v2->cells[i]].area = calculateCellArea(this->cells[v2->cells[i]]);
+			this->cells[v2->cells[i]].perimeter =calculateCellPerimeter(this->cells[v2->cells[i]]);
+		}
 	}
 }// End update_sizes
 
@@ -1039,6 +1172,7 @@ void Tissue::t1_update_neighbours(Vertex* v1, Vertex* v2, int edge, int common_c
 	v2->neighbour_vertices[ind_remove_from_v2] = remove_from_v1;
 }// End update neighbours
 
+
 void Tissue::t1_rotate_edge90degrees(Vertex* v1, Vertex* v2, int edge){
 	double center_x = (v1->x + v2->x)*0.5;
 	double center_y = (v1->y + v2->y)*0.5;
@@ -1105,6 +1239,7 @@ void Tissue::t1_getCellRelationships(Vertex* v1, Vertex* v2, int& common_cell1, 
 }// end t1_getCellRelationships
 
 
+
 //c1 and c2 are cels common to v1 and v2 in original position. s1 and s2 are cells specific to v1 and v2, respectively, in original positions.
 double Tissue::t1_get_dist_sum(Vertex* v1, Vertex* v2, Cell* c1 , Cell* c2, Cell* s1, Cell* s2){
 
@@ -1143,13 +1278,6 @@ double Tissue::t1_get_dist_sum(Vertex* v1, Vertex* v2, Cell* c1 , Cell* c2, Cell
 	vector<StraightLine> lines = {lv1_c1n1, lv1_c1n2, lv2_c2n1, lv2_c2n2, lv1v2};
 	vector<Cell*> neighbour_cells = {c1, c2, s1, s2};
 	int indices_avoid[6] = {v1->ind, v2->ind, v1_n1, v1_n2, v2_n1, v2_n2};
-	
-	/*for(Edge ee: this->edges) for(StraightLine l : lines){
-		if(!(contains(ee.vertices[1], indices_avoid, 6) && contains(ee.vertices[1], indices_avoid, 6))){
-			cell_edge=getLineFromEdge(&ee);
-			if(lines_cross(cell_edge, l)) return -1;
-		}
-	}*/
 	
 	Edge* ee;
 	for(StraightLine l : lines){ 
