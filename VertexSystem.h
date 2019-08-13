@@ -23,9 +23,9 @@ const float PERIMETER_CONTRACT_BLADE = 0.03;
 const float PERIMETER_CONTRACT_HINGE = 0.6;
 const float T1_TRANSITION_CRITICAL_DISTANCE = 0.4; // 0.1;
 const float T2_TRANSITION_CRITICAL_AREA = 0.01;//0.9;//0.01;
-const float MAX_CELL_AREA = 30;		
+const float MAX_CELL_AREA = 30;//30;		
 const float MAX_EDGE_LENGTH = 10; //Not used yet; not in paper
-const float PREFERRED_AREA_INITIAL = 10.0; //Use >= 30 for constant division
+const float PREFERRED_AREA_INITIAL = 33.0; //Use >= 30 for constant division
 const float PREFERRED_AREA_FINAL = 5.0;
 const float DIVISION_ANGLE_RANDOM_NOISE = 0.3; //1 = variation of 360ºC (completely random), 0 =no variation (division alwys orthogonal to the max. lengh)
 
@@ -186,7 +186,6 @@ class Tissue{
 		bool lines_cross(StraightLine &a, StraightLine &b);
 
 		//These methods are different steps in t1 transition
-		//bool t1_getClosestNeighbour(Vertex* v1, Vertex* v2, Vertex* other, double &dist, int &cell, const int &common_cell1, const int &common_cell2); //Used in t1 transitions
 		double t1_get_dist_sum(Vertex* v1, Vertex* v2, Cell* c1, Cell* c2, Cell* s1, Cell* s2);
 		void t1_rotate_edge90degrees(Vertex* v1, Vertex* v2, int edge); //not used anymore
 		void t1_rotate_edge(Vertex* v1, Vertex* v2, int edge, Cell* c1, Cell* c2, Cell*sp1, Cell* sp2);
@@ -195,6 +194,10 @@ class Tissue{
 		void t1_update_edges(Vertex* v1, Vertex* v2, int edge, int remove_from_v1, int remove_from_v2, int &e_remove_from_v1, int &e_remove_from_v2);
 		void t1_add_vertices_to_cells(Vertex* v1, Vertex* v2, Cell* sp2, int remove_from_v2);
 		void t1_update_sizes(Vertex* v1, Vertex* v2, int edge);
+
+
+		//Methods used by T1 transitions in borders
+		double t1_inwards_get_dist_sum(Vertex* v1, Vertex* v2, Cell* c1, Cell* s1, Cell* s2);
 
 		//Methods used by cell division
 		void splitEdgeWithVertex(int e, int cell, int  v);
