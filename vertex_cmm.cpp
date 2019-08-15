@@ -26,7 +26,13 @@ int main(int argc, char *argv[]){
 	cout << "Reading from file\n\n"<<endl;
 	std::string inputfile = argv[1];//"hex2_s2.5_r20_c20_n0.2_0";//"hex_s2.5_r5_c20_n0.4_0";//"test1016_11";
 	Tissue t = Tissue(inputfile, moves, print_step);
-	t.simulate(true);
+	try{
+		t.simulate();
+	}catch(const char* msg){
+		t.produceOutputs("crashed");
+		cout << msg << endl;
+		exit(1);
+	}
 	cout << t.getStats() << endl;
 	exit(0);
 	

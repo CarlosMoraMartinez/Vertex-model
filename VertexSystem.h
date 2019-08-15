@@ -40,8 +40,15 @@ const int RANDOM_SEED = 1234;
 const std::string VERTEX_FILE_EXTENSION = ".points";
 const std::string CELLS_FILE_EXTENSION = ".cells";
 
+const bool T1_ACTIVE = true;
+const bool T1_BORDER_INWARDS_ACTIVE = true;
+const bool T1_BORDER_OUTWARDS_ACTIVE = true;
+const bool DIVISION_ACTIVE = true;
+const bool T2_ACTIVE = true;
+
 const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
+
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tcells\tedges\tneighbour_vertices\n";
 const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\tnum_vertices\tvertices\tedges\n";
 const std::string EDGE_HEADER = "ind\ttype\tlength\ttension\tvertices\tcells\n";
@@ -117,7 +124,7 @@ class Tissue{
 		Tissue(std::string starting_tissue_file, int max_accepted_movements,  int write_every_N_moves=1000);
 		Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements,  int write_every_N_moves=1000); //not implemented
 
-		void simulate(bool writeAll=false);
+		void simulate();
 		double calculateCellArea(const Cell& c);
 		double calculateCellPerimeter(const Cell& c);
 		double distance(int v1, int v2);
@@ -146,6 +153,7 @@ class Tissue{
 		void writeCellsFile(std::string fname);
 		void writePointsFile(std::string fname);
 		void writeAllData(std::string fname);
+		void produceOutputs(std::string add_to_name);
 		std::string getStats();
 		int getCounterT1();
 		
@@ -198,6 +206,7 @@ class Tissue{
 
 		//Methods used by T1 transitions in borders
 		double t1_inwards_get_dist_sum(Vertex* v1, Vertex* v2, Cell* c1, Cell* s1, Cell* s2);
+		void t1_inwards_update_neighbours(Vertex* v1, Vertex* v2, int edge, int common_cell1, int only_v1, int only_v2, int& remove_from_v1, int& remove_from_v2);
 
 		//Methods used by cell division
 		void splitEdgeWithVertex(int e, int cell, int  v);
