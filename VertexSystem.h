@@ -18,14 +18,14 @@ const float LINE_TENSION_BLADE = -0.02;
 const float LINE_TENSION_HINGE = -0.01;
 const float LINE_TENSION_VEIN_HINGE = 7.0;
 const float LINE_TENSION_VEIN_BLADE = 1.0;
-const float LINE_TENSION_TISSUE_BOUNDARY = 4.0;
+const float LINE_TENSION_TISSUE_BOUNDARY = 4.0;//4.0;
 const float PERIMETER_CONTRACT_BLADE = 0.03;
 const float PERIMETER_CONTRACT_HINGE = 0.6;
 const float T1_TRANSITION_CRITICAL_DISTANCE = 0.4; // 0.1;
-const float T2_TRANSITION_CRITICAL_AREA = 0.01;//0.9;//0.01;
+const float T2_TRANSITION_CRITICAL_AREA = 18;//0.9;//0.01;
 const float MAX_CELL_AREA = 30;//30;		
 const float MAX_EDGE_LENGTH = 10; //Not used yet; not in paper
-const float PREFERRED_AREA_INITIAL = 33.0; //Use >= 30 for constant division
+const float PREFERRED_AREA_INITIAL = 40.0; //Use >= 30 for constant division
 const float PREFERRED_AREA_FINAL = 5.0;
 const float DIVISION_ANGLE_RANDOM_NOISE = 0.3; //1 = variation of 360ºC (completely random), 0 =no variation (division alwys orthogonal to the max. lengh)
 
