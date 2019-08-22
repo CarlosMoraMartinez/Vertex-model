@@ -117,7 +117,7 @@ def writeGrid(vertices, cells, centers, springs, outname):
         f.write('\n')
     f.close()
     f = open(outname + spring_ext,  'w')
-    f.write(str(len(springs)))
+    f.write(str(len(springs)) + '\n')
     for c in springs:
         f.write('\t'.join([str(i) for i in c]))
         f.write('\n')
