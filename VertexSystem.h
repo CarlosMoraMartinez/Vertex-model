@@ -19,13 +19,14 @@ const float LINE_TENSION_HINGE = -0.01;
 const float LINE_TENSION_VEIN_HINGE = 7.0;
 const float LINE_TENSION_VEIN_BLADE = 1.0;
 const float LINE_TENSION_TISSUE_BOUNDARY = 4.0;//4.0;
+const float SPRING_CONSTANT = 2;
 const float PERIMETER_CONTRACT_BLADE = 0.03;
 const float PERIMETER_CONTRACT_HINGE = 0.6;
-const float T1_TRANSITION_CRITICAL_DISTANCE = 0.4; // 0.1;
-const float T2_TRANSITION_CRITICAL_AREA = 18;//0.9;//0.01;
+const float T1_TRANSITION_CRITICAL_DISTANCE = 0.1; // 0.1;
+const float T2_TRANSITION_CRITICAL_AREA = 0.9;//0.9;//0.01;
 const float MAX_CELL_AREA = 30;//30;		
 const float MAX_EDGE_LENGTH = 10; //Not used yet; not in paper
-const float PREFERRED_AREA_INITIAL = 40.0; //Use >= 30 for constant division
+const float PREFERRED_AREA_INITIAL = 10.0; //Use >= 30 for constant division
 const float PREFERRED_AREA_FINAL = 5.0;
 const float DIVISION_ANGLE_RANDOM_NOISE = 0.3; //1 = variation of 360ºC (completely random), 0 =no variation (division alwys orthogonal to the max. lengh)
 
@@ -39,6 +40,7 @@ const int RANDOM_SEED = 1234;
 
 const std::string VERTEX_FILE_EXTENSION = ".points";
 const std::string CELLS_FILE_EXTENSION = ".cells";
+const std::string SPRING_FILE_EXTENSION = ".spr";
 
 const bool T1_ACTIVE = true;
 const bool T1_BORDER_INWARDS_ACTIVE = true;
@@ -49,7 +51,7 @@ const bool T2_ACTIVE = true;
 const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
 
-const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tcells\tedges\tneighbour_vertices\n";
+const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tcells\tedges\tneighbour_vertices\n";
 const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\tnum_vertices\tvertices\tedges\n";
 const std::string EDGE_HEADER = "ind\ttype\tlength\ttension\tvertices\tcells\n";
 
@@ -57,10 +59,10 @@ const std::string EDGE_HEADER = "ind\ttype\tlength\ttension\tvertices\tcells\n";
 enum class CellType{blade = 0, hinge = 1, vein = 2};
 
 //Enum class to define types of edges
-enum class EdgeType{blade = 0, hinge = 1, vein_hinge = 2, vein_blade = 3, tissue_boundary = 4};
+enum class EdgeType{blade = 0, hinge = 1, vein_hinge = 2, vein_blade = 3, tissue_boundary = 4, spring = 5};
 
 //Enum class to define types of transitions
-enum class RearrangementType{t1 = 0, t2 = 1, divide_cell = 2, divide_edge = 3, join_limit_edges = 4, t1_at_border_outwards = 5, t1_at_border_inwards = 6, rotate_inwards =7};
+enum class RearrangementType{t1 = 0, t2 = 1, divide_cell = 2, divide_edge = 3, join_limit_edges = 4, t1_at_border_outwards = 5, t1_at_border_inwards = 6, rotate_inwards = 7};
 // Structure for Vertex
 struct Vertex{
 	int ind;
@@ -70,6 +72,8 @@ struct Vertex{
 	int cells[CELLS_PER_VERTEX];
 	int edges[CELLS_PER_VERTEX];
 	int neighbour_vertices[CELLS_PER_VERTEX];
+	bool movable;
+	int spring;
 	bool dead;
 };
 // Structure for Cell
@@ -152,6 +156,7 @@ class Tissue{
 
 		void writeCellsFile(std::string fname);
 		void writePointsFile(std::string fname);
+		void writeSpringsFile(std::string fname);
 		void writeAllData(std::string fname);
 		void produceOutputs(std::string add_to_name);
 		std::string getStats();
@@ -164,10 +169,11 @@ class Tissue{
 		
 	private:
 		std::string simname;
-		int num_cells, num_vertices, num_edges;
+		int num_cells, num_vertices, num_edges, num_springs;
 		vertex_v vertices;
 		cell_v cells;
 		edge_v edges;
+		edge_v springs;
 		std::queue<int> dead_vertices;
 		std::queue<int> dead_cells;
 		std::queue<int> dead_edges;	
@@ -179,6 +185,7 @@ class Tissue{
 		void initialize_vertices(std::ifstream& inp);
 		void initialize_cells(std::ifstream& inp);  
 		void initialize_edges();
+		void initialize_springs(std::ifstream&);
 		void addEdge(int v1, int v2, int cell);		//Creates single edge
 		void set_default_params();			//Sets model parameters for each vertex, cell and edge, from constants defined in this file
 		void addCellToVertex(int vertex, int cell); 	//Adds one cell to the array of cells in a vertex structure

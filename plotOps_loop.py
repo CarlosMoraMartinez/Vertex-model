@@ -42,7 +42,7 @@ def set_limits(ax, x0, xN, y0, yN):
     ax.set_yticks(range(y0, yN+1))
     ax.set_aspect("equal")
 
-def plot_grid(plot_pos, grid, pointsList, add_vnums):
+def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums):
     # In order to plot a MultiPolygon object, I need to iterate over each oplygon
     fig = plt.figure(1, figsize=(5,5), dpi=90)
     ax = fig.add_subplot(plot_pos)
@@ -55,6 +55,9 @@ def plot_grid(plot_pos, grid, pointsList, add_vnums):
         col = color_isvalid(polygon)
         patch = PolygonPatch(polygon, facecolor=col, edgecolor=color_isvalid(polygon, valid=BLUE), alpha=0.5, zorder=2)
         ax.add_patch(patch)
+    for s in sprList:
+        ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color = RED)
+       
     if(add_vnums):
         for i in pointsList.keys():
             ax.annotate(i, pointsList[i])
@@ -67,6 +70,7 @@ def plot_grid(plot_pos, grid, pointsList, add_vnums):
 for fnum in range(int(sys.argv[2]), int(sys.argv[3])):
     pointsFile = open(sys.argv[1]+str(fnum)+".points", "r")
     cellsFile = open(sys.argv[1]+str(fnum)+".cells", "r")
+    
     numPoints = int(pointsFile.readline())
     numCells, numVerticesCell = [int(each) for each in cellsFile.readline().split()]
 
@@ -83,6 +87,15 @@ for fnum in range(int(sys.argv[2]), int(sys.argv[3])):
         polygonCoords = [list(pointsList[coord]) for coord in polygonIndex]
         polygonList.append(polygonCoords)
     #olygonList[row] =
+#springlist
+    sprList = [] #just in case
+    try:
+        springsfile = open(sys.argv[1]+str(fnum)+".spr", "r")
+        numsprings = int(springsfile.readline())
+        sprList = [[str(int(j)) for j in springsfile.readline().split('\t')] for i in range(numsprings) ]
+    except:
+        print("no springs (.spr) file")
+        sprList = [] #just in case
 
 ########################################################################################################################
 # Plotting the final polygons
@@ -92,7 +105,7 @@ for fnum in range(int(sys.argv[2]), int(sys.argv[3])):
         if(sys.argv[4] == '-n'):
             add_vnums = True
     fig, ax = plt.subplots()
-    plot_grid(111, polygonList, pointsList, add_vnums)
+    plot_grid(111, polygonList, pointsList, sprList, add_vnums)
 
 #plt.show()
     plt.savefig(sys.argv[1]+str(fnum)+'.png')
