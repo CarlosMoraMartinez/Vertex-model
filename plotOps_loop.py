@@ -57,6 +57,9 @@ def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums):
         ax.add_patch(patch)
     for s in sprList:
         ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color = RED)
+    for p in pointsList.keys():
+        if(pointsList[p][2] == 0):
+            ax.scatter(pointsList[p][0], pointsList[p][1], color = RED)
        
     if(add_vnums):
         for i in pointsList.keys():
@@ -78,7 +81,7 @@ for fnum in range(int(sys.argv[2]), int(sys.argv[3])):
     pointsList = {}#np.zeros((numPoints,2))
     for row in range(numPoints):
         ll = pointsFile.readline().split()
-        pointsList[ll[2]] = [float(ll[0]), float(ll[1])]
+        pointsList[ll[2]] = [float(ll[0]), float(ll[1]), int(ll[3])]
 
 #print(pointsList)
     polygonList = []

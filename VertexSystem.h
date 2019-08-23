@@ -26,7 +26,7 @@ const float T1_TRANSITION_CRITICAL_DISTANCE = 0.1; // 0.1;
 const float T2_TRANSITION_CRITICAL_AREA = 0.9;//0.9;//0.01;
 const float MAX_CELL_AREA = 30;//30;		
 const float MAX_EDGE_LENGTH = 10; //Not used yet; not in paper
-const float PREFERRED_AREA_INITIAL = 10.0; //Use >= 30 for constant division
+const float PREFERRED_AREA_INITIAL = 3.0; //Use >= 30 for constant division
 const float PREFERRED_AREA_FINAL = 5.0;
 const float DIVISION_ANGLE_RANDOM_NOISE = 0.3; //1 = variation of 360ºC (completely random), 0 =no variation (division alwys orthogonal to the max. lengh)
 
@@ -47,6 +47,8 @@ const bool T1_BORDER_INWARDS_ACTIVE = true;
 const bool T1_BORDER_OUTWARDS_ACTIVE = true;
 const bool DIVISION_ACTIVE = true;
 const bool T2_ACTIVE = true;
+const bool JOIN_EDGES_ACTIVE = true; 
+const int MOVE_TRIALS = 100;  //Times it tries to move a vertex before it quids because always makes edges to cross
 
 const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
@@ -178,7 +180,7 @@ class Tissue{
 		std::queue<int> dead_cells;
 		std::queue<int> dead_edges;	
 		rearrangement_q rearrangements_needed;
-		int counter_move_trials, counter_moves_accepted, counter_t1, counter_t1_abortions, counter_divisions, counter_t2, counter_t1_outwards, counter_t1_inwards;
+		int counter_move_trials, counter_moves_accepted, counter_edges_removed, counter_t1, counter_t1_abortions, counter_divisions, counter_t2, counter_t1_outwards, counter_t1_inwards;
 		int max_accepted_movements, write_every_N_moves;
 
 		//Methods used by constructors
@@ -218,7 +220,7 @@ class Tissue{
 		//Methods used by cell division
 		void splitEdgeWithVertex(int e, int cell, int  v);
 
-		//methods used by T2
+		//methods used by T2 and join_edges
 		void removeConnectionCell(int elm, int* elements, int length);
 };
 
