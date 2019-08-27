@@ -47,7 +47,8 @@ const bool T1_BORDER_INWARDS_ACTIVE = true;
 const bool T1_BORDER_OUTWARDS_ACTIVE = true;
 const bool DIVISION_ACTIVE = true;
 const bool T2_ACTIVE = true;
-const bool JOIN_EDGES_ACTIVE = true; 
+const bool JOIN_EDGES_ACTIVE = true;
+const bool CONTROL_CELLS_2SIDES = true; 
 const int MOVE_TRIALS = 100;  //Times it tries to move a vertex before it quids because always makes edges to cross
 
 const bool REPORT_T1 = false;
@@ -222,11 +223,13 @@ class Tissue{
 
 		//methods used by T2 and join_edges
 		void removeConnectionCell(int elm, int* elements, int length);
+		void make_remove_size2cell(int cell);
 };
 
 //functions of general use
 bool contains(int n, const int* a, int len);
 int which(int n, const int* a, int len);
+int count(int n, const int* a, int len);
 int element_not_in(const int* a, const int* b, int len1, int len2);
 
 //What follows is only useful to print easily, not part of the model

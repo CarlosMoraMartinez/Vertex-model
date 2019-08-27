@@ -63,7 +63,7 @@ def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums):
        
     if(add_vnums):
         for i in pointsList.keys():
-            ax.annotate(i, pointsList[i])
+            ax.annotate(i, pointsList[i][0:2])
 
 
 ########################################################################################################################

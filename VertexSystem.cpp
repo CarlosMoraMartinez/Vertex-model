@@ -306,9 +306,8 @@ void Tissue::addNeighbourVertex(int vertex1, int vertex2){
 
 int Tissue::newVertex(){
 	int v;
-	if(false){//if (!dead_vertices.empty()){
+	if (!dead_vertices.empty()){
 		v = dead_vertices.front();
-		dead_vertices.pop();
 	}else{
 		Vertex vert;
 		vert.ind = static_cast<int>(this->vertices.size());
@@ -324,6 +323,7 @@ int Tissue::newVertex(){
 	vertices[v].spring = EMPTY_CONNECTION;
 	vertices[v].dead = false;
 	this->num_vertices++;
+	if (!dead_vertices.empty()) dead_vertices.pop();
 	return v;	
 }
 
@@ -338,9 +338,8 @@ int Tissue::newVertex(double x, double y){
 }
 int Tissue::newCell(){
 	int c;
-	if(false){//if(!dead_cells.empty()){
+	if(!dead_cells.empty()){
 		c = dead_cells.front();
-		dead_cells.pop();
 	}else{
 		Cell cl;
 		cl.ind = static_cast<int>(this->cells.size());
@@ -354,14 +353,14 @@ int Tissue::newCell(){
 	cells[c].dead = false;
 	cells[c].num_vertices = 0;
 	this->num_cells++;
+	if (!dead_cells.empty()) dead_cells.pop();
 	return c;		
 
 }
 int Tissue::newEdge(){
 	int e;
-	if(false){//if(!dead_edges.empty()){ //if(false){//
-		e = dead_edges.front();
-		dead_edges.pop();	
+	if(!dead_edges.empty()){ //if(false){//
+		e = dead_edges.front();	
 	}else{
 		Edge ed;	
 		ed.ind = static_cast<int>(this->edges.size());
@@ -374,6 +373,7 @@ int Tissue::newEdge(){
 	edges[e].cells[1] = EMPTY_CONNECTION;
 	edges[e].dead=false;
 	this->num_edges++;
+	if (!dead_edges.empty()) dead_edges.pop();
 	return e;
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -530,7 +530,7 @@ void Tissue::simulate(){
 		if(tryMoveVertex(generator, unif)){ //Tries a random movement; if accepted:
 			counter_moves_accepted++;	
 			performRearrangements();	// Performs any transition/rearrangement needed
-			if(counter_moves_accepted % write_every_N_moves == 0) produceOutputs();
+			if(counter_moves_accepted % write_every_N_moves == 0) produceOutputs(); //&& counter_moves_accepted > 70000
 			//else if(counter_moves_accepted >= 4730400) produceOutputs("moved" + std::to_string(counter_moves_accepted));
 		}//End if move accepted
 		counter_move_trials++;
@@ -547,7 +547,7 @@ void Tissue::detectChangesAfterMove(int vertex_moved){
 		ee = &edges[ vertices[vertex_moved].edges[i] ];
 		Vertex* v1 = &vertices[ ee->vertices[0] ];
 		Vertex* v2 = &vertices[ ee->vertices[1] ];
-		if(ee->length <= T1_TRANSITION_CRITICAL_DISTANCE && v1->movable && v2->movable && v1->spring == EMPTY_CONNECTION && v2->spring == EMPTY_CONNECTION){ //if length < critical distance
+		if(ee->length <= T1_TRANSITION_CRITICAL_DISTANCE && v1->movable && v2->movable){ //if length < critical distance
 			if(ee->cells[0] != EMPTY_CONNECTION && ee->cells[1] != EMPTY_CONNECTION){ //if the edge touches two cells, and there are 4 cells involved, then T1
 				//int empty_connections = 0;
 				//for(int j = 0; j < CELLS_PER_VERTEX; j++) if(v1->cells[j] == EMPTY_CONNECTION) empty_connections++;
@@ -567,7 +567,7 @@ void Tissue::detectChangesAfterMove(int vertex_moved){
 				int edgenum = 0;
 				for(int j = 0; j < CELLS_PER_VERTEX; j++) if(v2->edges[j] != EMPTY_CONNECTION) edgenum++;
 				for(int j = 0; j < CELLS_PER_VERTEX; j++) if(v1->edges[j] != EMPTY_CONNECTION && !contains(v1->edges[j], v2->edges, CELLS_PER_VERTEX)) edgenum++;
-				if(edgenum == 5)  rearrangements_needed.push(Rearrangement{vertices[vertex_moved].edges[i], RearrangementType::t1_at_border_inwards});
+				if(edgenum == 5 && v1->spring == EMPTY_CONNECTION && v2->spring == EMPTY_CONNECTION)  rearrangements_needed.push(Rearrangement{vertices[vertex_moved].edges[i], RearrangementType::t1_at_border_inwards});
 				else if(edgenum < 5)  rearrangements_needed.push(Rearrangement{vertices[vertex_moved].edges[i], RearrangementType::join_limit_edges});
 			}
 
@@ -594,15 +594,15 @@ void Tissue::performRearrangements(){
 		rearrangements_needed.pop();
 		switch (r.type){
 			case RearrangementType::t1:
-				//cout << "Entering t1 \n";
+				cout << "Entering t1 \n";
 				if(T1_ACTIVE) make_t1(r);
 				break;
 			case RearrangementType::t2:
-				//cout << "Entering t2 \n";
+				cout << "Entering t2 \n";
 				if(T2_ACTIVE) make_t2(r);
 				break;
 			case RearrangementType::divide_cell:
-				//cout << "Entering division \n";
+				cout << "Entering division \n";
 				if(DIVISION_ACTIVE) make_divide_cell(r);
 				break;
 			case RearrangementType::divide_edge:
@@ -611,11 +611,11 @@ void Tissue::performRearrangements(){
 				if(JOIN_EDGES_ACTIVE) make_join_limit_edges(r);
 				break;
 			case RearrangementType::t1_at_border_outwards:
-				//cout << "Entering t1 outwards\n";
+				cout << "Entering t1 outwards\n";
 				if(T1_BORDER_OUTWARDS_ACTIVE) make_t1_at_border_outwards(r);
 				break;
 			case RearrangementType::t1_at_border_inwards:
-				//cout << "Entering t1 inwards " << counter_move_trials << "\n";
+				cout << "Entering t1 inwards " << counter_move_trials << "\n";
 				if(T1_BORDER_INWARDS_ACTIVE) make_t1_at_border_inwards(r);
 				break;
 			default:
@@ -1653,6 +1653,7 @@ void Tissue::make_join_limit_edges(Rearrangement& r){
 
 	//11) Take care of springs
 	if(v2->spring != EMPTY_CONNECTION){
+
 		if(v1->spring != EMPTY_CONNECTION){
 			springs[v2->spring].dead = true;
 			int dead_vert = springs[v2->spring].vertices[0] == v2->ind? springs[v2->spring].vertices[1] : springs[v2->spring].vertices[0];
@@ -1687,15 +1688,16 @@ void Tissue::make_join_limit_edges(Rearrangement& r){
 void Tissue::make_t2(Rearrangement& r){
 
 	int cell = r.element_index;
+	//cout << "A\n";
+	if(cells[cell].area > T2_TRANSITION_CRITICAL_AREA || cells[cell].num_vertices != 3 || cells[cell].dead) return; 
 
-	if(cells[cell].area > T2_TRANSITION_CRITICAL_AREA || cells[cell].num_vertices > 3 || cells[cell].dead) return; 
-
+	//cout << cells[cell] << endl;
 	int v1 = cells[cell].vertices[0], v2 = cells[cell].vertices[1], v3 = cells[cell].vertices[2];
 	vertices[v2].dead = true;
 	vertices[v3].dead = true;
 	vertices[v1].x = (vertices[v1].x + vertices[v2].x + vertices[v3].x)/3;
 	vertices[v1].y = (vertices[v1].y + vertices[v2].y + vertices[v3].y)/3;
-	
+	//cout << "B\n";	
 	//Remove edges between vertices of dead cell (still not remove; will be replaced later in v1 edges)
 	int v2e = -1, v3e = -1, v23e = -1;
 	cells[cell].dead = true;
@@ -1711,7 +1713,7 @@ void Tissue::make_t2(Rearrangement& r){
 		}
 		edges[cells[cell].edges[i]].dead=true;
 	}
-
+	//cout << "C\n";
 	//Replace neighbours
 	int v2nei = -1, v3nei = -1;
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
@@ -1737,7 +1739,7 @@ void Tissue::make_t2(Rearrangement& r){
 		}
 	}
 
-
+	//cout << "D\n";
 	//change edges connecting neighbours to v2 and v3
 	int echange2, echange3;
 	if(v2nei != EMPTY_CONNECTION){
@@ -1754,7 +1756,7 @@ void Tissue::make_t2(Rearrangement& r){
 	}else{
 		vertices[v1].edges[which(v2e, vertices[v1].edges, CELLS_PER_VERTEX)] = EMPTY_CONNECTION;
 	}
-
+	//cout << "E\n";
 	if(v3nei != EMPTY_CONNECTION){
 		for(int i = 0; i < CELLS_PER_VERTEX; i++){
 			if(vertices[v3nei].edges[i] == EMPTY_CONNECTION) continue;
@@ -1784,19 +1786,26 @@ void Tissue::make_t2(Rearrangement& r){
 	neicell2 = edges[v2e].cells[0] == cell ? edges[v2e].cells[1] : edges[v2e].cells[0];
 	neicell3 = edges[v3e].cells[0] == cell ? edges[v3e].cells[1] : edges[v3e].cells[0];
 	neicell23 = edges[v23e].cells[0] == cell ? edges[v23e].cells[1] : edges[v23e].cells[0];
-
+	//cout << "e\n";
 	//Change vertices in cells
+
 	if(neicell2 != EMPTY_CONNECTION){
+		
+		//cout  << " neicell2 ind: " << neicell2 << " v2 " << v2 << " v2e: " << v2e <<endl;
+		//cout << "neicell2 " << cells[neicell2]<< endl;
 		removeConnectionCell(v2e, cells[neicell2].edges, cells[neicell2].num_vertices);
 		removeConnectionCell(v2, cells[neicell2].vertices, cells[neicell2].num_vertices);
 		cells[neicell2].num_vertices--;
 	}
+	//cout << "e2"<<endl;
 	if(neicell3 != EMPTY_CONNECTION){
+		//cout<< " neicell3 ind: " << neicell3 << " v3 " << v3 << " v3e: " << v3e <<endl; 
+		//cout << "neicell3 " << cells[neicell3] << endl;
 		removeConnectionCell(v3e, cells[neicell3].edges, cells[neicell3].num_vertices);
 		removeConnectionCell(v3, cells[neicell3].vertices, cells[neicell3].num_vertices);
 		cells[neicell3].num_vertices--;
 	}
-
+	//cout << "F\n";
 	if(neicell23 != EMPTY_CONNECTION && neicell23 != neicell3 && neicell23 != neicell2){
 		removeConnectionCell(v23e, cells[neicell23].edges, cells[neicell23].num_vertices);
 		removeConnectionCell(v3, cells[neicell23].vertices, cells[neicell23].num_vertices);
@@ -1809,7 +1818,7 @@ void Tissue::make_t2(Rearrangement& r){
 		removeConnectionCell(v23e, cells[neicell23].edges, cells[neicell23].num_vertices);
 		cells[neicell23].vertices[which(v3, cells[neicell23].vertices, cells[neicell23].num_vertices)] = v1;
 	}
-
+	//cout << "G\n";
 
 	//Change cell in v1
 	if(neicell23 != neicell2 && neicell23 != neicell3){
@@ -1825,7 +1834,7 @@ void Tissue::make_t2(Rearrangement& r){
 			cells[vertices[v1].cells[i]].perimeter = calculateCellPerimeter(cells[vertices[v1].cells[i]]);
 		}
 	}
-
+	//cout << "H\n";
 	//Add dead elements to dead element queues:
 	dead_cells.push(cell);
 	dead_vertices.push(v1);
@@ -1833,7 +1842,7 @@ void Tissue::make_t2(Rearrangement& r){
 	dead_edges.push(v2e);
 	dead_edges.push(v3e);
 	dead_edges.push(v23e);
-
+	//cout << "I\n";
 	int static_v;
 	//Check if vertices were bound to springs
 	if(vertices[v2].spring != EMPTY_CONNECTION){
@@ -1850,17 +1859,121 @@ void Tissue::make_t2(Rearrangement& r){
 		vertices[static_v].dead = true;
 		dead_vertices.push(static_v);
 	}
-
+	//cout << "J\n";
 	this->num_cells--;
 	this->num_vertices-=2;
 	this->num_edges-=3;
 
 	this->counter_t2++;
 
+	if(CONTROL_CELLS_2SIDES){
+		for(int i = 0; i < cells[cell].num_vertices; i++){
+			for(int j = 0; j < 2; j++){
+				if(edges[cells[cell].edges[i]].cells[j] != EMPTY_CONNECTION && edges[cells[cell].edges[i]].cells[j] != cell){
+					if(cells[edges[cells[cell].edges[i]].cells[j]].num_vertices < 3 ){
+						//make_remove_size2cell(edges[cells[cell].edges[i]].cells[j] ); 
+						int new_v = newVertex();
+						cout << "Adding extra vertex " << cells[edges[cells[cell].edges[i]].cells[j]] << endl;
+						splitEdgeWithVertex(cells[edges[cells[cell].edges[i]].cells[j]].edges[0], edges[cells[cell].edges[i]].cells[j], new_v);
+						cout << "Added extra vertex " << cells[edges[cells[cell].edges[i]].cells[j]] << endl;
+					}
+				}
+			}
+		}
+	}
 	cout << "T2 transition: cell=" << cell << ", survivor vertex =" << v1 << "; v2: " << v2 << "; v3: " << v3 << "; v2nei: " << v2nei << "; v3nei: " << v3nei << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << "; T2: " << counter_t2 << endl;
-
+	//cout << "K\n";
 }//End make transition T2
 
+void Tissue::make_remove_size2cell(int cell){
+
+	cout << "Removing cell with 2 vertices: " << cell << endl;
+	int e1 = cells[cell].edges[0];
+	int e2 = cells[cell].edges[1];
+	int v1 = cells[cell].vertices[0];
+	int v2 = cells[cell].vertices[1];
+	int c1  = edges[e1].cells[0] == cell ? edges[e1].cells[1] : edges[e1].cells[0];
+	int c2  = edges[e2].cells[0] == cell ? edges[e2].cells[1] : edges[e2].cells[0];
+
+	vertices[v1].cells[which(cell, vertices[v1].cells, CELLS_PER_VERTEX)] = EMPTY_CONNECTION;
+	vertices[v2].cells[which(cell, vertices[v2].cells, CELLS_PER_VERTEX)] = EMPTY_CONNECTION;
+	int rep = 0;
+	for(int i = 0; i < CELLS_PER_VERTEX; i++){
+		if(vertices[v1].neighbour_vertices[i] == v2) rep++;
+		if(rep > 1) vertices[v1].neighbour_vertices[i] = EMPTY_CONNECTION;			
+	}
+	for(int i = 0; i < CELLS_PER_VERTEX; i++){
+		if(vertices[v2].neighbour_vertices[i] == v1) rep++;
+		if(rep > 1) vertices[v2].neighbour_vertices[i] = EMPTY_CONNECTION;			
+	}
+
+
+	if (c1 == EMPTY_CONNECTION && c2 == EMPTY_CONNECTION){
+		edges[e1].dead = true;
+		edges[e2].dead = true;
+		dead_edges.push(e1);
+		dead_edges.push(e2);
+		this->num_edges-=2;
+		vertices[edges[e1].vertices[0]].edges[which(e1, vertices[edges[e1].vertices[0]].edges, CELLS_PER_VERTEX)] = EMPTY_CONNECTION;
+		vertices[edges[e1].vertices[1]].edges[which(e1, vertices[edges[e1].vertices[1]].edges, CELLS_PER_VERTEX)] = EMPTY_CONNECTION;
+		vertices[edges[e2].vertices[0]].edges[which(e2, vertices[edges[e2].vertices[0]].edges, CELLS_PER_VERTEX)] = EMPTY_CONNECTION;
+		vertices[edges[e2].vertices[1]].edges[which(e2, vertices[edges[e2].vertices[1]].edges, CELLS_PER_VERTEX)] = EMPTY_CONNECTION;
+
+		cells[cell].dead = true;
+		dead_cells.push(cell);
+		this->num_cells--;
+		
+		if(count(EMPTY_CONNECTION, vertices[v1].cells, CELLS_PER_VERTEX) >= CELLS_PER_VERTEX){
+			vertices[v1].dead = true;
+			dead_vertices.push(v1);
+			this->num_vertices--;
+		}
+
+		if(count(EMPTY_CONNECTION, vertices[v1].cells, CELLS_PER_VERTEX) >= CELLS_PER_VERTEX){
+			vertices[v2].dead = true;
+			dead_vertices.push(v2);
+			this->num_vertices--;
+		}
+		return;
+
+	}else if (c2 != EMPTY_CONNECTION && c1 == EMPTY_CONNECTION){
+		int aux = c1;
+		c1 = c2;
+		c2 = aux;
+		aux = e1;	
+		e1 = e2;
+		e2 = aux;
+	}
+
+	edges[e1].cells[which(cell, edges[e1].cells, 2)] = c2;
+
+	if(c2 != EMPTY_CONNECTION){
+		if(! contains(e1, cells[cell].edges, cells[cell].num_vertices)){
+			cells[c2].edges[which(e2, cells[c2].edges, cells[c2].num_vertices)] = e1;
+		}else{
+			cout << "Weird geometry: cell of 2 vertices being deleted from inside a bigger cell. num. moves: " << counter_moves_accepted << "\n";
+			removeConnectionCell(e2, cells[cell].edges, cells[cell].num_vertices);
+			int c = count(v1, cells[cell].vertices, MAX_SIDES_PER_CELL);
+			if(c > 1){
+				removeConnectionCell(v1, cells[cell].vertices, cells[cell].num_vertices);
+				cells[cell].num_vertices--;
+			}
+			c = count(v2, cells[cell].vertices, MAX_SIDES_PER_CELL);
+			if(c > 1){
+				removeConnectionCell(v2, cells[cell].vertices, cells[cell].num_vertices);
+				cells[cell].num_vertices--;
+			}
+
+		}
+	}
+
+	edges[e2].dead = true;
+	dead_edges.push(e2);
+	this->num_edges--;
+	cout << "Removed cell with 2 vertices: " << cell << endl;
+	return;
+
+}
 
 //Assumes that array elements is at least 1 element longer than length
 void Tissue::removeConnectionCell(int elm, int* elements, int length){
@@ -2116,6 +2229,14 @@ int which(int n, const int* a, int len){
 	return -1;
 }
 
+
+int count(int n, const int* a, int len){
+	int cont = 0;
+	for(int i = 0; i<len; i++){
+		if(n == a[i]) cont++;
+	}
+	return cont;
+}
 //Returns index of FIRST element in array a that is not present in array b
 int element_not_in(const int* a, const int* b, int len1, int len2){
 	bool a_in_b;
