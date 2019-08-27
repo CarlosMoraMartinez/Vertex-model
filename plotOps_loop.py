@@ -15,6 +15,14 @@ BLUE = '#6699cc'
 GRAY = '#999999'
 RED = '#ff3333'
 
+
+bladetype = 0
+hingetype = 1
+veintype = 2
+veinhinge = 3
+wingcols = ['blue', 'green', 'black', 'gray']
+
+
 GM = (sqrt(5)-1.0)/2.0
 W = 8.0
 H = W*GM
@@ -42,17 +50,20 @@ def set_limits(ax, x0, xN, y0, yN):
     ax.set_yticks(range(y0, yN+1))
     ax.set_aspect("equal")
 
-def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums):
+def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes):
     # In order to plot a MultiPolygon object, I need to iterate over each oplygon
     fig = plt.figure(1, figsize=(5,5), dpi=90)
     ax = fig.add_subplot(plot_pos)
     count = 0
-    for element in grid:
+    for k, element in enumerate(grid):
         count += 1
         polygon = Polygon(element)
         plot_coords(ax, polygon.exterior)
-        col = BLUE
-        col = color_isvalid(polygon)
+        if(len(celltypes) == 0):
+            col = BLUE
+        else:
+            col = wingcols[celltypes[k]]
+        col = color_isvalid(polygon, col)
         patch = PolygonPatch(polygon, facecolor=col, edgecolor=color_isvalid(polygon, valid=BLUE), alpha=0.5, zorder=2)
         ax.add_patch(patch)
     for s in sprList:
@@ -70,6 +81,12 @@ def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums):
 # Generating the multipolygon object
 ########################################################################################################################
 
+
+if(len(sys.argv) <= 5):
+    plot_cell_types = True
+else:
+    plot_cell_types = False
+
 for fnum in range(int(sys.argv[2]), int(sys.argv[3])):
     pointsFile = open(sys.argv[1]+str(fnum)+".points", "r")
     cellsFile = open(sys.argv[1]+str(fnum)+".cells", "r")
@@ -85,8 +102,11 @@ for fnum in range(int(sys.argv[2]), int(sys.argv[3])):
 
 #print(pointsList)
     polygonList = []
+    celltypes = []
     for row in range(numCells):
         polygonIndex = [indPoint for indPoint in cellsFile.readline().split() if int(indPoint) >= 0]
+        if(plot_cell_types):
+            celltypes.append(int(polygonIndex.pop())) #CAREFUL: if cells file does not have type, will produce error
         polygonCoords = [list(pointsList[coord]) for coord in polygonIndex]
         polygonList.append(polygonCoords)
     #olygonList[row] =
@@ -108,7 +128,7 @@ for fnum in range(int(sys.argv[2]), int(sys.argv[3])):
         if(sys.argv[4] == '-n'):
             add_vnums = True
     fig, ax = plt.subplots()
-    plot_grid(111, polygonList, pointsList, sprList, add_vnums)
+    plot_grid(111, polygonList, pointsList, sprList, add_vnums, celltypes)
 
 #plt.show()
     plt.savefig(sys.argv[1]+str(fnum)+'.png')
