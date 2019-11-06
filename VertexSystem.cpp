@@ -2156,6 +2156,26 @@ bool Tissue::lines_cross(StraightLine& a, StraightLine& b){
 	
 }
 
+
+std::vector<int> Tissue::getNeighbourCells(int cell){
+	Cell *c1 = &this->cells[cell];
+	Edge *e;
+	std::vector<int> v;
+	bool added_border = false;
+	int aux;
+	for(int i = 0; i < c1->num_vertices; i++){
+		e = &this->edges[c1->edges[i]];
+		aux = e->cells[0] == c1->ind ? e->cells[1] : e->cells[0];
+		if(aux != EMPTY_CONNECTION || !added_border){
+			v.push_back(aux);
+			if(aux == EMPTY_CONNECTION) added_border=true;
+		}
+	}
+	return v;
+}
+
+
+
 std::string Tissue::getStats(){
 	std::string s = "";
 	s += "Move trials: " + std::to_string(counter_move_trials);

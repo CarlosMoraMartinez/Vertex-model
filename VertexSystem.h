@@ -82,6 +82,9 @@ struct Vertex{
 	bool dead;
 };
 // Structure for Cell
+//Add: preferred angle with respect to origin/longest axis and angle noise
+//     cell cycle stage
+//     etc
 struct Cell{
 	int ind;
 	CellType type;
@@ -167,6 +170,8 @@ class Tissue{
 		void produceOutputs(std::string add_to_name);
 		std::string getStats();
 		int getCounterT1();
+
+		std::vector<int> getNeighbourCells(int cell);
 		
 		friend std::ostream& operator<<(std::ostream& out, const Tissue& t); //Don't worry about these 4 lines, only important for output
 		friend std::ostream& operator<<(std::ostream& out, const Vertex& v);
