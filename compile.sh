@@ -1,4 +1,8 @@
 
+
+# mkdir $1
+cp VertexSystem.cpp VertexSystem.h vertex_cmm.cpp plotOps_loop.py $1
+cd $1
 g++ -std=c++11 -c VertexSystem.cpp
 g++ -std=c++11 -c vertex_cmm.cpp
 g++ -o vertex vertex_cmm.o VertexSystem.o
@@ -10,10 +14,9 @@ ffmpeg -framerate 10 -i $1'_moved_'%d.png -codec copy $1'_moved_'.avi
 rm *.o
 rm vertex
 
-mkdir $1
-mv $1'_moved'* $1
+#mv $1'_moved'* $1
 
-cd $1
+#cd $1
 mkdir t1_transitions
-mv ../T1_REPORT* t1_transitions
+mv T1_REPORT* t1_transitions
 cd ../

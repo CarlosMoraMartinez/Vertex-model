@@ -11,6 +11,7 @@ template <typename T> class GXMatrix {
   unsigned cols;
 
  public:
+  GXMatrix();
   GXMatrix(unsigned _rows, unsigned _cols, const T& _initial);
   GXMatrix(const GXMatrix<T>& rhs);
   ~GXMatrix();
@@ -31,7 +32,8 @@ template <typename T> class GXMatrix {
   GXMatrix<T>& operator*=(const GXMatrix<T>& rhs);
   GXMatrix<T> operator/(const GXMatrix<T>& rhs);
   GXMatrix<T>& operator/=(const GXMatrix<T>& rhs);
-  //GXMatrix<T> transpose();
+  
+  GXMatrix<T> transpose();
 
   // Matrix/scalar operations                                                                                                                                                                                                     
   GXMatrix<T> operator+(const T& rhs);
@@ -51,6 +53,7 @@ template <typename T> class GXMatrix {
   // Access the row and column sizes
   unsigned get_rows() const;
   unsigned get_cols() const;
+  std::vector<std::vector<T> > getMat();
   std::string toString();
 };
 
@@ -59,17 +62,21 @@ template <typename T> class GXMatrix {
 
 
 //Formerly in .cpp
-template <typename T> 
-GXMatrix<T>::GXMatrix(unsigned _rows, unsigned _cols, const T& _initial){
+template <typename T>  GXMatrix<T>::GXMatrix(){
+	this->rows = 0;
+	this->cols = 0;
+}
+
+
+template <typename T>  GXMatrix<T>::GXMatrix(unsigned _rows, unsigned _cols, const T& _initial){
 	this->rows = _rows;
 	this->cols = _cols;
 	for(int i = 0; i< _rows; i++){
 		this->mat.push_back(std::vector<T>(_cols, _initial));
 	}
-
 }
-template <typename T> 
-GXMatrix<T>::GXMatrix(const GXMatrix<T>& rhs){
+
+template <typename T> GXMatrix<T>::GXMatrix(const GXMatrix<T>& rhs){
 	this->rows = rhs.get_rows();
 	this->cols = rhs.get_cols();
 	std::vector<T> aux;
@@ -80,22 +87,19 @@ GXMatrix<T>::GXMatrix(const GXMatrix<T>& rhs){
 }
 
 
-template <typename T> 
-GXMatrix<T>::~GXMatrix(){
+template <typename T> GXMatrix<T>::~GXMatrix(){
 }
 
 
 
-template <typename T> 
-void GXMatrix<T>::add_row(std::vector<T> row){
+template <typename T>  void GXMatrix<T>::add_row(std::vector<T> row){
 	if(row.size() == rows){
 		this->mat.push_back(row);
 		this->rows++;
 	}
 }
 
-template <typename T> 
-void GXMatrix<T>::add_row(unsigned n_rows, const T& _initial){
+template <typename T>  void GXMatrix<T>::add_row(unsigned n_rows, const T& _initial){
 	for(int i = 0; i < n_rows; i++){
 		this->mat.push_back(std::vector<T>(this->cols, _initial));
 	}
@@ -103,47 +107,79 @@ void GXMatrix<T>::add_row(unsigned n_rows, const T& _initial){
 
   // Operator overloading, for "standard" mathematical matrix operations
                                                                                                                                                           
-template <typename T> 
-GXMatrix<T>& GXMatrix<T>::operator=(const GXMatrix<T>& rhs){
-	GXMatrix<T> result(*this);
-	return result;
+template <typename T>  GXMatrix<T>& GXMatrix<T>::operator=(const GXMatrix<T>& rhs){
+	this->mat = rhs.mat;
+	this->cols = rhs.get_cols();
+	this->rows = rhs.get_rows();
+	return *this;
 }
 
   // Matrix mathematical operations
- template <typename T>  GXMatrix<T> GXMatrix<T>::operator+(const GXMatrix<T>& rhs){
+template <typename T>  GXMatrix<T> GXMatrix<T>::operator+(const GXMatrix<T>& rhs){
 	GXMatrix<T> result(*this);
 	for(int i = 0; i < result.get_rows(); i++) for(int j = 0; j < result.get_cols(); j++) result(i, j) += rhs(i,j);
 	return result;
 }
- template <typename T>  GXMatrix<T>& GXMatrix<T>::operator+=(const GXMatrix<T>& rhs){}
- template <typename T>  GXMatrix<T> GXMatrix<T>::operator-(const GXMatrix<T>& rhs){
+template <typename T>  GXMatrix<T>& GXMatrix<T>::operator+=(const GXMatrix<T>& rhs){
+	*this = *this + rhs;
+	return *this;
+}
+template <typename T>  GXMatrix<T> GXMatrix<T>::operator-(const GXMatrix<T>& rhs){
 	GXMatrix<T> result(*this);
 	for(int i = 0; i < result.get_rows(); i++) for(int j = 0; j < result.get_cols(); j++) result(i, j) -= rhs(i,j);
 	return result;
 }
- template <typename T> GXMatrix<T>& GXMatrix<T>::operator-=(const GXMatrix<T>& rhs){}
- template <typename T>  GXMatrix<T> GXMatrix<T>::operator*(const GXMatrix<T>& rhs){
+template <typename T> GXMatrix<T>& GXMatrix<T>::operator-=(const GXMatrix<T>& rhs){
+	*this = *this - rhs;
+	return *this;
+}
+template <typename T>  GXMatrix<T> GXMatrix<T>::operator*(const GXMatrix<T>& rhs){
 	GXMatrix<T> result(*this);
 	for(int i = 0; i < result.get_rows(); i++) for(int j = 0; j < result.get_cols(); j++) result(i, j) *= rhs(i,j);
 	return result;
 }
- template <typename T>  GXMatrix<T>& GXMatrix<T>::operator*=(const GXMatrix<T>& rhs){}
- template <typename T>  GXMatrix<T> GXMatrix<T>::operator/(const GXMatrix<T>& rhs){
+template <typename T>  GXMatrix<T>& GXMatrix<T>::operator*=(const GXMatrix<T>& rhs){
+	*this = *this * rhs;
+	return *this;
+}
+template <typename T>  GXMatrix<T> GXMatrix<T>::operator/(const GXMatrix<T>& rhs){
 	GXMatrix<T> result(*this);
 	for(int i = 0; i < result.get_rows(); i++) for(int j = 0; j < result.get_cols(); j++) result(i, j) /= rhs(i,j);
 	return result;
 }
- template <typename T>  GXMatrix<T>& GXMatrix<T>::operator/=(const GXMatrix<T>& rhs){}
-  //GXMatrix<T> transpose();
+template <typename T>  GXMatrix<T>& GXMatrix<T>::operator/=(const GXMatrix<T>& rhs){
+	*this = *this / rhs;
+	return *this;
+}
+
+template <typename T> GXMatrix<T> GXMatrix<T>::transpose(){
+	GXMatrix<T> aux(*this);
+	GXMatrix<T> result(this->get_cols(), this->get_rows(), aux(0,0));
+	for(int i = 0; i < result.get_rows(); i++) for(int j = 0; j < result.get_cols(); j++) result(i, j) = aux(j,i);
+	return result;
+}
 
   // Matrix/scalar operations                                                                                                                                                                                                     
- template <typename T> GXMatrix<T> GXMatrix<T>::operator+(const T& rhs){
-
-
+template <typename T> GXMatrix<T> GXMatrix<T>::operator+(const T& rhs){
+	GXMatrix<T> result(*this);
+	for(int i = 0; i < result.get_rows(); i++) for(int j = 0; j < result.get_cols(); j++) result(i, j) += rhs;
+	return result;
 }
- template <typename T>  GXMatrix<T> GXMatrix<T>::operator-(const T& rhs){}
- template <typename T> GXMatrix<T> GXMatrix<T>::operator*(const T& rhs){}
- template <typename T> GXMatrix<T> GXMatrix<T>::operator/(const T& rhs){}
+template <typename T>  GXMatrix<T> GXMatrix<T>::operator-(const T& rhs){
+	GXMatrix<T> result(*this);
+	for(int i = 0; i < result.get_rows(); i++) for(int j = 0; j < result.get_cols(); j++) result(i, j) -= rhs;
+	return result;
+}
+template <typename T> GXMatrix<T> GXMatrix<T>::operator*(const T& rhs){
+	GXMatrix<T> result(*this);
+	for(int i = 0; i < result.get_rows(); i++) for(int j = 0; j < result.get_cols(); j++) result(i, j) *= rhs;
+	return result;
+}
+template <typename T> GXMatrix<T> GXMatrix<T>::operator/(const T& rhs){
+	GXMatrix<T> result(*this);
+	for(int i = 0; i < result.get_rows(); i++) for(int j = 0; j < result.get_cols(); j++) result(i, j) /= rhs;
+	return result;
+}
 
   // Matrix/vector operations                                                                                                                                                                                                     
   //std::vector<T> operator*(const std::vector<T>& rhs);
@@ -174,6 +210,10 @@ template <typename T> unsigned GXMatrix<T>::get_rows() const{
 } 
 template <typename T> unsigned GXMatrix<T>::get_cols() const{
 	return this->cols;
+}
+
+template <typename T> std::vector<std::vector<T> > GXMatrix<T>::getMat(){
+	return this->mat;
 }
 
 template <typename T> std::string GXMatrix<T>::toString(){

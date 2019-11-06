@@ -47,5 +47,38 @@ int main(int argc, char *argv[]){
 	cout << "g4 / g2: \n";
 	GXMatrix<int> g5 = g4 / g2;
 	cout << g4.toString() << "\n" << "\n" << g2.toString() << "\n" << "result:\n" << g5.toString();
+
+
+	cout << "ASSIGNMENT: \n";
+	cout << g4.toString() << "\n" << "\n" << g2.toString();
+	g4 = g2;
+	g4(0,0) = 12345;
+	cout << "after: \n";
+	cout << g4.toString() << "\n" << "\n" << g2.toString();
+
+
+	cout << "g5 /= g*g*g: \n";
+	cout << g5.toString() << "\n" << "\n" << g.toString();
+	g5 /= g*g*g;
+	g5(0,0) = 12345;
+	cout << "after: \n";
+	cout << g5.toString() << "\n" << "\n" << g.toString();
+
+
+	cout << "SCALAR SUM: \n";
+	cout << g.toString();
+	g2 = g + 100;
+	g2(0,0) = 12345;
+	cout << "after: \n";
+	cout << g.toString() << "\n" << "\n" << g2.toString();
+
+	cout << "TRANSPOSE: \n";
+	GXMatrix<double> g6(5, 7, 4.2);
+	GXMatrix<double> g7;
+	for(int i = 0; i < 5; i++) for(int j = 0; j < 7; j++) g6(i,j)+= double(i*j + j);
+	cout << g6.toString();
+	g7 = g6.transpose();
+	cout << "after: \n";
+	cout << g6.toString() << "\n" << "\n" << g7.toString();
 	exit(0);
 }
