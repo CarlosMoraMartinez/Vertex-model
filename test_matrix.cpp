@@ -10,9 +10,6 @@
 using namespace std;
 
 
-
-int DEFAULT_STEPS = 10e7;
-int DEFAULT_WRITE = 10e4;
 int main(int argc, char *argv[]){
 
 	GXMatrix<int> g(10,10, 5);

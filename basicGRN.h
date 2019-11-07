@@ -6,17 +6,18 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <map>
 #include <fstream>
 #include <string>
 #include <cstdlib>
 #include <random>
 
-
+using namespace std;
 //Files with this extension should contain:
 // - Type of each gene (including cell, edge and vertex properties, which for practical purposes count as genes)
 // - Parameters for each gene for each cell type (degradation rate, diffusion rate, initial expression and constant expression)
 const std::string INTERACTIONS_EXTENSION = ".grn";
-
+const std::string EXPRESSION_EXTENSION = ".expr";
 
 const int NOT_PRESENT = -999;
 
@@ -35,15 +36,15 @@ typedef std::map<CellType, list_of_regulators > map_of_regulators;
 
 
 struct Gene_params{ //This should be updated in other implementations
-      int min_intracel, num_intracel, min_diffusible, num_diffusible;
       ctparams degr, diff_rate, initial_expr, constant_expr;
 };
 
 
-class GXMatrix {
+class basicGRN {
   private:
     double h;
     int num_genes;
+    std::string name;
     GXMatrix<double> expression;
     ctinteractions interactions;
     std::vector<GXMatrix<double>> rungekutta_parts; //Store k1, k2, k3, k4
@@ -57,21 +58,23 @@ class GXMatrix {
     ctparams readSingleParam(std::vector<std::string>::iterator& it);
     void readGRN(std::vector<std::string>::iterator& it);
     void get_current_cell_grid_params();
+    void readExpressionFile(std::string expr_file);
+    void initializeExpression();
 
   public:
     basicGRN();
     basicGRN(std::string sname);
-    basicGRN(std::string sname, Tissue& t);
+    basicGRN(std::string sname, Tissue& t, std::string expr_file);
     void activateAll(GXMatrix<double> current_expr, int k);
     //Convolution, formulas
-    runge_kutta_4th();
+    void runge_kutta_4th();
     //update_cell_grid();
-
+    std::string toString();
     struct { //This affects which gene index affects each cell/edge property. Should be updated in other implementations
-    unsigned int cell_preferred_area = 0;
-    unsigned int cell_perimeter_contractility = 1;
-    unsigned int edge_tension = 2;
+      unsigned int cell_preferred_area = 0;
+      unsigned int cell_perimeter_contractility = 1;
+      unsigned int edge_tension = 2;
     } property_index;
     
-}
+};
 #endif
