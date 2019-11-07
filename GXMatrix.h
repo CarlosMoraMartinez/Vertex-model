@@ -218,9 +218,11 @@ template <typename T> std::vector<std::vector<T> > GXMatrix<T>::getMat(){
 
 template <typename T> std::string GXMatrix<T>::toString(){
 	std::string s = "";
+        int row = 0;
 	for(std::vector<T> i : this->mat){
+		s += "\n" + std::to_string(row) + ": ";
 		for(T j : i) s += std::to_string(j) + "\t";
-		s += "\n";
+                row++;
 	}
 	return s;
 }

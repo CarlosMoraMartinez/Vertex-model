@@ -132,6 +132,7 @@ typedef std::vector<Edge> edge_v;
 typedef std::queue<Rearrangement> rearrangement_q;
 
 class Tissue{
+        friend class basicGRN;
 	public:
 		Tissue();
 		Tissue(std::string starting_tissue_file, int max_accepted_movements,  int write_every_N_moves=1000);

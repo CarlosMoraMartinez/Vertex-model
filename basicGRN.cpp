@@ -34,12 +34,14 @@ basicGRN::basicGRN(std::string sname){
 
 basicGRN::basicGRN(std::string sname, Tissue& t, std::string expr_file="") : basicGRN(sname){
   cell_grid = &t;
+  num_cells = cell_grid->num_cells;
   if(expr_file == ""){
     initializeExpression();
   }
   else{
     readExpressionFile(expr_file);
   }
+  for(int k = 0; k < 5; k++)rungekutta_parts.push_back(GXMatrix<double>(num_cells, num_genes, 0.0));
   get_current_cell_grid_params();
 }
 
@@ -138,23 +140,99 @@ void basicGRN::readGRN( std::vector<std::string>::iterator& it){
 
 
 void basicGRN::initializeExpression(){
-
+  expression = GXMatrix<double>(num_cells, num_genes, 0.0);
+  for(int c = 0; c < num_cells; c++){
+    for(int g = 0; g < num_genes; g++){
+        expression(c, g) = params.initial_expr[cell_grid->cells[c].type][g];
+    }
+  }
 }
 void basicGRN::readExpressionFile(std::string expr_file){
-
+  //To implement
 }
 void basicGRN::get_current_cell_grid_params(){
+  Edge e_aux;
+  for(int c = 0; c < num_cells; c++){
+    expression(c, property_index.cell_preferred_area) = cell_grid->cells[c].preferred_area;
+    expression(c, property_index.cell_perimeter_contractility) = cell_grid->cells[c].perimeter_contractility;
 
-}
+    //Now guess edge tension of cells of this type
+    for(int ei = 0; ei < cell_grid->cells[c].num_vertices; ei++){
+      e_aux = cell_grid->edges[ cell_grid->cells[c].edges[ei] ];
+      if( ( cell_grid->cells[c].type == CellType::blade && e_aux.type == EdgeType::blade ) || 
+          ( cell_grid->cells[c].type == CellType::hinge && e_aux.type == EdgeType::hinge ) ||
+          ( cell_grid->cells[c].type == CellType::vein && e_aux.type == EdgeType::vein ) ){
+            expression(c, property_index.edge_tension) = e_aux.tension;
+      }
+    } //for edges in cell
 
-void basicGRN::activateAll(GXMatrix<double> current_expr, int k){
+  } //for cells
+} // end of get_current_cell_grid_params
 
+void basicGRN::activateAll(GXMatrix<double>& current_expr, int k){
+    for(int c = 0; c < num_cells; c++){
+      for(int g = 0; g < num_genes; g++){
+        increment_functions[gene_types[g]](current_expr, c, g, k);
+    }
+  }
 }
 void basicGRN::runge_kutta_4th(){
-   
+  activateAll(expression, 0);
+  activateAll(expression + 0.5*h*rungekutta_parts[0], 1);
+  activateAll(expression + 0.5*h*rungekutta_parts[1], 2);
+  activateAll(expression + h*rungekutta_parts[2], 3);
+  rungekutta_parts[4] = (rungekutta_parts[0] + 2*rungekutta_parts[1] + 2*rungekutta_parts[2] + rungekutta_parts[3])/6;
+
+  expression += h*rungekutta_parts[4];
+  // for(int c = 0; c < num_cells; c++) for(int g = 0; g < num_genes; g++) if(expression(c, g) < 0) expression(c, g) = 0; //CAREFUL! don't do this for parameters
+  // And maybe change here edge values. Although if it is a waste of time to iterate over all edges when several GRN steps precede a single vertex step, 
+  // it is the only way to take into account edges that are between two different cell types or at border. 
+  // Unless (as should be done), a different "gene" is used for each type of edge
 }
 
-std::string basicGRN::toString(){
+
+
+void basicGRN::intracel_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k){
+  double res = 0;
+  CellType ct = cell_grid->cells[cell].type;
+  for(int reg : regulators[ct][gene]){
+    res += current_expr[cell, reg]*ctinteractions[ct](gene, reg);
+  }
+  res = 1/(1 + exp(-1*res)) - params.degr[ct][gene]*current_expr(cell, gene);
+  rungekutta_parts[k](cell, gene) = res < 0 ? 0 : res;
+}
+void basicGRN::diffusible_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k){
+  intracel_getIncrement(current_expr, cell, gene, k);
+
+  const Cell *c = &cell_grid->cells[cell];
+  const Edge *edge;
+  double diff = 0;
+  int nei;
+  for(int e = 0; e < c->num_vertices; e++){
+    edge = &cell_grid->edges[e];
+    nei = edge->cells[0] == c->ind ? edge->cells[1] : edge->cells[0];
+    //diff += (current_expr(cell, gene)/c->area - current_expr(nei, gene)/cell_grid->cells[nei].area)*edge->length/c->perimeter; //normalizing by area?
+    diff += (current_expr(cell, gene)- current_expr(nei, gene))*edge->length/c->perimeter;
+  }
+  rungekutta_parts[k](cell, gene) -= params.diff_rate[c->type][gene]*diff; //*power(diff, 2);
+} //diffussible
+
+void basicGRN::cell_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k){
+  intracel_getIncrement(current_expr, cell, gene, k);
+}
+
+void basicGRN::edge_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k){
+  intracel_getIncrement(current_expr, cell, gene, k);
+}
+void basicGRN::vertex_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k){
+  intracel_getIncrement(current_expr, cell, gene, k);
+}
+void basicGRN::setNewParametersToCells(){
+  //to implement
+}
+
+
+std::string basicGRN::toString(bool print_current_expression=false){
     std::string s = name + " number of genes (+ variable properties): " + to_string(num_genes) + ".\n\n";
     s += "Gene type (intracel = 0, diffusible = 1, cell_property = 2, edge_property = 3, vertex_property = 4):\n";
     for(GeneType g : gene_types) s += to_string( static_cast<int>(g) ) + ", ";
@@ -206,6 +284,7 @@ std::string basicGRN::toString(){
       }  
     }
     s += "\n*****\n";
+    if(print_current_expression) s += expression.toString() + "\n*****\n";
     return s;
 }
 

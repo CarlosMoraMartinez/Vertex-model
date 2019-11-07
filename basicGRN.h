@@ -39,11 +39,14 @@ struct Gene_params{ //This should be updated in other implementations
       ctparams degr, diff_rate, initial_expr, constant_expr;
 };
 
+typedef void (*increment_function)(GXMatrix<double>&, int, int, int)>;
+
+typedef std::map<GeneType, increment_function> function_map;
 
 class basicGRN {
   private:
     double h;
-    int num_genes;
+    int num_genes, num_cells;
     std::string name;
     GXMatrix<double> expression;
     ctinteractions interactions;
@@ -52,6 +55,7 @@ class basicGRN {
     Gene_params params;
     map_of_regulators regulators;
     Tissue *cell_grid;
+    function_map increment_functions;
 
     void readGeneTypes(std::vector<std::string>::iterator& it);
     void readParams(std::vector<std::string>::iterator& it);
@@ -61,15 +65,22 @@ class basicGRN {
     void readExpressionFile(std::string expr_file);
     void initializeExpression();
 
+    void intracel_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k);
+    void diffusible_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k); 
+    void cell_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k);
+    void edge_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k);
+    void vertex_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k);
+
   public:
     basicGRN();
     basicGRN(std::string sname);
     basicGRN(std::string sname, Tissue& t, std::string expr_file);
-    void activateAll(GXMatrix<double> current_expr, int k);
+    void activateAll(GXMatrix<double>& current_expr, int k);
+    void setNewParametersToCells();
     //Convolution, formulas
     void runge_kutta_4th();
     //update_cell_grid();
-    std::string toString();
+    std::string toString(bool print_current_expression);
     struct { //This affects which gene index affects each cell/edge property. Should be updated in other implementations
       unsigned int cell_preferred_area = 0;
       unsigned int cell_perimeter_contractility = 1;
