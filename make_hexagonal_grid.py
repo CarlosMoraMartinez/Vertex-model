@@ -223,7 +223,12 @@ def addStatic(cells, vertices, static_vertices, spring_vertices, spring_length, 
 
 
 def addCellType(cells, hingelimit, veinpos, nr, nc):
-    veinpos = [int(i) for i in str.split(veinpos, ',')]
+    if(hingelimit is None):
+        hingelimit = -1
+    if(veinpos != ''):
+        veinpos = [int(i) for i in str.split(veinpos, ',')]
+    else:
+        veimpos = [nr + 1]
     types = []
     for i, cell in enumerate(cells):
         col = i%nc

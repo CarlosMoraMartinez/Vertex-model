@@ -39,10 +39,6 @@ struct Gene_params{ //This should be updated in other implementations
       ctparams degr, diff_rate, initial_expr, constant_expr;
 };
 
-typedef void (*increment_function)(GXMatrix<double>&, int, int, int)>;
-
-typedef std::map<GeneType, increment_function> function_map;
-
 class basicGRN {
   private:
     double h;
@@ -55,7 +51,6 @@ class basicGRN {
     Gene_params params;
     map_of_regulators regulators;
     Tissue *cell_grid;
-    function_map increment_functions;
 
     void readGeneTypes(std::vector<std::string>::iterator& it);
     void readParams(std::vector<std::string>::iterator& it);
@@ -64,7 +59,7 @@ class basicGRN {
     void get_current_cell_grid_params();
     void readExpressionFile(std::string expr_file);
     void initializeExpression();
-
+    //Each of this function calculates increment (derivative) of a type of gene.
     void intracel_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k);
     void diffusible_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k); 
     void cell_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k);
@@ -75,17 +70,36 @@ class basicGRN {
     basicGRN();
     basicGRN(std::string sname);
     basicGRN(std::string sname, Tissue& t, std::string expr_file);
+    void simulate(double start, double end);
+    void runge_kutta_4th();
     void activateAll(GXMatrix<double>& current_expr, int k);
     void setNewParametersToCells();
-    //Convolution, formulas
-    void runge_kutta_4th();
-    //update_cell_grid();
+    GXMatrix<double> getExpression();
+    std::string exprToString();
     std::string toString(bool print_current_expression);
+    void addCells();    
+
     struct { //This affects which gene index affects each cell/edge property. Should be updated in other implementations
       unsigned int cell_preferred_area = 0;
       unsigned int cell_perimeter_contractility = 1;
       unsigned int edge_tension = 2;
     } property_index;
+
+   using increment_function = void(basicGRN::*)(GXMatrix<double>&, int, int, int);
+   std::map<GeneType, increment_function> increment_functions;
     
 };
+
+
+//typedef void (basicGRN::*increment_function)(GXMatrix<double>&, int, int, int);
+//typedef std::map<GeneType, increment_function> function_map;
+//function_map increment_functions;
+/*
+
+    increment_functions.insert(pair<GeneType, increment_function>(GeneType::intracel, basicGRN::intracel_getIncrement));
+    increment_functions.insert(pair<GeneType, increment_function>(GeneType::diffusible, basicGRN::diffusible_getIncrement));
+    increment_functions.insert(pair<GeneType, increment_function>(GeneType::cell_property, basicGRN::cell_property_getIncrement));
+    increment_functions.insert(pair<GeneType, increment_function>(GeneType::edge_property, basicGRN::edge_property_getIncrement));
+    increment_functions.insert(pair<GeneType, increment_function>(GeneType::vertex_property, basicGRN::vertex_property_getIncrement));
+*/
 #endif

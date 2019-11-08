@@ -1152,6 +1152,8 @@ void Tissue::make_divide_cell(Rearrangement& r){
 	counter_divisions++;
 
 	if(REPORT_DIV) writeAllData(simname + "_div_2" + to_string(counter_divisions));
+
+	past_divisions.push(DivisionRecord{cell, newcind});
 	cout << "DIVISION: moves accepted: " << counter_moves_accepted << "; divi. accepted: " << counter_divisions << "; Cell: " << cell << "; New cell: " << newcind << "; cut in vertices: " << newvind1 << ", " << newvind2 << endl;
 	
 	
@@ -2174,7 +2176,10 @@ std::vector<int> Tissue::getNeighbourCells(int cell){
 	return v;
 }
 
-
+void Tissue::emptyDivisions(){
+	divisionrecord_q aux;
+	std::swap(aux, this->past_divisions);
+}
 
 std::string Tissue::getStats(){
 	std::string s = "";

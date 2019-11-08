@@ -26,7 +26,7 @@ const float T1_TRANSITION_CRITICAL_DISTANCE = 0.1; // 0.1;
 const float T2_TRANSITION_CRITICAL_AREA = 0.01;//0.9;//0.01;
 const float MAX_CELL_AREA = 30;//30;		
 const float MAX_EDGE_LENGTH = 10; //Not used yet; not in paper
-const float PREFERRED_AREA_INITIAL = 35.0; //Use >= 30 for constant division
+const float PREFERRED_AREA_INITIAL = 10.0; //Use >= 30 for constant division
 const float PREFERRED_AREA_HINGE = 3.0; //Use >= 30 for constant division
 const float PREFERRED_AREA_FINAL = 5.0;
 const float DIVISION_ANGLE_RANDOM_NOISE = 0.3; //1 = variation of 360ºC (completely random), 0 =no variation (division alwys orthogonal to the max. lengh)
@@ -124,12 +124,17 @@ struct StraightLine{
 	int v1;
 	int v2;
 };
+struct DivisionRecord{
+	int parent;
+	int offspring;
+};
 
 //Vector types for each structure
 typedef std::vector<Vertex> vertex_v;
 typedef std::vector<Cell> cell_v;
 typedef std::vector<Edge> edge_v;
 typedef std::queue<Rearrangement> rearrangement_q;
+typedef std::queue<DivisionRecord> divisionrecord_q;
 
 class Tissue{
         friend class basicGRN;
@@ -171,6 +176,7 @@ class Tissue{
 		void produceOutputs(std::string add_to_name);
 		std::string getStats();
 		int getCounterT1();
+		void emptyDivisions();
 
 		std::vector<int> getNeighbourCells(int cell);
 		
@@ -215,7 +221,7 @@ class Tissue{
 		std::queue<int> dead_cells;
 		std::queue<int> dead_edges;	
 		rearrangement_q rearrangements_needed;
-
+		divisionrecord_q past_divisions;
 		//counters
 		int counter_move_trials, counter_moves_accepted, counter_edges_removed, counter_t1, counter_t1_abortions, counter_divisions, counter_t2, counter_t1_outwards, counter_t1_inwards;
 		int max_accepted_movements, write_every_N_moves;
