@@ -26,8 +26,17 @@ int main(int argc, char *argv[]){
 	cout << "Reading from file\n\n"<<endl;
 	std::string inputfile = argv[1];
 	Tissue t = Tissue(inputfile, moves, print_step);
+
+	srand(RANDOM_SEED);
+	std::default_random_engine generator;
+	std::uniform_real_distribution<double> unif;
+
 	try{
-		t.simulate();
+		t.simulate(generator, unif);
+		cout << t.getStats() << endl; 
+		//t.addAcceptedMovements(10);
+		//t.simulate(generator, unif);
+		//cout << t.getStats() << endl; 
 	}catch(const char* msg){
 		t.produceOutputs("crashed");
 		cout << msg << endl;

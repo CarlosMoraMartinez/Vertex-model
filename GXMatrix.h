@@ -93,7 +93,7 @@ template <typename T> GXMatrix<T>::~GXMatrix(){
 
 
 template <typename T>  void GXMatrix<T>::add_row(std::vector<T> row){
-	if(row.size() == rows){
+	if(row.size() == cols){
 		this->mat.push_back(row);
 		this->rows++;
 	}
@@ -102,6 +102,7 @@ template <typename T>  void GXMatrix<T>::add_row(std::vector<T> row){
 template <typename T>  void GXMatrix<T>::add_row(unsigned n_rows, const T& _initial){
 	for(int i = 0; i < n_rows; i++){
 		this->mat.push_back(std::vector<T>(this->cols, _initial));
+		this->rows++;
 	}
 }
 
@@ -220,8 +221,9 @@ template <typename T> std::string GXMatrix<T>::toString(){
 	std::string s = "";
         int row = 0;
 	for(std::vector<T> i : this->mat){
-		s += "\n" + std::to_string(row) + ": ";
+		//s += "\n" + std::to_string(row) + ": ";
 		for(T j : i) s += std::to_string(j) + "\t";
+		s += "\n";
                 row++;
 	}
 	return s;

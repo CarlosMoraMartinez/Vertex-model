@@ -41,6 +41,8 @@ Tissue::Tissue() : num_cells(0), num_vertices(0), num_edges(0),  counter_move_tr
 	preferred_area_hinge = PREFERRED_AREA_HINGE;
 	division_angle_random_noise =  DIVISION_ANGLE_RANDOM_NOISE;
 	length_rotated_edge =  LENGTH_ROTATED_EDGE;
+
+	step_mode = false;
 }
 
 //Constructor that reads vertex positions and cells from two different files, and initializes all variables using constants defined in VertexSystem.h
@@ -98,9 +100,9 @@ Input: ifstream pointing to a file defining vertex coordinates
 */
 void Tissue::initialize_vertices(std::ifstream& inp){
 	string s;
-
 	getline(inp, s);
 	this->num_vertices = stoi(s);
+
 	Vertex v;
 	v.dead=false;
 	//v.movable = true;
@@ -487,6 +489,19 @@ int Tissue::addEdge(Edge e){
 	return num_edges;
 }
 
+void Tissue::addAcceptedMovements(int add){
+	this->max_accepted_movements += add;
+}
+
+void Tissue::setAcceptedMovements(int mv){
+	this->max_accepted_movements = mv;
+}
+
+void Tissue::setStepMode(bool mode, int steps){
+	this->write_every_N_moves = steps;
+	this->step_mode = mode;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 //Area of a polygon using Shoelace formula 
 double Tissue::calculateCellArea(const Cell& c){
@@ -605,7 +620,7 @@ bool Tissue::tryMoveVertex(std::default_random_engine& generator, std::uniform_r
 	
 }
 
-void Tissue::produceOutputs(std::string add_to_name="moved"){
+void Tissue::produceOutputs(std::string add_to_name){
 
 	std:string fname = simname + "_" + add_to_name + "_" + std::to_string(int(counter_moves_accepted / write_every_N_moves));
 	writeCellsFile(fname);
@@ -614,17 +629,17 @@ void Tissue::produceOutputs(std::string add_to_name="moved"){
 	writeAllData(fname);
 }
 
-void Tissue::simulate(){
-	srand(RANDOM_SEED);
-	std::default_random_engine generator;
-	std::uniform_real_distribution<double> unif;
-	produceOutputs();
+void Tissue::simulate(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif){
+
+	if(! step_mode){
+           produceOutputs();
+        }
 	//MAIN SIMULATION LOOP
 	do{
 		if(tryMoveVertex(generator, unif)){ //Tries a random movement; if accepted:
 			counter_moves_accepted++;	
 			performRearrangements();	// Performs any transition/rearrangement needed
-			if(counter_moves_accepted % write_every_N_moves == 0) produceOutputs(); //&& counter_moves_accepted > 70000
+			if(counter_moves_accepted % write_every_N_moves == 0 && ! step_mode) produceOutputs(); //&& counter_moves_accepted > 70000
 			//else if(counter_moves_accepted >= 4730400) produceOutputs("moved" + std::to_string(counter_moves_accepted));
 		}//End if move accepted
 		counter_move_trials++;

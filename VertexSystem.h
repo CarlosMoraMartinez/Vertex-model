@@ -22,9 +22,9 @@ const float LINE_TENSION_TISSUE_BOUNDARY = 4.0;//4.0;
 const float SPRING_CONSTANT = 2;
 const float PERIMETER_CONTRACT_BLADE = 0.03;
 const float PERIMETER_CONTRACT_HINGE = 0.6;
-const float T1_TRANSITION_CRITICAL_DISTANCE = 0.1; // 0.1;
+const float T1_TRANSITION_CRITICAL_DISTANCE = 0.01; // 0.1;
 const float T2_TRANSITION_CRITICAL_AREA = 0.01;//0.9;//0.01;
-const float MAX_CELL_AREA = 30;//30;		
+const float MAX_CELL_AREA = 15;//30;		
 const float MAX_EDGE_LENGTH = 10; //Not used yet; not in paper
 const float PREFERRED_AREA_INITIAL = 10.0; //Use >= 30 for constant division
 const float PREFERRED_AREA_HINGE = 3.0; //Use >= 30 for constant division
@@ -140,10 +140,10 @@ class Tissue{
         friend class basicGRN;
 	public:
 		Tissue();
-		Tissue(std::string starting_tissue_file, int max_accepted_movements,  int write_every_N_moves=1000);
-		Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements,  int write_every_N_moves=1000); //not implemented
+		Tissue(std::string starting_tissue_file, int max_accepted_movements=1000000,  int write_every_N_moves=1000);
+		Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements=1000000,  int write_every_N_moves=1000); //not implemented
 
-		void simulate();
+		void simulate(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif);
 		double calculateCellArea(const Cell& c);
 		double calculateCellPerimeter(const Cell& c);
 		double distance(int v1, int v2);
@@ -168,12 +168,15 @@ class Tissue{
 		int addVertex(Vertex v); //Only used for testing
 		int addCell(Cell c); //Only used for testing
 		int addEdge(Edge e); //Only used for testing
+		void addAcceptedMovements(int add);
+		void setAcceptedMovements(int mv);
+		void setStepMode(bool mode, int steps);
 
 		void writeCellsFile(std::string fname);
 		void writePointsFile(std::string fname);
 		void writeSpringsFile(std::string fname);
 		void writeAllData(std::string fname);
-		void produceOutputs(std::string add_to_name);
+		void produceOutputs(std::string add_to_name="moved");
 		std::string getStats();
 		int getCounterT1();
 		void emptyDivisions();
@@ -188,7 +191,7 @@ class Tissue{
 	private:
 		std::string simname;
 		int num_cells, num_vertices, num_edges, num_springs;
-
+		bool step_mode; //If the simulation is controlled by an external source, set this to true in order to avoid excessive printing of outputs
 		//parameters
 		float min_range_vertex_movement; 
 		float max_range_vertex_movement;

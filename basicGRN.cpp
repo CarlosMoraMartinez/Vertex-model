@@ -23,22 +23,40 @@ basicGRN::basicGRN(std::string sname): basicGRN(){
 
     cout << "Reading .grn file...\n";
     while(getline(fin_grn, line)) if(!(line.empty() || line.find_first_not_of(' ') == std::string::npos)) if(line.at(0) != '#') inp.push_back(line);
-
     std::vector<std::string>::iterator it = inp.begin(); 
 
     //First read value of h
     while(it->at(0) != '>') it++;
     it++;
-
     h = stod(*it, &sz);
+
+    while(it->at(0) != '>') it++;
+    it++;
+    grn_time_per_step = stod(*it, &sz);
+
+    while(it->at(0) != '>') it++;
+    it++;
+    vertex_moves_per_step = stoi(*it, &sz);
+
+    while(it->at(0) != '>') it++;
+    it++;
+    final_moves_accepted = stoi(*it, &sz);
+
+    while(it->at(0) != '>') it++;
+    it++;
+    write_every_N_moves = stoi(*it, &sz);
 
     readGeneTypes(it);
     readParams(it);
     readGRN(it);
+
+    time = 0.0;
+
 } //Constructor 1
 
-basicGRN::basicGRN(std::string sname, Tissue& t, std::string expr_file="") : basicGRN(sname){
+basicGRN::basicGRN(std::string sname, Tissue& t, std::string expr_file) : basicGRN(sname){
     cell_grid = &t;
+    cell_grid->setStepMode(true, write_every_N_moves);
     num_cells = cell_grid->num_cells;
     if(expr_file == ""){
         initializeExpression();
@@ -63,7 +81,6 @@ void basicGRN::readGeneTypes( std::vector<std::string>::iterator& it){
         s = s.substr(sz);
     }
     num_genes = gene_types.size();
-
 }//end readGeneTypes
 
 
@@ -192,8 +209,35 @@ void basicGRN::activateAll(GXMatrix<double>& current_expr, int k){
     }
 }
 
+void basicGRN::simulateVertexAndNetwork(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif){
+
+    cell_grid->setAcceptedMovements(vertex_moves_per_step);
+    cell_grid->produceOutputs();
+    produceOutputs();
+
+    while(cell_grid->counter_moves_accepted < final_moves_accepted){
+        cell_grid->simulate(generator, unif);
+        addCells();
+
+        simulate(time, time + grn_time_per_step);
+        setNewParametersToCells();
+        if(cell_grid->counter_moves_accepted % write_every_N_moves == 0 && cell_grid->counter_moves_accepted > 0){
+            cell_grid->produceOutputs();
+            produceOutputs();
+            //cout << expressionToString() << endl;
+        }
+
+        cell_grid->addAcceptedMovements(vertex_moves_per_step);
+
+    } 
+}
+
+
 void basicGRN::simulate(double start, double end){
-        for(double t = start; t < end; t += h) runge_kutta_4th();
+    for(double t = start; t < end; t += h){
+        runge_kutta_4th();
+        time += h;
+    }
 }
 
 
@@ -207,7 +251,7 @@ void basicGRN::runge_kutta_4th(){
     aux = expression + rungekutta_parts[2]*h;
     activateAll(aux, 3);
     rungekutta_parts[4] = (rungekutta_parts[0] + rungekutta_parts[1]*2 + rungekutta_parts[2]*2 + rungekutta_parts[3])/6;
-    aux = rungekutta_parts[4]*h;
+
     expression += rungekutta_parts[4]*h;
     // for(int c = 0; c < num_cells; c++) for(int g = 0; g < num_genes; g++) if(expression(c, g) < 0) expression(c, g) = 0; //CAREFUL! don't do this for parameters
     // And maybe change here edge values. Although if it is a waste of time to iterate over all edges when several GRN steps precede a single vertex step, 
@@ -267,11 +311,21 @@ void basicGRN::vertex_property_getIncrement(GXMatrix<double>& current_expr, int 
     intracel_getIncrement(current_expr, cell, gene, k);
 }
 void basicGRN::setNewParametersToCells(){
-    //to implement
+    for(int i = 0; i < num_cells; i++){
+        if(!cell_grid->cells[i].dead){
+            cell_grid->cells[i].preferred_area = expression(i, property_index.cell_preferred_area);
+            cell_grid->cells[i].perimeter_contractility = expression(i, property_index.cell_perimeter_contractility);
+        }
+    }
+
+    //To implement: changes in vertices or edges, orientation with respect to a morphogen gradient
 }
 
 void basicGRN::addCells(){
     
+    if(cell_grid->past_divisions.empty()){
+        return;
+    }
     for(int i = 0; i < 5; i++) rungekutta_parts[i].add_row(cell_grid->past_divisions.size(), 0.0);
     DivisionRecord d;
     vector<double> row;
@@ -293,8 +347,28 @@ std::string basicGRN::exprToString(){
     return expression.toString();
 }
 
+void basicGRN::produceOutputs(std::string add_to_name){
+
+    std:string fname = name + "_" + add_to_name + "_" + std::to_string(int(cell_grid->counter_moves_accepted / write_every_N_moves));
+    std::string s = toString(true);
+    ofstream fo;
+    fo.open(fname + "." + OUTPUT_EXTENSION);
+    fo << s;
+    fo.close();
+
+    fo.open(fname + "." + EXPRESSION_EXTENSION);
+    s = expressionToString();
+    fo << s;
+    fo.close();
+
+
+}
+
+std::string basicGRN::expressionToString(){
+    return expression.toString();
+}
 std::string basicGRN::toString(bool print_current_expression=false){
-        std::string s = name + " number of genes (+ variable properties): " + to_string(num_genes) + ".\n\n";
+        std::string s = name + " time: " + to_string(time) + ", number of genes (and variable properties): " + to_string(num_genes) + ".\n\n";
         s += "Gene type (intracel = 0, diffusible = 1, cell_property = 2, edge_property = 3, vertex_property = 4):\n";
         for(GeneType g : gene_types) s += to_string( static_cast<int>(g) ) + ", ";
 

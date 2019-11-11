@@ -18,6 +18,7 @@ using namespace std;
 // - Parameters for each gene for each cell type (degradation rate, diffusion rate, initial expression and constant expression)
 const std::string INTERACTIONS_EXTENSION = ".grn";
 const std::string EXPRESSION_EXTENSION = ".expr";
+const std::string OUTPUT_EXTENSION = ".grn2";
 
 const int NOT_PRESENT = -999;
 
@@ -41,7 +42,11 @@ struct Gene_params{ //This should be updated in other implementations
 
 class basicGRN {
   private:
-    double h;
+    double h, time;
+    float grn_time_per_step; //each iteration
+    int vertex_moves_per_step; //each iterat
+    int final_moves_accepted;
+    int write_every_N_moves; 
     int num_genes, num_cells;
     std::string name;
     GXMatrix<double> expression;
@@ -66,10 +71,16 @@ class basicGRN {
     void edge_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k);
     void vertex_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k);
 
+    void orientDivisionToMorphogen(float angle_to_major_difference);
+    
+    void changeVerticesInGrid();
+    void changeEdgesInGrid();
+
   public:
     basicGRN();
     basicGRN(std::string sname);
-    basicGRN(std::string sname, Tissue& t, std::string expr_file);
+    basicGRN(std::string sname, Tissue& t, std::string expr_file="");
+    void simulateVertexAndNetwork(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif);
     void simulate(double start, double end);
     void runge_kutta_4th();
     void activateAll(GXMatrix<double>& current_expr, int k);
@@ -77,7 +88,9 @@ class basicGRN {
     GXMatrix<double> getExpression();
     std::string exprToString();
     std::string toString(bool print_current_expression);
-    void addCells();    
+    void addCells();  
+    void produceOutputs(std::string add_to_name="moved");  
+    std::string expressionToString();
 
     struct { //This affects which gene index affects each cell/edge property. Should be updated in other implementations
       unsigned int cell_preferred_area = 0;

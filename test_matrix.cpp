@@ -17,10 +17,17 @@ int main(int argc, char *argv[]){
 	cout << "check element: " << g(1, 1) << endl;
 	g(1, 1) = 3;
 	cout  << "check changed element: "<< g(1, 1) << endl;
+        cout << g.toString() << "<BEFORE ADDING ROW" << endl;
 	g.add_row(g.getRow(1));
+        cout << g.toString() << "<AFTER ADDING ROW" << endl;
         g(10, 1)++;
 	cout  << "check added row element (should be 4): " << g(10, 1)<< ", element in original row (should be 3): " <<  g(1, 1) << endl;
 	
+
+	g.add_row(2, 19);
+        cout << g.toString() << "<AFTER ADDING 2 ROWS WITH VALUE = 19" << endl;
+
+
 	GXMatrix<int> g2(g);
 	g2(10, 1)++;
 	cout << "check initialize with another"  << g(10, 1) << " plus 1 = "<< g2(10, 1) << endl;
