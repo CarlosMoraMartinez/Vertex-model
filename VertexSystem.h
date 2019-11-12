@@ -24,7 +24,7 @@ const float PERIMETER_CONTRACT_BLADE = 0.03;
 const float PERIMETER_CONTRACT_HINGE = 0.6;
 const float T1_TRANSITION_CRITICAL_DISTANCE = 0.01; // 0.1;
 const float T2_TRANSITION_CRITICAL_AREA = 0.01;//0.9;//0.01;
-const float MAX_CELL_AREA = 15;//30;		
+const float MAX_CELL_AREA = 20;//30;		
 const float MAX_EDGE_LENGTH = 10; //Not used yet; not in paper
 const float PREFERRED_AREA_INITIAL = 10.0; //Use >= 30 for constant division
 const float PREFERRED_AREA_HINGE = 3.0; //Use >= 30 for constant division

@@ -259,8 +259,6 @@ void basicGRN::runge_kutta_4th(){
     // Unless (as should be done), a different "gene" is used for each type of edge
 }
 
-
-
 void basicGRN::intracel_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k){
     double res = 0;
     CellType ct = cell_grid->cells[cell].type;
@@ -269,8 +267,9 @@ void basicGRN::intracel_getIncrement(GXMatrix<double>& current_expr, int cell, i
     }
     //res = 1/(1 + exp(-1*res)) - params.degr[ct][gene]*current_expr(cell, gene);
     res = tanh(res);
-    rungekutta_parts[k](cell, gene) = res < 0 ? 0 - params.degr[ct][gene]*current_expr(cell, gene): res - params.degr[ct][gene]*current_expr(cell, gene);
+    rungekutta_parts[k](cell, gene) = res < 0 ? 0 - params.degr[ct][gene]*current_expr(cell, gene) : res - params.degr[ct][gene]*current_expr(cell, gene);
 }
+
 void basicGRN::diffusible_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k){
     intracel_getIncrement(current_expr, cell, gene, k);
     //cout << "        A2.6" << endl;
@@ -281,7 +280,7 @@ void basicGRN::diffusible_getIncrement(GXMatrix<double>& current_expr, int cell,
     int nei;
     //cout << "        A2.8" << endl;
     for(int e = 0; e < c->num_vertices; e++){
-        edge = &cell_grid->edges[e];
+        edge = &cell_grid->edges[c->edges[e]];
         nei = edge->cells[0] == c->ind ? edge->cells[1] : edge->cells[0];
         if(nei == EMPTY_CONNECTION){
             continue;
