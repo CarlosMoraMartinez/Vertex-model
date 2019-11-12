@@ -23,9 +23,9 @@
 >int vertex_moves_per_step; //each iterat
 1
 >int final_moves_accepted;
-1000000
+1000
 >int write_every_N_moves, 
-10000
+10
 
 
 >Gene types
@@ -36,33 +36,33 @@
 #PARAMETERS: ROW = CELL TYPE, COL = GENE
 #Cell types: blade = 0, hinge = 1, vein = 2, vein_hinge = 3
 >Degradation rate
-0:0.1	0.0	0.0	0.1	0.2	0.1
+0:0.02	0.0	0.0	0.1	0.2	0.1
 1:0.0	0.0	0.0	0.1	0.2	0.1
 2:0.0	0.0	0.0	0.1	0.2	0.1
 3:0.0	0.0	0.0	0.1	0.2	0.1
 <
 >diffusion rate
-0:0.0	0.0	0.0	0.0	0.5	0.5
-1:0.0	0.0	0.0	0.0	0.5	0.5
-2:0.0	0.0	0.0	0.0	0.5	0.5
-3:0.0	0.0	0.0	0.0	0.5	0.5
+0:0.0	0.0	0.0	0.0	0.5	0.25
+1:0.0	0.0	0.0	0.0	0.5	0.25
+2:0.0	0.0	0.0	0.0	0.5	0.25
+3:0.0	0.0	0.0	0.0	0.5	0.25
 <
 >initial expression (vertex model parameters are not set with this)
 0:0.0	0.0	0.0	5	0	0
 1:0.0	0.0	0.0	5	0	0
-2:0.0	0.0	0.0	0.0	10	100
-3:0.0	0.0	0.0	0.0	10	100
+2:0.0	0.0	0.0	0.0	10	1
+3:0.0	0.0	0.0	0.0	10	1
 <
 >constant expression (negative means that expression is not constant, i.e., it can change at every step)
 0:-1.0	-1.0	-1.0	-1.0	-1.0	-1.0
 1:-1.0	-1.0	-1.0	-1.0	-1.0	-1.0
-2:-1.0	-1.0	-1.0	-1.0	-1.0	100.0
-3:-1.0	-1.0	-1.0	-1.0	-1.0	100.0
+2:-1.0	-1.0	-1.0	-1.0	-1.0	1.0
+3:-1.0	-1.0	-1.0	-1.0	-1.0	1.0
 <
 
 >Cell-specific regulatory network (rows: regulated, columns: regulator)
 0:
-0.0	0.0	0.0	0.0	0.0	1.0
+0.0	0.0	0.0	0.0	0.0	2.0
 0.0	0.0	0.0	0.0	0.0	0
 0.0	0.0	0.0	0.0	0.0	0
 0.0	0.0	0.0	0.0	-0.1	0.1

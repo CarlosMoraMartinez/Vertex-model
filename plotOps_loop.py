@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+import os
 from shapely.ops import polygonize
 from shapely.geometry import Polygon, MultiPoint, Point
 from descartes.patch import PolygonPatch
@@ -87,7 +88,12 @@ if(len(sys.argv) <= 5):
 else:
     plot_cell_types = False
 
+
+
 for fnum in range(int(sys.argv[2]), int(sys.argv[3])):
+    if(not os.path.isfile(sys.argv[1]+str(fnum)+".points") or not os.path.isfile(sys.argv[1]+str(fnum)+".cells")):
+        break;
+
     pointsFile = open(sys.argv[1]+str(fnum)+".points", "r")
     cellsFile = open(sys.argv[1]+str(fnum)+".cells", "r")
     

@@ -292,7 +292,7 @@ void basicGRN::diffusible_getIncrement(GXMatrix<double>& current_expr, int cell,
         //cout << "            A2.10" << endl;
     }
     //cout << "        A2.11" << endl;
-    rungekutta_parts[k](cell, gene) -= params.diff_rate[c->type][gene]*diff; //*power(diff, 2);
+    rungekutta_parts[k](cell, gene) = rungekutta_parts[k](cell, gene) - params.diff_rate[c->type][gene]*diff; //*power(diff, 2);
     //cout << "        A2.12" << endl;
 } //diffussible
 
@@ -351,16 +351,14 @@ void basicGRN::produceOutputs(std::string add_to_name){
     std:string fname = name + "_" + add_to_name + "_" + std::to_string(int(cell_grid->counter_moves_accepted / write_every_N_moves));
     std::string s = toString(true);
     ofstream fo;
-    fo.open(fname + "." + OUTPUT_EXTENSION);
+    fo.open(fname + OUTPUT_EXTENSION);
     fo << s;
     fo.close();
 
-    fo.open(fname + "." + EXPRESSION_EXTENSION);
+    fo.open(fname + EXPRESSION_EXTENSION);
     s = expressionToString();
     fo << s;
     fo.close();
-
-
 }
 
 std::string basicGRN::expressionToString(){
