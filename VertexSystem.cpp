@@ -19,38 +19,78 @@ Tissue::Tissue() : num_cells(0), num_vertices(0), num_edges(0),  counter_move_tr
 	simname = "";
 	max_accepted_movements = 0;
 	write_every_N_moves = 0;
-
-	min_range_vertex_movement = MIN_RANGE_VERTEX_MOVEMENT;
-	max_range_vertex_movement = MAX_RANGE_VERTEX_MOVEMENT;
-	temperature_positive_energy = TEMPERATURE_POSITIVE_ENERGY;
-	temperature_negative_energy =  TEMPERATURE_NEGATIVE_ENERGY;
-	line_tension_blade = LINE_TENSION_BLADE;
-	line_tension_hinge = LINE_TENSION_HINGE;
-	line_tension_vein_hinge = LINE_TENSION_VEIN_HINGE;
-	line_tension_vein_blade = LINE_TENSION_VEIN_BLADE;
-	line_tension_tissue_boundary = LINE_TENSION_TISSUE_BOUNDARY;
-	spring_constant = SPRING_CONSTANT;
-	perimeter_contract_blade = PERIMETER_CONTRACT_BLADE;
-	perimeter_contract_hinge = PERIMETER_CONTRACT_HINGE;
-	t1_transition_critical_distance =  T1_TRANSITION_CRITICAL_DISTANCE;
-	t2_transition_critical_area = T2_TRANSITION_CRITICAL_AREA;
-	max_cell_area = MAX_CELL_AREA;
-	max_edge_length =  MAX_EDGE_LENGTH;
-	preferred_area_initial = PREFERRED_AREA_INITIAL;
-	preferred_area_final = PREFERRED_AREA_FINAL;
-	preferred_area_hinge = PREFERRED_AREA_HINGE;
-	division_angle_random_noise =  DIVISION_ANGLE_RANDOM_NOISE;
-	length_rotated_edge =  LENGTH_ROTATED_EDGE;
-
 	step_mode = false;
+
+	set_default_simulation_params();
 }
 
 //Constructor that reads vertex positions and cells from two different files, and initializes all variables using constants defined in VertexSystem.h
-Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  int write_every_N_moves) : Tissue(){
+Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  int write_every_N_moves){
 
 	this->simname = starting_tissue_file;
 	this->max_accepted_movements = max_accepted_movements;
 	this->write_every_N_moves = write_every_N_moves;
+	step_mode = false;
+
+	set_default_simulation_params();
+	cout << "x1" << endl;
+	//Read file of vertices (indicates coordinates for each vertex)
+	string vertexfile = starting_tissue_file + VERTEX_FILE_EXTENSION;
+	cout << "x2" << endl;
+	std::ifstream fin_vertex;
+	fin_vertex.open(vertexfile);
+	cout << "x3" << endl;
+	initialize_vertices(fin_vertex);
+	cout << "x4" << endl;
+	fin_vertex.close();
+	cout << ".points file read...\n";
+	cout << "x5" << endl;
+	//Read file of cells (indicates vertices for each cell)
+	try{
+		string cellfile = starting_tissue_file + CELLS_FILE_EXTENSION;
+		ifstream fin_cells(cellfile);
+		initialize_cells(fin_cells);
+		fin_cells.close();
+		cout << ".cells file read...\n";
+	}catch(const char* msg){
+		cout << msg << endl;
+		exit(1);
+	}
+	//Initialize edges from vertices and cells
+	cout << "x6" << endl;
+	initialize_edges();
+	cout << "x7" << endl;
+	try{
+		string springsfile = starting_tissue_file + SPRING_FILE_EXTENSION;
+		ifstream fin_springs(springsfile);
+		if(fin_springs.good()){
+			initialize_springs(fin_springs);
+			cout << ".spr file read...\n";
+		}else{
+			num_springs = 0;
+		}
+		fin_springs.close();
+	}catch(const char* msg){
+		num_springs = 0;
+		cout << msg << endl;
+		cout << "No spring file\n";
+	}
+	cout << "x3" << endl;
+	//No file with parameters, therefore use constants defined in VertexSystem.h.
+	//Also initializes cell area and vertex energy
+	set_default_params();
+	cout << "x4" << endl;
+	cout << "parameters set to cells\n";
+}
+
+Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements,  int write_every_N_moves){
+	this->simname = starting_tissue_file;
+	this->max_accepted_movements = max_accepted_movements;
+	this->write_every_N_moves = write_every_N_moves;
+	step_mode = false;
+
+	initialize_params(params_file);
+
 	//Read file of vertices (indicates coordinates for each vertex)
 	string vertexfile = starting_tissue_file + VERTEX_FILE_EXTENSION;
 	std::ifstream fin_vertex;
@@ -92,7 +132,127 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  in
 	set_default_params();
 }
 
+void Tissue::set_default_simulation_params(){
 
+	min_range_vertex_movement = MIN_RANGE_VERTEX_MOVEMENT;
+	max_range_vertex_movement = MAX_RANGE_VERTEX_MOVEMENT;
+	temperature_positive_energy = TEMPERATURE_POSITIVE_ENERGY;
+	temperature_negative_energy =  TEMPERATURE_NEGATIVE_ENERGY;
+
+	line_tension.insert(pair<CellType, double>(CellType::blade, LINE_TENSION_BLADE));
+	line_tension.insert(pair<CellType, double>(CellType::hinge, LINE_TENSION_HINGE));
+	line_tension.insert(pair<CellType, double>(CellType::vein_hinge, LINE_TENSION_VEIN_HINGE));
+	line_tension.insert(pair<CellType, double>(CellType::vein_blade, LINE_TENSION_VEIN_BLADE));
+	line_tension_tissue_boundary.insert(pair<CellType, double>(CellType::blade, LINE_TENSION_TISSUE_BOUNDARY));
+	line_tension_tissue_boundary.insert(pair<CellType, double>(CellType::hinge, LINE_TENSION_TISSUE_BOUNDARY));
+	line_tension_tissue_boundary.insert(pair<CellType, double>(CellType::vein_hinge, LINE_TENSION_TISSUE_BOUNDARY));
+	line_tension_tissue_boundary.insert(pair<CellType, double>(CellType::vein_blade, LINE_TENSION_TISSUE_BOUNDARY));
+	spring_constant = SPRING_CONSTANT;
+
+	perimeter_contract.insert(pair<CellType, double>(CellType::blade, PERIMETER_CONTRACT_BLADE));
+	perimeter_contract.insert(pair<CellType, double>(CellType::hinge, PERIMETER_CONTRACT_HINGE));
+	perimeter_contract.insert(pair<CellType, double>(CellType::vein_hinge, PERIMETER_CONTRACT_BLADE));
+	perimeter_contract.insert(pair<CellType, double>(CellType::vein_hinge, PERIMETER_CONTRACT_HINGE));
+
+	t1_transition_critical_distance =  T1_TRANSITION_CRITICAL_DISTANCE;
+	t2_transition_critical_area = T2_TRANSITION_CRITICAL_AREA;
+	max_cell_area = MAX_CELL_AREA;
+	max_edge_length =  MAX_EDGE_LENGTH;
+
+	preferred_area_initial.insert(pair<CellType, double>(CellType::blade, PREFERRED_AREA_INITIAL));
+	preferred_area_initial.insert(pair<CellType, double>(CellType::hinge, PREFERRED_AREA_INITIAL));
+	preferred_area_initial.insert(pair<CellType, double>(CellType::vein_blade, PREFERRED_AREA_INITIAL));
+	preferred_area_initial.insert(pair<CellType, double>(CellType::vein_hinge, PREFERRED_AREA_INITIAL));
+
+	preferred_area_final.insert(pair<CellType, double>(CellType::blade, PREFERRED_AREA_FINAL));
+	preferred_area_final.insert(pair<CellType, double>(CellType::hinge, PREFERRED_AREA_FINAL));
+	preferred_area_final.insert(pair<CellType, double>(CellType::vein_blade, PREFERRED_AREA_FINAL));
+	preferred_area_final.insert(pair<CellType, double>(CellType::vein_hinge, PREFERRED_AREA_FINAL));
+
+	division_angle_random_noise.insert(pair<CellType, double>(CellType::blade, DIVISION_ANGLE_RANDOM_NOISE));
+	division_angle_random_noise.insert(pair<CellType, double>(CellType::hinge, DIVISION_ANGLE_RANDOM_NOISE));
+	division_angle_random_noise.insert(pair<CellType, double>(CellType::vein_blade, DIVISION_ANGLE_RANDOM_NOISE));
+	division_angle_random_noise.insert(pair<CellType, double>(CellType::vein_hinge, DIVISION_ANGLE_RANDOM_NOISE));
+
+	division_angle_longest_axis.insert(pair<CellType, double>(CellType::blade, DIVISION_ANGLE_LONGEST_AXIS));
+	division_angle_longest_axis.insert(pair<CellType, double>(CellType::hinge, DIVISION_ANGLE_LONGEST_AXIS));
+	division_angle_longest_axis.insert(pair<CellType, double>(CellType::vein_blade, DIVISION_ANGLE_LONGEST_AXIS));
+	division_angle_longest_axis.insert(pair<CellType, double>(CellType::vein_hinge, DIVISION_ANGLE_LONGEST_AXIS));
+
+	division_angle_external.insert(pair<CellType, double>(CellType::blade, DIVISION_ANGLE_EXTERNAL));
+	division_angle_external.insert(pair<CellType, double>(CellType::hinge, DIVISION_ANGLE_EXTERNAL));
+	division_angle_external.insert(pair<CellType, double>(CellType::vein_blade, DIVISION_ANGLE_EXTERNAL));
+	division_angle_external.insert(pair<CellType, double>(CellType::vein_hinge, DIVISION_ANGLE_EXTERNAL));
+
+	division_angle_external_degrees.insert(pair<CellType, double>(CellType::blade, DIVISION_ANGLE_EXTERNAL_DEGREES));
+	division_angle_external_degrees.insert(pair<CellType, double>(CellType::hinge, DIVISION_ANGLE_EXTERNAL_DEGREES));
+	division_angle_external_degrees.insert(pair<CellType, double>(CellType::vein_blade, DIVISION_ANGLE_EXTERNAL_DEGREES));
+	division_angle_external_degrees.insert(pair<CellType, double>(CellType::vein_hinge, DIVISION_ANGLE_EXTERNAL_DEGREES));
+
+
+}
+
+double Tissue::read_real_par(std::vector<std::string>::iterator& it){
+    while(it->at(0) != '>') it++;
+    it++;
+    return stod(*it);  
+}
+
+cell_type_param Tissue::read_celltype_par(std::vector<std::string>::iterator& it, std::string::size_type sz){
+    std::string s;
+    CellType celltype;
+    double auxd;
+    cell_type_param res;
+
+    while(it->at(0) != '>') it++;
+    it++;
+
+    while(it->at(0) != '<'){
+        s = *it;
+        celltype = static_cast<CellType>( stoi(s, &sz) );
+        s = s.substr(sz);
+        s.erase(0, 1);
+        auxd = stod(s, &sz);
+        res.insert(pair<CellType, double >(celltype, auxd)); 
+        it++;
+    }
+    return res;
+}
+void Tissue::initialize_params(std::string params_file){
+
+	params_file += PARAMS_FILE_EXTENSION;
+	std::ifstream fin;
+	fin.open(params_file);
+	std::string line;
+	std::vector<std::string> inp;
+	std::string::size_type sz;
+
+	cout << "Reading .vp file...\n";
+	while(getline(fin, line)) if(!(line.empty() || line.find_first_not_of(' ') == std::string::npos)) if(line.at(0) != '#') inp.push_back(line);
+	std::vector<std::string>::iterator it = inp.begin(); 
+
+	min_range_vertex_movement = read_real_par(it);
+
+	max_range_vertex_movement = read_real_par(it);
+	temperature_positive_energy = read_real_par(it);
+	temperature_negative_energy = read_real_par(it);
+	spring_constant = read_real_par(it);
+	t1_transition_critical_distance = read_real_par(it);
+	length_rotated_edge = read_real_par(it);
+	t2_transition_critical_area = read_real_par(it);
+	max_cell_area = read_real_par(it);
+	max_edge_length = read_real_par(it);
+
+	line_tension = read_celltype_par(it, sz);
+	line_tension_tissue_boundary = read_celltype_par(it, sz);
+	perimeter_contract = read_celltype_par(it, sz);
+	preferred_area_initial = read_celltype_par(it, sz);
+	preferred_area_final = read_celltype_par(it, sz);
+	division_angle_random_noise = read_celltype_par(it, sz);
+	division_angle_longest_axis = read_celltype_par(it, sz);
+	division_angle_external = read_celltype_par(it, sz);
+	division_angle_external_degrees = read_celltype_par(it, sz);
+}
 
 /*
 Initializes vertices from file
@@ -272,82 +432,104 @@ void Tissue::addEdge(int v1, int v2, int cell){
 
 void Tissue::set_default_params(){
 	for(int c = 0; c < cells.size(); c++){
-		switch(cells[c].type){
+		/*switch(cells[c].type){
 			case CellType::blade:
-				cells[c].perimeter_contractility = perimeter_contract_blade;
+				cells[c].perimeter_contractility = perimeter_contract[CellType::blade];
 				cells[c].preferred_area = preferred_area_initial;
 				break;
 			case CellType::hinge:
-				cells[c].perimeter_contractility = perimeter_contract_hinge;
+				cells[c].perimeter_contractility = perimeter_contractperimeter_contract[CellType::hinge];
 				cells[c].preferred_area = preferred_area_hinge;
 				break;
 			case CellType::vein:
-				cells[c].perimeter_contractility = perimeter_contract_blade;
+				cells[c].perimeter_contractility = perimeter_contract[CellType::vein_blade];
 				cells[c].preferred_area = preferred_area_initial;
 				break;
 			case CellType::vein_hinge:
-				cells[c].perimeter_contractility = perimeter_contract_hinge;
+				cells[c].perimeter_contractility = perimeter_contract[CellType::vein_hinge];
 				cells[c].preferred_area = preferred_area_hinge;
 				break;
 			default:
-				cells[c].perimeter_contractility = perimeter_contract_blade;
+				cells[c].perimeter_contractility = perimeter_contract[CellType::blade];
 				cells[c].preferred_area = preferred_area_initial;
 				break;
-		}
+		}*/
+	cout << "A" << endl;
+		cells[c].perimeter_contractility = perimeter_contract[cells[c].type];
+		cells[c].preferred_area = preferred_area_initial[cells[c].type];
 		cells[c].area = calculateCellArea(cells[c]);
-		cells[c].perimeter_contractility = perimeter_contract_blade;
 		cells[c].perimeter = calculateCellPerimeter(cells[c]);
 	}
+	cout << "Baa" << edges.size() << endl;
 	int c1, c2;
 	for(int e = 0; e < edges.size(); e++){
+		cout << "BB" << endl;
 		setEdgeType(e);
+		cout << "C" << endl;
 	}
+	cout << "D" << endl;
 	for(int v = 0; v < vertices.size(); v++){
 		vertices[v].energy = calculateEnergy(vertices[v]);
+		cout << "E" << endl;
 	}
+	cout << "F" << endl;
 
 }
 
 void Tissue::setEdgeType(int e){
+		cout << "  B0" << endl;
 		int c1 = edges[e].cells[0];
 		int c2 = edges[e].cells[1];
+		int aux;
+		cout << "  B1" << endl;
 		if(contains(EMPTY_CONNECTION, edges[e].cells, VERTEX_PER_EDGE)){
+		cout << "  B2" << endl;
+			aux = edges[e].cells[0] == EMPTY_CONNECTION ? edges[e].cells[1] : edges[e].cells[0];
 			edges[e].type = EdgeType::tissue_boundary;
-			edges[e].tension = line_tension_tissue_boundary;
+			edges[e].tension = line_tension_tissue_boundary[cells[aux].type];
 			edges[e].can_transition = true;
 		}else if(cells[c1].type == CellType::blade && cells[c2].type == CellType::blade){ 
+		cout << "  B3" << endl;
 			edges[e].type = EdgeType::blade;
-			edges[e].tension = line_tension_blade;
+			edges[e].tension = line_tension[CellType::blade];
 			edges[e].can_transition = true;
 		}else if(cells[c1].type == CellType::hinge && cells[c2].type == CellType::hinge){ 
+		cout << "  B4" << endl;
 			edges[e].type = EdgeType::hinge;
-			edges[e].tension = line_tension_hinge;
+			edges[e].tension = line_tension[CellType::hinge];
 			edges[e].can_transition = true;
 		}else if((cells[c1].type == CellType::hinge && cells[c2].type == CellType::blade) || (cells[c1].type == CellType::blade && cells[c2].type == CellType::hinge)){ 
+		cout << "  B5" << endl;
 			edges[e].type = EdgeType::hinge;
-			edges[e].tension = 0.5*(line_tension_hinge + line_tension_blade);
+			edges[e].tension = 0.5*(line_tension[CellType::hinge] + line_tension[CellType::blade]);
 			edges[e].can_transition = true;
-		}else if((cells[c1].type == CellType::blade && cells[c2].type == CellType::vein) || (cells[c2].type == CellType::blade && cells[c1].type == CellType::vein)){ 
+		}else if((cells[c1].type == CellType::blade && cells[c2].type == CellType::vein_blade) || (cells[c2].type == CellType::blade && cells[c1].type == CellType::vein_blade)){ 
+		cout << "  B6" << endl;
 			edges[e].type = EdgeType::vein_blade;
-			edges[e].tension = line_tension_vein_blade;
+			edges[e].tension = line_tension[CellType::vein_blade];
 			edges[e].can_transition = false;
 		}else if((cells[c1].type == CellType::hinge && cells[c2].type == CellType::vein_hinge) || (cells[c2].type == CellType::hinge && cells[c1].type == CellType::vein_hinge)){ 
+		cout << "  B7" << endl;
 			edges[e].type = EdgeType::vein_hinge;
-			edges[e].tension = line_tension_vein_hinge;
+			edges[e].tension =  line_tension[CellType::vein_hinge];
 			edges[e].can_transition = false;
-		}else if(cells[c1].type == CellType::vein && cells[c2].type == CellType::vein){ 
+		}else if(cells[c1].type == CellType::vein_blade && cells[c2].type == CellType::vein_blade){ 
+		cout << "  B8" << endl;
 			edges[e].type = EdgeType::vein;
-			edges[e].tension = line_tension_blade;
+			edges[e].tension = line_tension[CellType::vein_blade];
 			edges[e].can_transition = false;
 		}else if(cells[c1].type == CellType::vein_hinge && cells[c2].type == CellType::vein_hinge){ 
+		cout << "  B9" << endl;
 			edges[e].type = EdgeType::vein;
-			edges[e].tension = line_tension_hinge;
+			edges[e].tension = line_tension[CellType::vein_hinge];
 			edges[e].can_transition = false;
-		}else if((cells[c1].type == CellType::vein && cells[c2].type == CellType::vein_hinge) || (cells[c1].type == CellType::vein_hinge && cells[c2].type == CellType::vein) ){ 
+		}else if((cells[c1].type == CellType::vein_blade && cells[c2].type == CellType::vein_hinge) || (cells[c1].type == CellType::vein_hinge && cells[c2].type == CellType::vein_blade) ){ 
+		cout << "  B10" << endl;
 			edges[e].type = EdgeType::vein;
-			edges[e].tension = 0.5*(line_tension_hinge + line_tension_blade);
+			edges[e].tension = 0.5*(line_tension[CellType::vein_hinge] + line_tension[CellType::vein_blade]);
 			edges[e].can_transition = false;
 		}
+		cout << "  B11" << endl;
 }
 /*
 Adds a cell index to the vector of cells in a vertex structure
@@ -838,28 +1020,28 @@ void Tissue::make_t1_at_border_inwards(Rearrangement& r){
 	edges[edge].cells[1] = sp2->ind;
 	//cout << "K\n";
 	//10) Change edge tension and type
-	if(sp1->type == CellType::vein){
+	if(sp1->type == CellType::vein_blade){
 		if(sp2->type == CellType::blade){
 			edges[edge].type = EdgeType::vein_blade;
-			edges[edge].tension = line_tension_vein_blade;
+			edges[edge].tension = line_tension[CellType::vein_blade];
 		}else{
 			edges[edge].type = EdgeType::vein_hinge;
-			edges[edge].tension = line_tension_vein_hinge;
+			edges[edge].tension = line_tension[CellType::vein_hinge];
 		}
-	}else if(sp2->type == CellType::vein ){
+	}else if(sp2->type == CellType::vein_blade ){
 		if(sp1->type == CellType::blade){
 			edges[edge].type = EdgeType::vein_blade;
-			edges[edge].tension = line_tension_vein_blade;
+			edges[edge].tension = line_tension[CellType::vein_blade];;
 		}else{
 			edges[edge].type = EdgeType::vein_hinge;
-			edges[edge].tension = line_tension_vein_hinge;
+			edges[edge].tension = line_tension[CellType::vein_hinge];;
 		}
 	}else if(sp1->type == CellType::hinge || sp2->type == CellType::hinge){ //No special tension for hinge-blade separation; hinge tension used
 		edges[edge].type = EdgeType::hinge;
-		edges[edge].tension = line_tension_hinge;		
+		edges[edge].tension = line_tension[CellType::hinge];;		
 	}else{
 		edges[edge].type = EdgeType::blade;
-		edges[edge].tension = line_tension_blade;
+		edges[edge].tension = line_tension[CellType::blade];;
 	}
 
 	//cout << "L\n";
@@ -989,7 +1171,7 @@ void Tissue::make_t1_at_border_outwards(Rearrangement& r){
 	//9) Update cells in edge
 	edges[edge].cells[0] = sp1->ind;
 	edges[edge].cells[1] = EMPTY_CONNECTION;
-	edges[edge].tension = line_tension_tissue_boundary;
+	edges[edge].tension = line_tension_tissue_boundary[sp1->type];
 	edges[edge].type = EdgeType::tissue_boundary;
 	this->counter_t1_outwards++;
 
@@ -1027,7 +1209,7 @@ void Tissue::make_divide_cell(Rearrangement& r){
 	double center_x = (vertices[mv1].x + vertices[mv2].x)*0.5;
 	double center_y = (vertices[mv1].y + vertices[mv2].y)*0.5;
 	double angle = atan2(vertices[mv1].y - vertices[mv2].y, vertices[mv1].x - vertices[mv2].x);
-	double angle_rotate = division_angle_random_noise > 0 ? division_angle_random_noise*(rand()%360)*M_PI/180 + 0.5*M_PI : 0.5*M_PI ; //ADD SOME NOISE TO THE ANGLE
+	double angle_rotate = division_angle_random_noise[cells[cell].type] > 0 ? division_angle_random_noise[cells[cell].type]*(rand()%360)*M_PI/180 + 0.5*M_PI : 0.5*M_PI ; //ADD SOME NOISE TO THE ANGLE
 	//Rotate angle 90ºC and calculate new positions (new edge will have a length of 1.5*T1_TRANSITION_CRITICAL_DISTANCE)
 	double x1 = center_x + cos(angle - angle_rotate)*max_dist*20; 
 	double y1 = center_y - sin(angle - angle_rotate)*max_dist*20; // calculate an orthogonal line (big in excess to be sure that it cuts the polygon in 2 pieces) and look which edges it cuts
@@ -1145,6 +1327,12 @@ void Tissue::make_divide_cell(Rearrangement& r){
 	//Now update cell areas and perimeters
 	cells[newcind].perimeter_contractility = cells[cell].perimeter_contractility;
 	cells[newcind].preferred_area = cells[cell].preferred_area;
+
+	cells[newcind].division_angle_random_noise = cells[cell].division_angle_random_noise;
+	cells[newcind].division_angle_longest = cells[cell].division_angle_longest;
+	cells[newcind].division_angle_external = cells[cell].division_angle_external;
+	cells[newcind].division_angle_external_degrees = cells[cell].division_angle_external_degrees;
+
 	cells[newcind].area = calculateCellArea(cells[newcind]);
 	cells[newcind].perimeter = calculateCellPerimeter(cells[newcind]);
 	cells[cell].area = calculateCellArea(cells[cell]);
@@ -1155,13 +1343,13 @@ void Tissue::make_divide_cell(Rearrangement& r){
 	int aux_nei;
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
 		aux_nei = vertices[newvind1].neighbour_vertices[i];
-		if(aux_nei != EMPTY_CONNECTION) if(!vertices[aux_nei].movable) num_static_neighbours++;
+		if(aux_nei != EMPTY_CONNECTION && aux_nei != newvind2) if(!vertices[aux_nei].movable) num_static_neighbours++;
 	}
 	if(num_static_neighbours >= 2) vertices[newvind1].movable = false;
 	num_static_neighbours = 0;
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
 		aux_nei = vertices[newvind2].neighbour_vertices[i];
-		if(aux_nei != EMPTY_CONNECTION) if(!vertices[aux_nei].movable) num_static_neighbours++;
+		if(aux_nei != EMPTY_CONNECTION && aux_nei != newvind1) if(!vertices[aux_nei].movable) num_static_neighbours++;
 	}
 	if(num_static_neighbours >= 2) vertices[newvind2].movable = false;
 	counter_divisions++;

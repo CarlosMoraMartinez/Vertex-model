@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
 #include <random>
 #include <cstdlib>
 #include <cmath>
@@ -30,6 +31,10 @@ const float PREFERRED_AREA_INITIAL = 10.0; //Use >= 30 for constant division
 const float PREFERRED_AREA_HINGE = 3.0; //Use >= 30 for constant division
 const float PREFERRED_AREA_FINAL = 5.0;
 const float DIVISION_ANGLE_RANDOM_NOISE = 0.3; //1 = variation of 360ºC (completely random), 0 =no variation (division alwys orthogonal to the max. lengh)
+const float DIVISION_ANGLE_LONGEST_AXIS = 0.7;
+const float DIVISION_ANGLE_EXTERNAL = 0.0; // 
+const float DIVISION_ANGLE_EXTERNAL_DEGREES = 0;
+
 const float LENGTH_ROTATED_EDGE = 0.5*T1_TRANSITION_CRITICAL_DISTANCE*1.2; //after a t1 transition, rotated edge length is multiplied by twice this constant
 
 
@@ -43,6 +48,7 @@ const int RANDOM_SEED = 1234;
 const std::string VERTEX_FILE_EXTENSION = ".points";
 const std::string CELLS_FILE_EXTENSION = ".cells";
 const std::string SPRING_FILE_EXTENSION = ".spr";
+const std::string PARAMS_FILE_EXTENSION = ".vp";
 
 const bool T1_ACTIVE = true;
 const bool T1_BORDER_INWARDS_ACTIVE = true;
@@ -61,7 +67,7 @@ const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tper
 const std::string EDGE_HEADER = "ind\ttype\tlength\ttension\tvertices\tcells\n";
 
 //Enum class to define types of cells 
-enum class CellType{blade = 0, hinge = 1, vein = 2, vein_hinge = 3};
+enum class CellType{blade = 0, hinge = 1, vein_blade = 2, vein_hinge = 3};
 
 //Enum class to define types of edges
 enum class EdgeType{blade = 0, hinge = 1, vein_hinge = 2, vein_blade = 3, tissue_boundary = 4, spring = 5, vein = 4};
@@ -92,6 +98,11 @@ struct Cell{
 	double preferred_area;
 	double perimeter;
 	double perimeter_contractility;
+	float division_angle_random_noise; 
+	float division_angle_longest;
+	float division_angle_external; 
+	float division_angle_external_degrees;
+
 	int edges[MAX_SIDES_PER_CELL];
 	int vertices[MAX_SIDES_PER_CELL];
 	int num_vertices; 
@@ -136,12 +147,19 @@ typedef std::vector<Edge> edge_v;
 typedef std::queue<Rearrangement> rearrangement_q;
 typedef std::queue<DivisionRecord> divisionrecord_q;
 
+typedef std::map<CellType, double> cell_type_param;
+
 class Tissue{
         friend class basicGRN;
 	public:
 		Tissue();
 		Tissue(std::string starting_tissue_file, int max_accepted_movements=1000000,  int write_every_N_moves=1000);
 		Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements=1000000,  int write_every_N_moves=1000); //not implemented
+
+		void initialize_params(std::string params_file="");
+		double read_real_par(std::vector<std::string>::iterator& it);
+		cell_type_param read_celltype_par(std::vector<std::string>::iterator& it, std::string::size_type sz);
+		void set_default_simulation_params();
 
 		void simulate(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif);
 		double calculateCellArea(const Cell& c);
@@ -197,22 +215,27 @@ class Tissue{
 		float max_range_vertex_movement;
 		float temperature_positive_energy;
 		float temperature_negative_energy; 
-		float line_tension_blade;
-		float line_tension_hinge;
-		float line_tension_vein_hinge;
-		float line_tension_vein_blade;
-		float line_tension_tissue_boundary;
+		cell_type_param line_tension;
+		//float line_tension_blade;
+		//float line_tension_hinge;
+		//float line_tension_vein_hinge;
+		//float line_tension_vein_blade;
+		cell_type_param line_tension_tissue_boundary;
+		//float line_tension_tissue_boundary;
 		float spring_constant;
-		float perimeter_contract_blade;
-		float perimeter_contract_hinge;
+		cell_type_param perimeter_contract;
+		//float perimeter_contract_blade;
+		//float perimeter_contract_hinge;
 		float t1_transition_critical_distance; 
 		float t2_transition_critical_area;
 		float max_cell_area;	
 		float max_edge_length; 
-		float preferred_area_initial;
-		float preferred_area_final;
-		float preferred_area_hinge;
-		float division_angle_random_noise; 
+		cell_type_param preferred_area_initial, preferred_area_final;
+		//float preferred_area_initial;
+		//float preferred_area_final;
+		//float preferred_area_hinge;
+		cell_type_param division_angle_longest_axis, division_angle_random_noise, division_angle_external, division_angle_external_degrees;
+		//float division_angle_random_noise; 
 		float length_rotated_edge; 
 
 		//Data structures

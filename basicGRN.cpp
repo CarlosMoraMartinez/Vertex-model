@@ -110,7 +110,6 @@ ctparams basicGRN::readSingleParam( std::vector<std::string>::iterator& it){
         celltype = static_cast<CellType>( stoi(s, &sz) );
         s = s.substr(sz);
         while(s.length() != 0){
-            std::string prueba = "a5.5";
             s.erase(0, 1);
             auxd = stod(s, &sz);
             values.push_back(auxd);
@@ -186,8 +185,9 @@ void basicGRN::get_current_cell_grid_params(){
             e_aux = cell_grid->edges[ cell_grid->cells[c].edges[ei] ];
             if( ( cell_grid->cells[c].type == CellType::blade && e_aux.type == EdgeType::blade ) || 
                     ( cell_grid->cells[c].type == CellType::hinge && e_aux.type == EdgeType::hinge ) ||
-                    ( cell_grid->cells[c].type == CellType::vein && e_aux.type == EdgeType::vein ) ){
+                    ( (cell_grid->cells[c].type == CellType::vein_blade || cell_grid->cells[c].type == CellType::vein_hinge) && e_aux.type == EdgeType::vein ) ){
                         expression(c, property_index.edge_tension) = e_aux.tension;
+                        break;
             }
         } //for edges in cell
 
