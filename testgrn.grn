@@ -19,13 +19,13 @@
 0.01
 
 >grn_time_per_step; //each iteration
-0.5  
+0.1 
 >int vertex_moves_per_step; //each iterat
 1
 >int final_moves_accepted;
-1000
+1000000
 >int write_every_N_moves, 
-10
+1000
 
 
 >Gene types
