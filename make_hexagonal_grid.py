@@ -30,9 +30,33 @@ def getPoint(x, y, size, i):
     angle_rad = np.pi/180 * angle_deg
     return (x + size*np.cos(angle_rad), y + size*np.sin(angle_rad))
 
+def getPoint2(x, y, size, i, pull):
+    a2= 60 + (60-pull)/2
+    angles = [pull, a2, a2, pull, a2, a2]
+    angle_deg = pull/2
+    for side in range(i+1):
+        angle_deg -= angles[side]
+    angle_rad = np.pi/180 * angle_deg
+    return (x + size*np.cos(angle_rad), y + size*np.sin(angle_rad))
+
+def rotateVertices(vertices, centers, angle):
+    angle = angle*np.pi/180
+    for v in range(len(vertices)):
+        xnew = vertices[v][0]*np.cos(angle) - vertices[v][1]*np.sin(angle)
+        ynew = vertices[v][1]*np.cos(angle) + vertices[v][0]*np.sin(angle)
+        vertices[v][0] = xnew 
+        vertices[v][1] = ynew
+    for c in range(len(centers)):
+        xnew = centers[c][2]*np.cos(angle) - centers[c][3]*np.sin(angle)
+        ynew = centers[c][3]*np.cos(angle) + centers[c][2]*np.sin(angle)
+        newtup = (centers[c][0], centers[c][1],xnew, ynew)
+        centers[c] = newtup 
+    return(vertices, centers)
+
+
 #Hexagon centers are separated by width horizontally and by height*3/4 vertically
 
-def getCells(size, nrow, ncol):
+def getCells(size, nrow, ncol, pull=0):
     max_coord = height(size)*(ncol+1)
     centers = [ (j-1, i-1, width(size)*i + width(size)*0.5*(j%2) , height(size)*0.75*j)  for j in range(1, nrow + 1) for i in range(1, ncol + 1)]
     vertices = []
@@ -62,7 +86,10 @@ def getCells(size, nrow, ncol):
                         newv = cells[ncol*(i-1) +j  + 1][4]
             if(newv == -1):
                 newv = vnum
-                a, b = getPoint(x, y, size, v)
+                if(pull > 0):
+                    a, b = getPoint2(x, y, size, v, pull)
+                else:
+                    a, b = getPoint(x, y, size, v)
                 vertices.append([a, b, newv, 1]) # coord_x, coord_y, index, movable
                 vnum+=1
             cell.append(newv)
@@ -78,7 +105,6 @@ def addNoise(vertices, size, noise):
         vertices[i][0] = vertices[i][0] + np.random.uniform(-1*size*noise, size*noise)
         vertices[i][1] = vertices[i][1] + np.random.uniform(-1*size*noise, size*noise)
     return vertices
-
 
 
 def plotHex(centers, vertices, cells, springs, celltypes, outname = 'hexagonal_grid'):
@@ -244,7 +270,12 @@ def addCellType(cells, hingelimit, veinpos, nr, nc):
             types.append(bladetype)
     return types
 
-
+def addStrecht(vertices, centers, strecht):
+    for v in range(len(vertices)):
+        vertices[v][0] = vertices[v][0]*strecht
+    for c in range(len(centers)):
+        centers[c] = (centers[c][0], centers[c][1], centers[c][2]*strecht, centers[c][3])
+    return (vertices, centers)
 
 parser = argparse.ArgumentParser(description='Hexagonal grid arguments.')
 parser.add_argument('-o', '--Outname', metavar='outname', type=str, default = "hexgrid", 
@@ -270,6 +301,15 @@ parser.add_argument('-g', '--Hinge', metavar='Hinge_pos', type=int, default = No
                     help='Hexagons in columns in range [0:g] will be considered hinge (value 1).')
 parser.add_argument('-v', '--Veins', metavar='Veins_pos', type=str, default = '',
                     help='Hexagons in rows specified (as integers) will be considered veins ( value 2).')
+
+parser.add_argument('-f', '--Pull', metavar='Change relative size of angles', type=float, default = 0,
+                    help='Value of side angle (default is 60 for a regular hexagon')
+
+parser.add_argument('-k', '--Strecht', metavar='Strecht', type=float, default = 0,
+                    help='Scale horizontally by a factor of k')
+parser.add_argument('-j', '--Rotate', metavar='Rotate', type=float, default = 0,
+                    help='Rotate the whole grid specified angles')
+
 def main():
 
     args = parser.parse_args()
@@ -278,6 +318,9 @@ def main():
     nr = args.Rows
     nc = args.Cols
     ran = args.Noise
+    pull = args.Pull
+    strecht = args.Strecht
+    rotate = args.Rotate
 
     static_vertices = args.StaticVertices
     spring_vertices = args.Springs
@@ -286,12 +329,14 @@ def main():
     hingelimit = args.Hinge
     veinpos = args.Veins
     outname = args.Outname + '_s'+str(s) + '_' + str(nr) + 'x' + str(nc) + '_n' + str(ran)
-    print('size: ', s, '; num. rows: ', nr, '; num. cols: ', nc, '; noise: ', ran, '; output files: ', outname)
+    print('size: ', s, '; num. rows: ', nr, '; num. cols: ', nc, '; noise: ', ran, '; strecht: ', pull, '; output files: ', outname)
 
-    centers, cells, vertices = getCells(s, nr, nc)
-  
+    centers, cells, vertices = getCells(s, nr, nc, pull)
+
     if(ran > 0):
         vertices = addNoise(vertices, s, ran)
+    if(strecht > 0):
+        vertices, centers = addStrecht(vertices, centers, strecht)
     if(static_vertices != ''):
         vertices, springs = addStatic(cells, vertices, static_vertices, spring_vertices, spring_length, nr, nc)
     else:
@@ -301,6 +346,8 @@ def main():
     else:
         celltypes = [bladetype for c in cells]
 
+    if(rotate > 0):
+        vertices, centers = rotateVertices(vertices, centers, rotate)
     writeGrid(vertices, cells, centers, springs, celltypes, outname)
     plotHex(centers, vertices, cells, springs, celltypes, outname)
 

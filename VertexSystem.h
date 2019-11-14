@@ -44,6 +44,7 @@ const unsigned short MAX_SIDES_PER_CELL = 20; //Maybe pass as argument instead o
 const unsigned short VERTEX_PER_EDGE = 2;
 const int EMPTY_CONNECTION = -999;  //Value to initialize arrays (cells in vertex, etc)
 const int RANDOM_SEED = 1234;
+const double NUMERIC_THRESHOLD = 1e-15;
 
 const std::string VERTEX_FILE_EXTENSION = ".points";
 const std::string CELLS_FILE_EXTENSION = ".cells";
@@ -102,7 +103,7 @@ struct Cell{
 	float division_angle_longest;
 	float division_angle_external; 
 	float division_angle_external_degrees;
-
+	double centroid_x, centroid_y;
 	int edges[MAX_SIDES_PER_CELL];
 	int vertices[MAX_SIDES_PER_CELL];
 	int num_vertices; 
@@ -164,6 +165,7 @@ class Tissue{
 		void simulate(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif);
 		double calculateCellArea(const Cell& c);
 		double calculateCellPerimeter(const Cell& c);
+		void calculateCellCentroid(Cell& c);
 		double distance(int v1, int v2);
 		double calculateEnergy(Vertex& v);
 		void moveVertex(Vertex& v, float x, float y);
@@ -288,6 +290,8 @@ class Tissue{
 		void t1_inwards_update_neighbours(Vertex* v1, Vertex* v2, int edge, int common_cell1, int only_v1, int only_v2, int& remove_from_v1, int& remove_from_v2);
 
 		//Methods used by cell division
+		bool getDivisionPoints(const int cell, double &x1, double &x2, double &y1, double &y2, int &e1, int &e2);
+		bool findEdgesToCut(const int cell, double x1, double x2, double y1, double y2, int &e1, int &e2, StraightLine &l1, StraightLine &l2, StraightLine &l3, StraightLine &l4);
 		void splitEdgeWithVertex(int e, int cell, int  v);
 
 		//methods used by T2 and join_edges

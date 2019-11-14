@@ -32,7 +32,6 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  in
 	this->write_every_N_moves = write_every_N_moves;
 	step_mode = false;
 
-	set_default_simulation_params();
 	//Read file of vertices (indicates coordinates for each vertex)
 	string vertexfile = starting_tissue_file + VERTEX_FILE_EXTENSION;
 	std::ifstream fin_vertex;
@@ -76,7 +75,8 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  in
 	cout << "parameters set to cells\n";
 }
 
-Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements,  int write_every_N_moves) : Tissue(){
+Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements,  int write_every_N_moves) : num_cells(0), num_vertices(0), num_edges(0),  counter_move_trials(0), counter_moves_accepted(0), counter_t1(0), counter_t1_abortions(0), counter_edges_removed(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0){
+
 	this->simname = starting_tissue_file;
 	this->max_accepted_movements = max_accepted_movements;
 	this->write_every_N_moves = write_every_N_moves;
@@ -181,7 +181,6 @@ void Tissue::set_default_simulation_params(){
 	division_angle_external_degrees.insert(pair<CellType, double>(CellType::hinge, DIVISION_ANGLE_EXTERNAL_DEGREES));
 	division_angle_external_degrees.insert(pair<CellType, double>(CellType::vein_blade, DIVISION_ANGLE_EXTERNAL_DEGREES));
 	division_angle_external_degrees.insert(pair<CellType, double>(CellType::vein_hinge, DIVISION_ANGLE_EXTERNAL_DEGREES));
-
 
 }
 
@@ -451,6 +450,12 @@ void Tissue::set_default_params(){
 		cells[c].preferred_area = preferred_area_initial[cells[c].type];
 		cells[c].area = calculateCellArea(cells[c]);
 		cells[c].perimeter = calculateCellPerimeter(cells[c]);
+
+		cells[c].division_angle_random_noise = division_angle_random_noise[cells[c].type];
+		cells[c].division_angle_longest = division_angle_longest_axis[cells[c].type];
+		cells[c].division_angle_external = division_angle_external[cells[c].type];
+		cells[c].division_angle_external_degrees = division_angle_external_degrees[cells[c].type];
+
 	}
 
 	int c1, c2;
@@ -667,7 +672,23 @@ double Tissue::calculateCellArea(const Cell& c){
 		area += (vertices[c.vertices[previous]].x * vertices[c.vertices[i]].y - vertices[c.vertices[previous]].y * vertices[c.vertices[i]].x);
 		previous = i;
 	}
-	return abs(area/2.0);
+	return abs(0.5*area);
+}
+
+// Calculates centroid, (some of the terms are the same as in area, but did not join both functions since area will be called much more often
+//From n to 0 because vertices are ordered clock-wise and some terms become negative
+void Tissue::calculateCellCentroid(Cell& c){
+	double xc = 0, yc = 0, a;
+	int previous = 0;
+	for(int i = c.num_vertices - 1; i >= 0; i--){
+		a = vertices[c.vertices[previous]].x * vertices[c.vertices[i]].y - vertices[c.vertices[previous]].y * vertices[c.vertices[i]].x;
+		xc += a * (vertices[c.vertices[previous]].x + vertices[c.vertices[i]].x);
+		yc += a * (vertices[c.vertices[previous]].y + vertices[c.vertices[i]].y);
+		previous = i;
+	}
+	c.centroid_x = xc/(6*c.area);
+	c.centroid_y = yc/(6*c.area);
+	return;
 }
 
 double Tissue::calculateCellPerimeter(const Cell& c){
@@ -1165,59 +1186,12 @@ void Tissue::make_divide_cell(Rearrangement& r){
 	int cell = r.element_index;
 	if(cells[cell].area < max_cell_area || cells[cell].num_vertices < 3 || cells[cell].dead) return; 
 
-	int mv1, mv2;
-	double dist, max_dist = -1;
-	//get longest ditance
-	for(int i = 0; i < cells[cell].num_vertices - 1; i++){
-		for(int j  = i + 1; j < cells[cell].num_vertices; j++){
-			dist = distance(cells[cell].vertices[i], cells[cell].vertices[j]);
-			if(dist > max_dist || max_dist < 0){
-				max_dist = dist;
-				mv1 = cells[cell].vertices[i];
-				mv2 = cells[cell].vertices[j];
-			} 
-		}
-
-	}
-
-	double center_x = (vertices[mv1].x + vertices[mv2].x)*0.5;
-	double center_y = (vertices[mv1].y + vertices[mv2].y)*0.5;
-	double angle = atan2(vertices[mv1].y - vertices[mv2].y, vertices[mv1].x - vertices[mv2].x);
-	double angle_rotate = division_angle_random_noise[cells[cell].type] > 0 ? division_angle_random_noise[cells[cell].type]*(rand()%360)*M_PI/180 + 0.5*M_PI : 0.5*M_PI ; //ADD SOME NOISE TO THE ANGLE
-	//Rotate angle 90ºC and calculate new positions (new edge will have a length of 1.5*T1_TRANSITION_CRITICAL_DISTANCE)
-	double x1 = center_x + cos(angle - angle_rotate)*max_dist*20; 
-	double y1 = center_y - sin(angle - angle_rotate)*max_dist*20; // calculate an orthogonal line (big in excess to be sure that it cuts the polygon in 2 pieces) and look which edges it cuts
-	double x2 = center_x - cos(angle - angle_rotate)*max_dist*20;
-	double y2 = center_y + sin(angle - angle_rotate)*max_dist*20;
-
-	//Find edges to cut
+	double x1, x2, y1, y2;
 	int e1 = -1, e2 = -1;
-	StraightLine l1, l2, l3, l4;
-	l1 = getLineFromEdge(x1, x2, y1, y2);
-	for(int i = 0; i < cells[cell].num_vertices; i++){
-		l2 = getLineFromEdge(&this->edges[cells[cell].edges[i]]);
-		if(lines_cross(l1, l2)){
-			if(e1 < 0){
-				e1 = cells[cell].edges[i];
-				l3 = l2;
-			}else{
-				e2 = cells[cell].edges[i];
-				l4 = l2;
-				break;
-			}
-
-		}
-
-	}//end for find edges that intersect with division edge
-	//cout << "D " << cell << "\n";
-	if(e1 < 0  || e2 < 0){
-		cout << "Error: new edge does not cut other cell edges. Cell: " << cell <<endl;
+	if(!getDivisionPoints(cell, x1, x2, y1, y2, e1, e2)){
 		return;
 	}
-	x1 = (l3.intercept - l1.intercept)/(l1.slope - l3.slope); //Now calculate the points where they actually cross
-	x2 = (l4.intercept - l1.intercept)/(l1.slope - l4.slope);
-	y1 = l1.intercept + l1.slope*x1;
-	y2 = l1.intercept + l1.slope*x2;
+
 
 	int newvind1 = newVertex(x1, y1);
 	int newvind2 = newVertex(x2, y2);  //create new vertices that are going to be positioned at (x1, y1) and (x2, y2) insideedges e1 and e2
@@ -1335,6 +1309,100 @@ void Tissue::make_divide_cell(Rearrangement& r){
 	
 	
 }// END make_divide_cell
+
+bool Tissue::getDivisionPoints(const int cell, double &x1, double &x2, double &y1, double &y2, int &e1, int &e2){
+
+	/*Final angle = cell.division_angle_random_noise * rand() +
+			cell.division_angle_longest * (angle_of_longest_distance - 0.5*PI) + 
+			cell.division_angle_external * cell.division_angle_external_degrees; */
+			
+	float division_angle_longest;
+	float division_angle_external; 
+	float division_angle_external_degrees;
+
+	int mv1, mv2;
+	double dist, max_dist = -1;
+	//get longest ditance
+	for(int i = 0; i < cells[cell].num_vertices - 1; i++){
+		for(int j  = i + 1; j < cells[cell].num_vertices; j++){
+			dist = distance(cells[cell].vertices[i], cells[cell].vertices[j]);
+			if(dist > max_dist || max_dist < 0){
+				max_dist = dist;
+				mv1 = cells[cell].vertices[i];
+				mv2 = cells[cell].vertices[j];
+			} 
+		}
+
+	}
+
+	
+	//double center_x = (vertices[mv1].x + vertices[mv2].x)*0.5;
+	//double center_y = (vertices[mv1].y + vertices[mv2].y)*0.5;
+	//Instead, now line will go through centroid
+	calculateCellCentroid(cells[cell]);
+	double center_x = cells[cell].centroid_x;
+	double center_y = cells[cell].centroid_y;
+	//cout << "\n\ncentroid: " << cells[cell].centroid_x << ", " << cells[cell].centroid_y << endl;
+
+	double angle_hertwig = cells[cell].division_angle_longest == 0 ? 0 : cells[cell].division_angle_longest * (atan2(vertices[mv1].y - vertices[mv2].y, vertices[mv1].x - vertices[mv2].x) + 0.5*M_PI);
+	double random_angle = cells[cell].division_angle_random_noise == 0 ? 0 : cells[cell].division_angle_random_noise * (rand()%360)*M_PI/180;
+	double externally_controlled_angle = cells[cell].division_angle_external  == 0 ? 0 : cells[cell].division_angle_external * cells[cell].division_angle_external_degrees*M_PI/180;
+	double final_angle = angle_hertwig + random_angle + externally_controlled_angle;
+
+	if(abs(final_angle - 0.5*M_PI) <= NUMERIC_THRESHOLD){
+		//WARNING! This is a not very elegant fix of the problem of vertical lines (they have infinite slope), and can happen in other parts of the program
+		final_angle += 0.01;
+	}
+	//cout << "v1: " << mv1 << ", v2: " << mv2 << ", final_angle: " << 180*final_angle/M_PI << endl;
+	//cout << "angle hertwig: " << 180*angle_hertwig/M_PI << ", cell angle_longest: " << cells[cell].division_angle_longest << ", atan2: " << 180*atan2(vertices[mv1].y - vertices[mv2].y, vertices[mv1].x - vertices[mv2].x)/M_PI << ", random angle: " << random_angle << ", ext: " << externally_controlled_angle << ", 0.5*pi: " << 180*0.5*M_PI/M_PI << endl;
+
+
+	//Rotate angle 90ºC and calculate new positions (new edge will have a length of 1.5*T1_TRANSITION_CRITICAL_DISTANCE)
+	x1 = center_x + cos(final_angle)*max_dist*20; 
+	y1 = center_y + sin(final_angle)*max_dist*20; // calculate an orthogonal line (big in excess to be sure that it cuts the polygon in 2 pieces) and look which edges it cuts
+	x2 = center_x + cos(final_angle + M_PI)*max_dist*20;
+	y2 = center_y + sin(final_angle + M_PI)*max_dist*20;
+
+
+	//cout << "new angle is actually (before): " << 180*atan2(y1 - y2, x1 - x2)/M_PI << endl;
+	//Find edges to cut
+	StraightLine l1, l2, l3, l4;
+	if(!findEdgesToCut(cell, x1, x2, y1, y2, e1, e2, l1, l2, l3, l4)){
+		return false;
+	}
+
+	x1 = (l3.intercept - l1.intercept)/(l1.slope - l3.slope); //Now calculate the points where they actually cross
+	x2 = (l4.intercept - l1.intercept)/(l1.slope - l4.slope);
+	y1 = l1.intercept + l1.slope*x1;
+	y2 = l1.intercept + l1.slope*x2;
+
+	//cout << "new angle is actually (after): " << 180*atan2(y1 - y2, x1 - x2)/M_PI << endl;
+	return true;
+}
+
+bool Tissue::findEdgesToCut(const int cell, double x1, double x2, double y1, double y2, int &e1, int &e2, StraightLine &l1, StraightLine &l2, StraightLine &l3, StraightLine &l4){
+	l1 = getLineFromEdge(x1, x2, y1, y2);
+	for(int i = 0; i < cells[cell].num_vertices; i++){
+		l2 = getLineFromEdge(&this->edges[cells[cell].edges[i]]);
+		if(lines_cross(l1, l2)){
+			if(e1 < 0){
+				e1 = cells[cell].edges[i];
+				l3 = l2;
+			}else{
+				e2 = cells[cell].edges[i];
+				l4 = l2;
+				break;
+			}
+		}
+	}//end for find edges that intersect with division edge
+	//cout << "D " << cell << "\n";
+	if(e1 < 0  || e2 < 0){
+		cout << "Error: new edge does not cut other cell edges. Cell: " << cell << " ****** "<<endl;
+		return false;
+	}
+	return true;
+}
+
 
 void Tissue::splitEdgeWithVertex(int e, int cell, int  v){
 
@@ -2330,6 +2398,7 @@ StraightLine Tissue::getLineFromEdge(double x1, double x2, double y1, double y2)
 
 bool Tissue::lines_cross(StraightLine& a, StraightLine& b){
 	//if(a.v1 == b.v1 || a.v1 == b.v2 || a.v2 == b.v1 || a.v2 == b.v2) return false;
+	if(a.slope == b.slope) return false;
 	double x_intersect = (b.intercept - a.intercept)/(a.slope - b.slope);
 	return ((x_intersect < a.x1 && x_intersect > a.x2) || (x_intersect < a.x2 && x_intersect > a.x1) ) && ((x_intersect < b.x1 && x_intersect > b.x2) || (x_intersect < b.x2 && x_intersect > b.x1));
 	
