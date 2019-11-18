@@ -64,13 +64,13 @@
 3:0
 <
 >division_angle_longest_axis
-0:1
-1:1
+0:0
+1:0
 2:0
 3:0
 <
 >division_angle_external
-0:0
+0:1
 1:0
 2:0
 3:0

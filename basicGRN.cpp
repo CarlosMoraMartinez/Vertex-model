@@ -65,6 +65,7 @@ basicGRN::basicGRN(std::string sname, Tissue& t, std::string expr_file) : basicG
         readExpressionFile(expr_file);
     }
     for(int k = 0; k < 5; k++)rungekutta_parts.push_back(GXMatrix<double>(num_cells, num_genes, 0.0));
+    //setNewParametersToCells();
     get_current_cell_grid_params();
 } //Constructor 2
 
@@ -89,6 +90,7 @@ void basicGRN::readParams( std::vector<std::string>::iterator& it){
     params.diff_rate = readSingleParam(it);
     params.initial_expr = readSingleParam(it);
     params.constant_expr = readSingleParam(it);
+    params.angle_influence = readSingleParam(it);
 } //read params
 
 
@@ -180,6 +182,9 @@ void basicGRN::get_current_cell_grid_params(){
         expression(c, property_index.cell_preferred_area) = cell_grid->cells[c].preferred_area;
         expression(c, property_index.cell_perimeter_contractility) = cell_grid->cells[c].perimeter_contractility;
 
+        expression(c, property_index.division_angle_random_noise) = cell_grid->cells[c].division_angle_random_noise;
+        expression(c, property_index.division_angle_longest) = cell_grid->cells[c].division_angle_longest;
+        expression(c, property_index.division_angle_external) = cell_grid->cells[c].division_angle_external;
         //Now guess edge tension of cells of this type
         for(int ei = 0; ei < cell_grid->cells[c].num_vertices; ei++){
             e_aux = cell_grid->edges[ cell_grid->cells[c].edges[ei] ];
@@ -286,8 +291,8 @@ void basicGRN::diffusible_getIncrement(GXMatrix<double>& current_expr, int cell,
             continue;
         }else{
         //cout << "            A2.9 cell: " << cell << ", gene: " << gene << ", nei: " << nei <<endl;
-        //diff += (current_expr(cell, gene)/c->area - current_expr(nei, gene)/cell_grid->cells[nei].area)*edge->length/c->perimeter; //normalizing by area?
-            diff += (current_expr(cell, gene)- current_expr(nei, gene))*edge->length/c->perimeter;
+            diff += (current_expr(cell, gene)/c->area - current_expr(nei, gene)/cell_grid->cells[nei].area)*edge->length; //normalizing by area
+            //diff += (current_expr(cell, gene)- current_expr(nei, gene))*edge->length/c->perimeter;
         }
         //cout << "            A2.10" << endl;
     }
@@ -310,14 +315,57 @@ void basicGRN::vertex_property_getIncrement(GXMatrix<double>& current_expr, int 
     intracel_getIncrement(current_expr, cell, gene, k);
 }
 void basicGRN::setNewParametersToCells(){
+    double angle_total;
     for(int i = 0; i < num_cells; i++){
         if(!cell_grid->cells[i].dead){
             cell_grid->cells[i].preferred_area = expression(i, property_index.cell_preferred_area);
             cell_grid->cells[i].perimeter_contractility = expression(i, property_index.cell_perimeter_contractility);
+
+            angle_total = expression(i, property_index.division_angle_random_noise) + expression(i, property_index.division_angle_longest) + expression(i, property_index.division_angle_external);
+
+            //Overall, influence on final angle must be a proportion
+            cell_grid->cells[i].division_angle_random_noise = expression(i, property_index.division_angle_random_noise)/angle_total;
+            cell_grid->cells[i].division_angle_longest = expression(i, property_index.division_angle_longest)/angle_total;
+            cell_grid->cells[i].division_angle_external = expression(i, property_index.division_angle_external)/angle_total;
+            cell_grid->cells[i].division_angle_external_degrees = getDegreesFromGradient(i);
+
         }
     }
 
-    //To implement: changes in vertices or edges, orientation with respect to a morphogen gradient
+    //To implement: changes in vertices or edges
+}
+
+//Calculates the average angle in which all molecules that influence angle of division according to a gradient 
+double basicGRN::getDegreesFromGradient(int cell){
+    CellType ct = cell_grid->cells[cell].type;
+    double xsum = 0, ysum=0,  currentgrad, angle1;
+    std::vector<double> angles(regulators[ct][property_index.division_angle_external].size());
+    std::vector<double> gradients(regulators[ct][property_index.division_angle_external].size());
+    int e1, c1, mv1, mv2;
+
+    cell_grid->calculateCellCentroid(cell_grid->cells[cell]);
+    for(int reg : regulators[ct][property_index.division_angle_external]){
+        //Search direction of maximum difference in concentration for regulator reg
+        for(int i = 0; i < cell_grid->cells[cell].num_vertices - 1; i++){
+            e1 = cell_grid->cells[cell].edges[i];
+            c1 = cell_grid->edges[e1].cells[0] == cell ? cell_grid->edges[e1].cells[1] : cell_grid->edges[e1].cells[0]; 
+            currentgrad = cell_grid->edges[e1].length * (expression(c1, reg)/cell_grid->cells[c1].area - expression(cell, reg)/cell_grid->cells[cell].area);
+            mv1 = cell_grid->edges[e1].vertices[0];
+            mv2 = cell_grid->edges[e1].vertices[1];
+            ysum += (0.5*(cell_grid->vertices[mv1].y + cell_grid->vertices[mv2].y) - cell_grid->cells[cell].centroid_y) * currentgrad;
+            xsum += (0.5*(cell_grid->vertices[mv1].x + cell_grid->vertices[mv2].x) - cell_grid->cells[cell].centroid_x) * currentgrad;
+        }//Iterate over cell edges
+        angle1 = 180 * atan2(ysum, xsum) / M_PI;
+        currentgrad = sqrt(pow(xsum, 2) + pow(ysum, 2));
+        angles.push_back(angle1 + params.angle_influence[ct][reg]); 
+        gradients.push_back(currentgrad);
+    } //End for regulators
+    double sum_con = 0, sum_angle = 0;
+    for(int r = 0; r < angles.size(); r++){
+        sum_con += gradients[r];
+        sum_angle += angles[r]*gradients[r];
+    }
+    return sum_angle/sum_con;
 }
 
 void basicGRN::addCells(){

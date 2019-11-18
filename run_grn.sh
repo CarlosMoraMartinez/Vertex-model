@@ -14,9 +14,9 @@ g++ -std=c++11 -c run_grn.cpp  #test_grn.cpp
 #g++ -o matrix test_matrix.o GXMatrix.o
 g++ -o grn basicGRN.o run_grn.o VertexSystem.o #test_grn.o
 
-./grn $1 $2
+./grn $1 $2 $3
 
-python plotOps_loop.py $1'_moved_' $3 $4 $6
+python plotOps_loop.py $1'_moved_' $4 $5 $6
 ffmpeg -framerate 10 -i $1'_moved_'%d.png -codec copy $1'_moved_'.avi
 
 rm *.o

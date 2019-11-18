@@ -37,7 +37,7 @@ typedef std::map<CellType, list_of_regulators > map_of_regulators;
 
 
 struct Gene_params{ //This should be updated in other implementations
-      ctparams degr, diff_rate, initial_expr, constant_expr;
+      ctparams degr, diff_rate, initial_expr, constant_expr, angle_influence;
 };
 
 class basicGRN {
@@ -71,8 +71,8 @@ class basicGRN {
     void edge_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k);
     void vertex_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k);
 
-    void orientDivisionToMorphogen(float angle_to_major_difference);
-    
+    double getDegreesFromGradient(int cell);
+
     void changeVerticesInGrid();
     void changeEdgesInGrid();
 
@@ -96,6 +96,9 @@ class basicGRN {
       unsigned int cell_preferred_area = 0;
       unsigned int cell_perimeter_contractility = 1;
       unsigned int edge_tension = 2;
+      unsigned int division_angle_random_noise = 3;
+      unsigned int division_angle_longest = 4;
+      unsigned int division_angle_external = 5;
     } property_index;
 
    using increment_function = void(basicGRN::*)(GXMatrix<double>&, int, int, int);
