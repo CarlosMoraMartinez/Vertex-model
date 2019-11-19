@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+import argparse
 import os
 from shapely.ops import polygonize
 from shapely.geometry import Polygon, MultiPoint, Point
@@ -15,6 +16,8 @@ import matplotlib.pyplot as plt
 BLUE = '#6699cc'
 GRAY = '#999999'
 RED = '#ff3333'
+WHITE = '#ffffff'
+BLACK = '#000000'
 
 
 bladetype = 0
@@ -51,7 +54,8 @@ def set_limits(ax, x0, xN, y0, yN):
     ax.set_yticks(range(y0, yN+1))
     ax.set_aspect("equal")
 
-def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes):
+def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name):
+    fig, ax = plt.subplots()
     # In order to plot a MultiPolygon object, I need to iterate over each oplygon
     fig = plt.figure(1, figsize=(5,5), dpi=90)
     ax = fig.add_subplot(plot_pos)
@@ -60,12 +64,23 @@ def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes):
         count += 1
         polygon = Polygon(element)
         plot_coords(ax, polygon.exterior)
-        if(len(celltypes) == 0):
-            col = BLUE
+
+        if(len(expr) == 0):
+            if(len(celltypes) == 0):
+                col = BLUE
+            else:
+                col = wingcols[celltypes[k]]
+            col = color_isvalid(polygon, col)
+            transp = 0.5
         else:
             col = wingcols[celltypes[k]]
-        col = color_isvalid(polygon, col)
-        patch = PolygonPatch(polygon, facecolor=col, edgecolor=color_isvalid(polygon, valid=BLUE), alpha=0.5, zorder=2)
+            transp = expr[k]
+       # if(len(celltypes) == 0):
+       #     edgec = "#000000"
+       # else:
+       #     edgec = color_isvalid(polygon, valid=wingcols[celltypes[k]])
+        edgec = color_isvalid(polygon, valid=BLACK)
+        patch = PolygonPatch(polygon, facecolor=col, edgecolor=edgec, alpha=transp, zorder=2)
         ax.add_patch(patch)
     for s in sprList:
         ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color = RED)
@@ -76,37 +91,37 @@ def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes):
     if(add_vnums):
         for i in pointsList.keys():
             ax.annotate(i, pointsList[i][0:2])
-
-
-########################################################################################################################
-# Generating the multipolygon object
-########################################################################################################################
-
-
-if(len(sys.argv) <= 5):
-    plot_cell_types = True
-else:
-    plot_cell_types = False
+    plt.savefig(name + '.png')
+    plt.clf()
 
 
 
-for fnum in range(int(sys.argv[2]), int(sys.argv[3])):
-    if(not os.path.isfile(sys.argv[1]+str(fnum)+".points") or not os.path.isfile(sys.argv[1]+str(fnum)+".cells")):
-        break;
+def plot_expr(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name, color_expr):
+    for g in color_expr:    
+        xx = expr[:,g].tolist()
+        #xmin = min(xx)
+        xmax = max(xx)
+        xx = [i/xmax for i in xx]
+        #print("_____ ", xx)
+        plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, xx, name + 'g' + str(g))
 
-    pointsFile = open(sys.argv[1]+str(fnum)+".points", "r")
-    cellsFile = open(sys.argv[1]+str(fnum)+".cells", "r")
-    
+
+def readPointsFile(name):
+    pointsFile = open(name + ".points", "r")
     numPoints = int(pointsFile.readline())
-    numCells, numVerticesCell = [int(each) for each in cellsFile.readline().split()]
 
-# This is the list of points
+    # This is the list of points
     pointsList = {}#np.zeros((numPoints,2))
     for row in range(numPoints):
         ll = pointsFile.readline().split()
         pointsList[ll[2]] = [float(ll[0]), float(ll[1]), int(ll[3])]
+    pointsFile.close()
+    return (numPoints, pointsList)
 
-#print(pointsList)
+def readCellsFile(name, plot_cell_types, pointsList):
+    cellsFile = open(name + ".cells", "r")
+    numCells, numVerticesCell = [int(each) for each in cellsFile.readline().split()]
+
     polygonList = []
     celltypes = []
     for row in range(numCells):
@@ -115,30 +130,70 @@ for fnum in range(int(sys.argv[2]), int(sys.argv[3])):
             celltypes.append(int(polygonIndex.pop())) #CAREFUL: if cells file does not have type, will produce error
         polygonCoords = [list(pointsList[coord]) for coord in polygonIndex]
         polygonList.append(polygonCoords)
-    #olygonList[row] =
-#springlist
+    cellsFile.close()
+    return (numCells, polygonList, celltypes)
+
+def readSprings(name):
     sprList = [] #just in case
+    numsprings = 0
     try:
-        springsfile = open(sys.argv[1]+str(fnum)+".spr", "r")
+        springsfile = open(name + ".spr", "r")
         numsprings = int(springsfile.readline())
         sprList = [[str(int(j)) for j in springsfile.readline().split('\t')] for i in range(numsprings) ]
+        springsfile.close()
     except:
         print("no springs (.spr) file")
-        sprList = [] #just in case
+    return (numsprings, sprList)
 
+
+def readExpr(name):
+    xprList = np.loadtxt(name + '.expr') #just in case
+    return xprList
+    
 ########################################################################################################################
-# Plotting the final polygons
+# Generating the multipolygon object
 ########################################################################################################################
-    add_vnums = False
-    if(len(sys.argv) > 4):
-        if(sys.argv[4] == '-n'):
-            add_vnums = True
-    fig, ax = plt.subplots()
-    plot_grid(111, polygonList, pointsList, sprList, add_vnums, celltypes)
 
-#plt.show()
-    plt.savefig(sys.argv[1]+str(fnum)+'.png')
-    plt.clf()
-    print(fnum)
+parser = argparse.ArgumentParser(description='Plot grid arguments.')
+parser.add_argument('-i', '--Inputname', metavar='inputname', type=str, default = "hexgrid", 
+                    help='Identifier. Used as prefix of input files of cell coordinates. ')
+parser.add_argument('-i2', '--Input_expr', metavar='input_expr', type=str, default = "testgrn", 
+                    help='Identifier. Used as prefix of input files of gene expression. ')
+parser.add_argument('-s', '--Start_index', metavar='start', type=int, default = 0, 
+                    help='First file to read')
+parser.add_argument('-e', '--End_index', metavar='end', type=int, default = 1000, 
+                    help='Last file to read')
+parser.add_argument('-v', '--write_vertex_number', metavar='writevert', type=bool, default = False, 
+                    help='Add number of vertices to plot (recommended only for small grids)')
+parser.add_argument('-g', '--genes_to_plot_expression', metavar='gexpr', type=str, default = '', 
+                    help='Plot grid with expression of all these genes. Integers separated by commas.')
+parser.add_argument('-t', '--plotCellTypes', metavar='plot_cell_types', type=bool, default = True, 
+                    help='Color according to cell type or not')
 
 
+def main():
+    args = parser.parse_args()
+    plot_cell_types = args.plotCellTypes
+    add_vnums = args.write_vertex_number
+    color_expr = [int(i) for i in args.genes_to_plot_expression.split(',') ]
+    for fnum in range(args.Start_index, args.End_index):
+        if(not os.path.isfile(args.Inputname + str(fnum) + ".points") or not os.path.isfile(args.Inputname + str(fnum) + ".cells")):
+            break;
+        name = args.Inputname + str(fnum)
+        numPoints, pointsList = readPointsFile(name)
+        numCells, polygonList, celltypes = readCellsFile(name, plot_cell_types, pointsList)
+        numsprings, sprList = readSprings(name)
+        if(len(color_expr) > 0):
+            xprList = readExpr(args.Input_expr + str(fnum))
+        ########################################################################################################################
+        # Plotting the final polygons
+        ########################################################################################################################
+
+        plot_grid(111, polygonList, pointsList, sprList, add_vnums, celltypes, [] ,name)  
+        plot_expr(111, polygonList, pointsList, sprList, add_vnums, celltypes, xprList, name, color_expr)
+
+        print(fnum)
+
+
+if __name__ == '__main__':
+    main()

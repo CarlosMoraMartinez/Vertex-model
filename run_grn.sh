@@ -5,6 +5,7 @@
 # mkdir $1
 cp VertexSystem.cpp VertexSystem.h basicGRN.cpp basicGRN.h run_grn.cpp GXMatrix.h plotOps_loop.py $1
 cp $2.grn $1
+cp $3.vp $1
 cd $1
 
 
@@ -16,7 +17,7 @@ g++ -o grn basicGRN.o run_grn.o VertexSystem.o #test_grn.o
 
 ./grn $1 $2 $3
 
-python plotOps_loop.py $1'_moved_' $4 $5 $6
+python plotOps_loop.py -i $1'_moved_' -i2 $2'_moved_'  -g '8'
 ffmpeg -framerate 10 -i $1'_moved_'%d.png -codec copy $1'_moved_'.avi
 
 rm *.o

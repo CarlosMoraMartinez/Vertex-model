@@ -168,6 +168,9 @@ void basicGRN::initializeExpression(){
     for(int c = 0; c < num_cells; c++){
         for(int g = 0; g < num_genes; g++){
                 expression(c, g) = params.initial_expr[cell_grid->cells[c].type][g];
+                /*if(gene_types[g] == GeneType::intracel || gene_types[g] == GeneType::diffusible){
+                    expression(c, g) = expression(c, g)*cell_grid->cells[c].area;
+                }*/
         }
     }
 }
@@ -297,7 +300,7 @@ void basicGRN::diffusible_getIncrement(GXMatrix<double>& current_expr, int cell,
         //cout << "            A2.10" << endl;
     }
     //cout << "        A2.11" << endl;
-    rungekutta_parts[k](cell, gene) = rungekutta_parts[k](cell, gene) - params.diff_rate[c->type][gene]*diff; //*power(diff, 2);
+    rungekutta_parts[k](cell, gene) = rungekutta_parts[k](cell, gene) - params.diff_rate[c->type][gene]*diff/cell_grid->cells[cell].perimeter; //*power(diff, 2);
     //cout << "        A2.12" << endl;
 } //diffussible
 
@@ -341,24 +344,40 @@ double basicGRN::getDegreesFromGradient(int cell){
     double xsum = 0, ysum=0,  currentgrad, angle1;
     std::vector<double> angles(regulators[ct][property_index.division_angle_external].size());
     std::vector<double> gradients(regulators[ct][property_index.division_angle_external].size());
-    int e1, c1, mv1, mv2;
+    int reg, e1, c1, mv1, mv2;
 
+   // cout << "A: CELL: " << cell_grid->cells[cell] << endl;
     cell_grid->calculateCellCentroid(cell_grid->cells[cell]);
-    for(int reg : regulators[ct][property_index.division_angle_external]){
+    for(int rind = 0; rind < regulators[ct][property_index.division_angle_external].size(); rind++){
+    reg = regulators[ct][property_index.division_angle_external][rind];
+   // cout << "B reg: " << reg << endl;
         //Search direction of maximum difference in concentration for regulator reg
         for(int i = 0; i < cell_grid->cells[cell].num_vertices - 1; i++){
             e1 = cell_grid->cells[cell].edges[i];
+          //  cout << "  C edge in cell: [" << i <<"] = " << e1 << endl;
             c1 = cell_grid->edges[e1].cells[0] == cell ? cell_grid->edges[e1].cells[1] : cell_grid->edges[e1].cells[0]; 
-            currentgrad = cell_grid->edges[e1].length * (expression(c1, reg)/cell_grid->cells[c1].area - expression(cell, reg)/cell_grid->cells[cell].area);
+            if(c1 == EMPTY_CONNECTION){
+                currentgrad = cell_grid->edges[e1].length * (0 - expression(cell, reg));
+              //  cout << "  C.2: empty connection" << endl;
+            }else{
+           // cout << "  D edge other cell cell: " << c1 << endl;
+            //currentgrad = cell_grid->edges[e1].length * (expression(c1, reg)/cell_grid->cells[c1].area - expression(cell, reg)/cell_grid->cells[cell].area);
+            currentgrad = cell_grid->edges[e1].length * (expression(c1, reg) - expression(cell, reg));
+           // cout << "  E currentgrad. e1 length " << cell_grid->edges[e1].length << ", expr c1: "<<  expression(c1, reg) << ", expr cell" << expression(cell, reg) << ", areas: "<< cell_grid->cells[c1].area << ", " << cell_grid->cells[cell].area << ", result: " << currentgrad <<endl;
+            }
             mv1 = cell_grid->edges[e1].vertices[0];
             mv2 = cell_grid->edges[e1].vertices[1];
             ysum += (0.5*(cell_grid->vertices[mv1].y + cell_grid->vertices[mv2].y) - cell_grid->cells[cell].centroid_y) * currentgrad;
             xsum += (0.5*(cell_grid->vertices[mv1].x + cell_grid->vertices[mv2].x) - cell_grid->cells[cell].centroid_x) * currentgrad;
+            //cout << "  F xsum, ysum: (" << xsum << ", " << ysum << ")" << endl;
         }//Iterate over cell edges
         angle1 = 180 * atan2(ysum, xsum) / M_PI;
+       // cout << "G: angle1 = " << angle1 << endl;
         currentgrad = sqrt(pow(xsum, 2) + pow(ysum, 2));
-        angles.push_back(angle1 + params.angle_influence[ct][reg]); 
-        gradients.push_back(currentgrad);
+       // cout << "G: gradient size = " << currentgrad << endl;
+        angles[rind] = angle1 + params.angle_influence[ct][reg]; 
+        gradients[rind] = currentgrad;
+       // cout << "H" << endl;
     } //End for regulators
     double sum_con = 0, sum_angle = 0;
     for(int r = 0; r < angles.size(); r++){
@@ -376,10 +395,17 @@ void basicGRN::addCells(){
     for(int i = 0; i < 5; i++) rungekutta_parts[i].add_row(cell_grid->past_divisions.size(), 0.0);
     DivisionRecord d;
     vector<double> row;
-    
+    //double a;
     while(!cell_grid->past_divisions.empty()){
         d = cell_grid->past_divisions.front();
         row = expression.getRow(d.parent);
+        /*a = cell_grid->cells[d.parent].area + cell_grid->cells[d.offspring].area;
+        for(int g = 0; g < row.size(); g++){
+            if(gene_types[g] == GeneType::diffusible || gene_types[g] == GeneType::intracel){
+                row[g] = row[g]*cell_grid->cells[d.offspring].area/a;
+                expression(d.parent, g) = expression(d.parent, g)*cell_grid->cells[d.parent].area/a;
+            }
+	}*/
         expression.add_row(row);
         cell_grid->past_divisions.pop();
         num_cells++;
@@ -404,13 +430,21 @@ void basicGRN::produceOutputs(std::string add_to_name){
     fo.close();
 
     fo.open(fname + EXPRESSION_EXTENSION);
-    s = expressionToString();
+    s = exprToString();
     fo << s;
     fo.close();
 }
 
-std::string basicGRN::expressionToString(){
-    return expression.toString();
+std::string basicGRN::exprToStringConc(){
+    GXMatrix<double> expression2 = expression;
+    for(int g = 0; g < num_genes; g++){
+        if(gene_types[g] == GeneType::intracel || gene_types[g] == GeneType::diffusible){
+            for(int c = 0; c < num_cells; c++){
+                expression2(c, g) = expression2(c, g)/cell_grid->cells[c].area;
+            }
+        }
+    }   
+    return expression2.toString();
 }
 std::string basicGRN::toString(bool print_current_expression=false){
         std::string s = name + " time: " + to_string(time) + ", number of genes (and variable properties): " + to_string(num_genes) + ".\n\n";

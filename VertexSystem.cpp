@@ -1353,18 +1353,21 @@ bool Tissue::getDivisionPoints(const int cell, double &x1, double &x2, double &y
 		//WARNING! This is a not very elegant fix of the problem of vertical lines (they have infinite slope), and can happen in other parts of the program
 		final_angle += 0.01;
 	}
-	//cout << "v1: " << mv1 << ", v2: " << mv2 << ", final_angle: " << 180*final_angle/M_PI << endl;
-	//cout << "angle hertwig: " << 180*angle_hertwig/M_PI << ", cell angle_longest: " << cells[cell].division_angle_longest << ", atan2: " << 180*atan2(vertices[mv1].y - vertices[mv2].y, vertices[mv1].x - vertices[mv2].x)/M_PI << ", random angle: " << random_angle << ", ext: " << externally_controlled_angle << ", 0.5*pi: " << 180*0.5*M_PI/M_PI << endl;
+	cout << "\ncell: " << cell << " of type " << static_cast<int>(cells[cell].type) << "; v1: " << mv1 << ", v2: " << mv2 << ", final_angle: " << 180*final_angle/M_PI << endl;
+	cout << "- angle hertwig: " << 180*angle_hertwig/M_PI << endl;
+        cout << "- cell angle_longest: " << cells[cell].division_angle_longest << ", atan2 longest: " << 180*atan2(vertices[mv1].y - vertices[mv2].y, vertices[mv1].x - vertices[mv2].x)/M_PI << endl;
+        cout << "- random angle final: " << random_angle << ", random angle proportion: " << cells[cell].division_angle_random_noise << endl;
+        cout << "- ext final: " << externally_controlled_angle << ", ext proportion: " << cells[cell].division_angle_external << ", ext degrees: " << cells[cell].division_angle_external_degrees << endl;
 
 
 	//Rotate angle 90ºC and calculate new positions (new edge will have a length of 1.5*T1_TRANSITION_CRITICAL_DISTANCE)
-	x1 = center_x + cos(final_angle)*max_dist*20; 
-	y1 = center_y + sin(final_angle)*max_dist*20; // calculate an orthogonal line (big in excess to be sure that it cuts the polygon in 2 pieces) and look which edges it cuts
-	x2 = center_x + cos(final_angle + M_PI)*max_dist*20;
-	y2 = center_y + sin(final_angle + M_PI)*max_dist*20;
+	x1 = center_x + cos(final_angle)*max_dist*1.1; 
+	y1 = center_y + sin(final_angle)*max_dist*1.1; // calculate an orthogonal line (big in excess to be sure that it cuts the polygon in 2 pieces) and look which edges it cuts
+	x2 = center_x + cos(final_angle + M_PI)*max_dist*1.1;
+	y2 = center_y + sin(final_angle + M_PI)*max_dist*1.1;
 
 
-	//cout << "new angle is actually (before): " << 180*atan2(y1 - y2, x1 - x2)/M_PI << endl;
+	cout << "new angle is actually (before): " << 180*atan2(y1 - y2, x1 - x2)/M_PI << endl;
 	//Find edges to cut
 	StraightLine l1, l2, l3, l4;
 	if(!findEdgesToCut(cell, x1, x2, y1, y2, e1, e2, l1, l2, l3, l4)){
@@ -1376,14 +1379,18 @@ bool Tissue::getDivisionPoints(const int cell, double &x1, double &x2, double &y
 	y1 = l1.intercept + l1.slope*x1;
 	y2 = l1.intercept + l1.slope*x2;
 
-	//cout << "new angle is actually (after): " << 180*atan2(y1 - y2, x1 - x2)/M_PI << endl;
+	cout << "new angle is actually (after): " << 180*atan2(y1 - y2, x1 - x2)/M_PI << endl;
 	return true;
 }
 
 bool Tissue::findEdgesToCut(const int cell, double x1, double x2, double y1, double y2, int &e1, int &e2, StraightLine &l1, StraightLine &l2, StraightLine &l3, StraightLine &l4){
 	l1 = getLineFromEdge(x1, x2, y1, y2);
+        cout << "Cutting edge: x1 = " << l1.x1 << ", y1 = " << l1.y1 << ", x2 = " << l1.x2 << ", y2 = " << l1.y2 << ", b0 = " << l1.intercept << ", b1 = " << l1.slope << endl;
 	for(int i = 0; i < cells[cell].num_vertices; i++){
 		l2 = getLineFromEdge(&this->edges[cells[cell].edges[i]]);
+                cout << "  l2: x1 = " << l2.x1 << ", y1 = " << l2.y1 << ", x2 = " << l2.x2 << ", y2 = " << l2.y2 << ", b0 = " << l2.intercept << ", b1 = " << l2.slope << endl;
+		cout << "    x intersect: " << (l2.intercept - l1.intercept)/(l1.slope - l2.slope) << endl;
+		cout << "    cross: " << lines_cross(l1, l2) << endl;
 		if(lines_cross(l1, l2)){
 			if(e1 < 0){
 				e1 = cells[cell].edges[i];
@@ -2369,6 +2376,7 @@ StraightLine Tissue::getLineFromEdge(const Edge* e){
 	sl.intercept = sl.y2 - sl.x2*sl.slope;
 	sl.v1 = v1->ind;
 	sl.v2 = v2->ind;
+	sl.vertical = std::isinf(sl.slope);
 	return sl;
 }
 
@@ -2382,6 +2390,7 @@ StraightLine Tissue::getLineFromEdge(const Vertex* v1, const Vertex* v2){
 	sl.intercept = sl.y2 - sl.x2*sl.slope;
 	sl.v1 = v1->ind;
 	sl.v2 = v2->ind;
+	sl.vertical = std::isinf(sl.slope);
 	return sl;
 }
 
@@ -2393,14 +2402,22 @@ StraightLine Tissue::getLineFromEdge(double x1, double x2, double y1, double y2)
 	sl.y2 = y2;
 	sl.slope = (sl.y1 - sl.y2)/(sl.x1 - sl.x2);
 	sl.intercept = sl.y2 - sl.x2*sl.slope;
+	sl.vertical = std::isinf(sl.slope);
 	return sl;
 }
 
 bool Tissue::lines_cross(StraightLine& a, StraightLine& b){
 	//if(a.v1 == b.v1 || a.v1 == b.v2 || a.v2 == b.v1 || a.v2 == b.v2) return false;
-	if(a.slope == b.slope) return false;
-	double x_intersect = (b.intercept - a.intercept)/(a.slope - b.slope);
-	return ((x_intersect < a.x1 && x_intersect > a.x2) || (x_intersect < a.x2 && x_intersect > a.x1) ) && ((x_intersect < b.x1 && x_intersect > b.x2) || (x_intersect < b.x2 && x_intersect > b.x1));
+	if(abs(a.slope - b.slope) < NUMERIC_THRESHOLD || (a.vertical && b.vertical)) return false;
+	double x_intersect;
+	if(a.vertical){
+		x_intersect = 0.5*(a.x1 + a.x2);
+	}else if(b.vertical){
+		x_intersect = 0.5*(b.x1 + b.x2);		
+	}else{
+		x_intersect = (b.intercept - a.intercept)/(a.slope - b.slope);
+	}
+	return ((x_intersect <= a.x1 && x_intersect >= a.x2) || (x_intersect <= a.x2 && x_intersect >= a.x1) ) && ((x_intersect <= b.x1 && x_intersect >= b.x2) || (x_intersect <= b.x2 && x_intersect >= b.x1));
 	
 }
 

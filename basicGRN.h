@@ -87,10 +87,11 @@ class basicGRN {
     void setNewParametersToCells();
     GXMatrix<double> getExpression();
     std::string exprToString();
+    std::string exprToStringConc(); //Diffusing molecules are divided by cell area
     std::string toString(bool print_current_expression);
     void addCells();  
     void produceOutputs(std::string add_to_name="moved");  
-    std::string expressionToString();
+
 
     struct { //This affects which gene index affects each cell/edge property. Should be updated in other implementations
       unsigned int cell_preferred_area = 0;

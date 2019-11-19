@@ -44,7 +44,7 @@ const unsigned short MAX_SIDES_PER_CELL = 20; //Maybe pass as argument instead o
 const unsigned short VERTEX_PER_EDGE = 2;
 const int EMPTY_CONNECTION = -999;  //Value to initialize arrays (cells in vertex, etc)
 const int RANDOM_SEED = 1234;
-const double NUMERIC_THRESHOLD = 1e-15;
+const double NUMERIC_THRESHOLD = 1e-16;
 
 const std::string VERTEX_FILE_EXTENSION = ".points";
 const std::string CELLS_FILE_EXTENSION = ".cells";
@@ -127,6 +127,7 @@ struct Rearrangement{
 };
 
 struct StraightLine{
+        bool vertical;
 	double intercept;
 	double slope;
 	double x1;
