@@ -47,6 +47,7 @@ basicGRN::basicGRN(std::string sname): basicGRN(){
     write_every_N_moves = stoi(*it, &sz);
 
     readGeneTypes(it);
+    readGenesThatTakeOnlyPositiveValues(it);
     readParams(it);
     readGRN(it);
 
@@ -85,7 +86,21 @@ void basicGRN::readGeneTypes( std::vector<std::string>::iterator& it){
 }//end readGeneTypes
 
 
+void basicGRN::readGenesThatTakeOnlyPositiveValues(std::vector<std::string>::iterator& it){
+    std::string s;
+    std::string::size_type sz;
+    while(it->at(0) != '>') it++;
+    it++;
+    s = *it;
+    while(s.length() != 0){
+        gene_takes_only_positive_values.push_back(static_cast<int>(stoi(s, &sz)) > 0);
+        s = s.substr(sz);
+    }
+}//end readGenesThatTakeOnlyPositiveValues
+
+
 void basicGRN::readParams( std::vector<std::string>::iterator& it){
+    params.km = readSingleParam(it);
     params.degr = readSingleParam(it);
     params.diff_rate = readSingleParam(it);
     params.initial_expr = readSingleParam(it);
@@ -274,10 +289,15 @@ void basicGRN::intracel_getIncrement(GXMatrix<double>& current_expr, int cell, i
         res += current_expr(cell, reg)*interactions[ct](gene, reg);
     }
     //res = 1/(1 + exp(-1*res)) - params.degr[ct][gene]*current_expr(cell, gene);
-    res = tanh(res);
-    rungekutta_parts[k](cell, gene) = res < 0 ? 0 - params.degr[ct][gene]*current_expr(cell, gene) : res - params.degr[ct][gene]*current_expr(cell, gene);
+    //res = tanh(res);
+    res = res/(res + params.km[ct][gene]);
+    //Negative transcription is not possible. The only negative term is degradation.
+    res = res < 0 ? 0 - params.degr[ct][gene]*current_expr(cell, gene) : res - params.degr[ct][gene]*current_expr(cell, gene);
+    //Only some parameters can be negative
+    rungekutta_parts[k](cell, gene) = res < 0 && gene_takes_only_positive_values[gene] ? 0 : res;
 }
 
+//Tested manually for various cells during runge-kutta k(0) and k(1) for 2 iterations 
 void basicGRN::diffusible_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k){
     intracel_getIncrement(current_expr, cell, gene, k);
     //cout << "        A2.6" << endl;
@@ -285,6 +305,7 @@ void basicGRN::diffusible_getIncrement(GXMatrix<double>& current_expr, int cell,
     //cout << "        A2.7" << endl;
     const Edge *edge;
     double diff = 0;
+    //double difaux;
     int nei;
     //cout << "        A2.8" << endl;
     for(int e = 0; e < c->num_vertices; e++){
@@ -293,15 +314,18 @@ void basicGRN::diffusible_getIncrement(GXMatrix<double>& current_expr, int cell,
         if(nei == EMPTY_CONNECTION){
             continue;
         }else{
-        //cout << "            A2.9 cell: " << cell << ", gene: " << gene << ", nei: " << nei <<endl;
-            diff += (current_expr(cell, gene)/c->area - current_expr(nei, gene)/cell_grid->cells[nei].area)*edge->length; //normalizing by area
-            //diff += (current_expr(cell, gene)- current_expr(nei, gene))*edge->length/c->perimeter;
+            //diff += (current_expr(cell, gene)/c->area - current_expr(nei, gene)/cell_grid->cells[nei].area)*edge->length; //normalizing by area
+            //difaux = (current_expr(cell, gene)- current_expr(nei, gene))*edge->length;
+            diff += (current_expr(cell, gene)- current_expr(nei, gene))*edge->length;
+            //cout << "            A2.9 cell: " << cell << ", gene: " << gene << ", nei: " << nei << ", Diff this: " << difaux << ", diff acum: " << diff<<endl;
+	    //cout << "            Edge: " << edge->ind << " Edge length: " << edge->length << "Current expr this :" << current_expr(cell, gene) << "Current expr nei :" << current_expr(nei, gene) << endl;
         }
         //cout << "            A2.10" << endl;
     }
-    //cout << "        A2.11" << endl;
-    rungekutta_parts[k](cell, gene) = rungekutta_parts[k](cell, gene) - params.diff_rate[c->type][gene]*diff/cell_grid->cells[cell].perimeter; //*power(diff, 2);
-    //cout << "        A2.12" << endl;
+    //cout << "        A2.11, rk " << k <<": " << rungekutta_parts[k](cell, gene) << endl;
+    rungekutta_parts[k](cell, gene) = rungekutta_parts[k](cell, gene) - params.diff_rate[c->type][gene]*diff / c->perimeter; //*power(diff, 2);
+    //cout << "        A2.12" << k <<": " << rungekutta_parts[k](cell, gene) << endl;
+    //cout << "**" << endl;
 } //diffussible
 
 void basicGRN::cell_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k){

@@ -1,4 +1,5 @@
 import sys
+import os
 import argparse
 
 import numpy as np
@@ -107,7 +108,7 @@ def addNoise(vertices, size, noise):
     return vertices
 
 
-def plotHex(centers, vertices, cells, springs, celltypes, outname = 'hexagonal_grid'):
+def plotHex(centers, vertices, cells, springs, celltypes, outname):
     f, ax = plt.subplots()
     ax.scatter([i[2] for i in centers], [i[3] for i in centers], c = [wingcols[k] for k in celltypes])
     for i in range(len(centers)):
@@ -122,33 +123,53 @@ def plotHex(centers, vertices, cells, springs, celltypes, outname = 'hexagonal_g
     for v in vertices:
         if(v[3] == 0):
            ax.scatter(v[0], v[1], c = "red")
-    plt.savefig( outname + '.png')
+
+
+    dirname = ''
+    if(not os.path.isdir(outname)):
+        try:
+            os.mkdir(outname)
+            dirname = outname + '/'
+        except OSError:
+            print ("Creation of the directory %s failed" % outname)
+    else:
+        dirname = outname + '/'
+    plt.savefig(dirname + outname + '.png')
     plt.show()
 
 
 
 def writeGrid(vertices, cells, centers, springs, celltypes, outname):
 
-    f = open(outname + vert_ext,  'w')
+    dirname = ''
+    if(not os.path.isdir(outname)):
+        try:
+            os.mkdir(outname)
+            dirname = outname + '/'
+        except OSError:
+            print ("Creation of the directory %s failed" % outname)
+    else:
+        dirname = outname + '/'
+    f = open(dirname + outname + vert_ext,  'w')
     f.write(str(len(vertices)))
     f.write('\n')
     for v in vertices:
         f.write('\t'.join([str(i) for i in v]))
         f.write('\n')
     f.close()
-    f = open(outname + cell_ext,  'w')
+    f = open(dirname + outname + cell_ext,  'w')
     f.write(str(len(cells)) + "\t" + str(6))
     f.write('\n')
     for i, c in enumerate(cells):
         f.write('\t'.join([str(i) for i in c]))
         f.write('\t-999\t' + str(celltypes[i]) + '\n')
     f.close()
-    f = open(outname + cent_ext,  'w')
+    f = open(dirname + outname + cent_ext,  'w')
     for c in centers:
         f.write('\t'.join([str(i) for i in v]))
         f.write('\n')
     f.close()
-    f = open(outname + spring_ext,  'w')
+    f = open(dirname + outname + spring_ext,  'w')
     f.write(str(len(springs)) + '\n')
     for c in springs:
         f.write('\t'.join([str(i) for i in c]))

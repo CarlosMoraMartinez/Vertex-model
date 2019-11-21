@@ -37,7 +37,7 @@ typedef std::map<CellType, list_of_regulators > map_of_regulators;
 
 
 struct Gene_params{ //This should be updated in other implementations
-      ctparams degr, diff_rate, initial_expr, constant_expr, angle_influence;
+      ctparams km, degr, diff_rate, initial_expr, constant_expr, angle_influence;
 };
 
 class basicGRN {
@@ -53,11 +53,13 @@ class basicGRN {
     ctinteractions interactions;
     std::vector<GXMatrix<double>> rungekutta_parts; //Store k1, k2, k3, k4
     std::vector<GeneType> gene_types;
+    std::vector<bool> gene_takes_only_positive_values;
     Gene_params params;
     map_of_regulators regulators;
     Tissue *cell_grid;
 
     void readGeneTypes(std::vector<std::string>::iterator& it);
+    void readGenesThatTakeOnlyPositiveValues(std::vector<std::string>::iterator& it);
     void readParams(std::vector<std::string>::iterator& it);
     ctparams readSingleParam(std::vector<std::string>::iterator& it);
     void readGRN(std::vector<std::string>::iterator& it);

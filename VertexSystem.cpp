@@ -691,17 +691,17 @@ void Tissue::calculateCellCentroid(Cell& c){
 	return;
 }
 
-double Tissue::calculateCellPerimeter(const Cell& c){
+inline double Tissue::calculateCellPerimeter(const Cell& c){
 	double perim = 0.0;
 	for(int i = 0; i < c.num_vertices; i++) perim += edges[c.edges[i]].length;
 	return perim;
 }
 
-double Tissue::distance(int v1, int v2){
+inline double Tissue::distance(int v1, int v2){
 	return sqrt(pow(this->vertices[v1].x - this->vertices[v2].x, 2) + pow(this->vertices[v1].y - this->vertices[v2].y, 2));
 }
 
-double Tissue::calculateEnergy(Vertex& v){
+inline double Tissue::calculateEnergy(Vertex& v){
 	double term1 = 0, term2 = 0, term3 = 0;
 	
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
@@ -1353,44 +1353,45 @@ bool Tissue::getDivisionPoints(const int cell, double &x1, double &x2, double &y
 		//WARNING! This is a not very elegant fix of the problem of vertical lines (they have infinite slope), and can happen in other parts of the program
 		final_angle += 0.01;
 	}
+	/*	
 	cout << "\ncell: " << cell << " of type " << static_cast<int>(cells[cell].type) << "; v1: " << mv1 << ", v2: " << mv2 << ", final_angle: " << 180*final_angle/M_PI << endl;
 	cout << "- angle hertwig: " << 180*angle_hertwig/M_PI << endl;
         cout << "- cell angle_longest: " << cells[cell].division_angle_longest << ", atan2 longest: " << 180*atan2(vertices[mv1].y - vertices[mv2].y, vertices[mv1].x - vertices[mv2].x)/M_PI << endl;
         cout << "- random angle final: " << random_angle << ", random angle proportion: " << cells[cell].division_angle_random_noise << endl;
         cout << "- ext final: " << externally_controlled_angle << ", ext proportion: " << cells[cell].division_angle_external << ", ext degrees: " << cells[cell].division_angle_external_degrees << endl;
+	*/
 
-
-	//Rotate angle 90ºC and calculate new positions (new edge will have a length of 1.5*T1_TRANSITION_CRITICAL_DISTANCE)
+	//Get point positions of new edge (new edge is first set to be longer than the longest distance between vertices, so that it intersects with at least two edges)
 	x1 = center_x + cos(final_angle)*max_dist*1.1; 
 	y1 = center_y + sin(final_angle)*max_dist*1.1; // calculate an orthogonal line (big in excess to be sure that it cuts the polygon in 2 pieces) and look which edges it cuts
 	x2 = center_x + cos(final_angle + M_PI)*max_dist*1.1;
 	y2 = center_y + sin(final_angle + M_PI)*max_dist*1.1;
 
 
-	cout << "new angle is actually (before): " << 180*atan2(y1 - y2, x1 - x2)/M_PI << endl;
+	//cout << "new angle is actually (before): " << 180*atan2(y1 - y2, x1 - x2)/M_PI << endl;
 	//Find edges to cut
 	StraightLine l1, l2, l3, l4;
 	if(!findEdgesToCut(cell, x1, x2, y1, y2, e1, e2, l1, l2, l3, l4)){
-		return false;
+		return false; //It will send a warning but the program will continue
 	}
 
-	x1 = (l3.intercept - l1.intercept)/(l1.slope - l3.slope); //Now calculate the points where they actually cross
+	x1 = (l3.intercept - l1.intercept)/(l1.slope - l3.slope); //Now calculate the points where new edge actually crosses parent cell edges
 	x2 = (l4.intercept - l1.intercept)/(l1.slope - l4.slope);
 	y1 = l1.intercept + l1.slope*x1;
 	y2 = l1.intercept + l1.slope*x2;
 
-	cout << "new angle is actually (after): " << 180*atan2(y1 - y2, x1 - x2)/M_PI << endl;
+	//cout << "new angle is actually (after): " << 180*atan2(y1 - y2, x1 - x2)/M_PI << endl;
 	return true;
 }
 
 bool Tissue::findEdgesToCut(const int cell, double x1, double x2, double y1, double y2, int &e1, int &e2, StraightLine &l1, StraightLine &l2, StraightLine &l3, StraightLine &l4){
 	l1 = getLineFromEdge(x1, x2, y1, y2);
-        cout << "Cutting edge: x1 = " << l1.x1 << ", y1 = " << l1.y1 << ", x2 = " << l1.x2 << ", y2 = " << l1.y2 << ", b0 = " << l1.intercept << ", b1 = " << l1.slope << endl;
+        //cout << "Cutting edge: x1 = " << l1.x1 << ", y1 = " << l1.y1 << ", x2 = " << l1.x2 << ", y2 = " << l1.y2 << ", b0 = " << l1.intercept << ", b1 = " << l1.slope << ", is inf: " << l1.vertical << endl;
 	for(int i = 0; i < cells[cell].num_vertices; i++){
 		l2 = getLineFromEdge(&this->edges[cells[cell].edges[i]]);
-                cout << "  l2: x1 = " << l2.x1 << ", y1 = " << l2.y1 << ", x2 = " << l2.x2 << ", y2 = " << l2.y2 << ", b0 = " << l2.intercept << ", b1 = " << l2.slope << endl;
-		cout << "    x intersect: " << (l2.intercept - l1.intercept)/(l1.slope - l2.slope) << endl;
-		cout << "    cross: " << lines_cross(l1, l2) << endl;
+                //cout << "  l2: x1 = " << l2.x1 << ", y1 = " << l2.y1 << ", x2 = " << l2.x2 << ", y2 = " << l2.y2 << ", b0 = " << l2.intercept << ", b1 = " << l2.slope << ", is inf: " << l2.vertical << endl;
+		//cout << "    x intersect: " << (l2.intercept - l1.intercept)/(l1.slope - l2.slope) << endl;
+		//cout << "    cross: " << lines_cross(l1, l2) << endl;
 		if(lines_cross(l1, l2)){
 			if(e1 < 0){
 				e1 = cells[cell].edges[i];
@@ -1404,7 +1405,7 @@ bool Tissue::findEdgesToCut(const int cell, double x1, double x2, double y1, dou
 	}//end for find edges that intersect with division edge
 	//cout << "D " << cell << "\n";
 	if(e1 < 0  || e2 < 0){
-		cout << "Error: new edge does not cut other cell edges. Cell: " << cell << " ****** "<<endl;
+		cout << ">> Error: new edge does not cut other cell edges. Cell: " << cell << " ****** "<<endl;
 		return false;
 	}
 	return true;
@@ -1615,7 +1616,7 @@ void Tissue::t1_add_vertices_to_cells(Vertex* v1, Vertex* v2, Cell* sp2, int rem
 			}else if(sp2->vertices[(i - 1 + sp2->num_vertices) % sp2->num_vertices] == v2->ind){
 				move_from = i;
 			}else{
-				cout << "Error in t1 transition: unable to insert vertex in cell: v1=" << v1->ind << " v2=" << v2->ind << " cell:" << sp2->ind << endl;
+				cout << ">> Error in t1 transition: unable to insert vertex in cell: v1=" << v1->ind << " v2=" << v2->ind << " cell:" << sp2->ind << endl;
 			}
 			break;
 		}
@@ -2217,14 +2218,20 @@ void Tissue::make_t2(Rearrangement& r){
 	this->counter_t2++;
 
 	if(CONTROL_CELLS_2SIDES){
+		int new_v, edge_to_split, cell_with_two_sides;
+		double x, y;
 		for(int i = 0; i < cells[cell].num_vertices; i++){
 			for(int j = 0; j < 2; j++){
 				if(edges[cells[cell].edges[i]].cells[j] != EMPTY_CONNECTION && edges[cells[cell].edges[i]].cells[j] != cell){
 					if(cells[edges[cells[cell].edges[i]].cells[j]].num_vertices < 3 ){
 						//make_remove_size2cell(edges[cells[cell].edges[i]].cells[j] ); 
-						int new_v = newVertex();
-						cout << "in T2: Adding extra vertex " << cells[edges[cells[cell].edges[i]].cells[j]] << endl;
-						splitEdgeWithVertex(cells[edges[cells[cell].edges[i]].cells[j]].edges[0], edges[cells[cell].edges[i]].cells[j], new_v);
+						cell_with_two_sides = edges[cells[cell].edges[i]].cells[j];
+						edge_to_split = cells[cell_with_two_sides].edges[0];
+						x = 0.5*(vertices[edges[edge_to_split].vertices[0]].x + vertices[edges[edge_to_split].vertices[1]].x);
+						y = 0.5*(vertices[edges[edge_to_split].vertices[0]].y + vertices[edges[edge_to_split].vertices[1]].y);
+						new_v = newVertex(x, y);
+						cout << "in T2: Adding extra vertex " << cells[cell_with_two_sides] << endl;
+						splitEdgeWithVertex(edge_to_split, cell_with_two_sides, new_v);
 					}
 				}
 			}
@@ -2364,7 +2371,7 @@ bool Tissue::check_if_edges_cross(int vertex){
 	return false; //Edges do not cross
 }
 
-StraightLine Tissue::getLineFromEdge(const Edge* e){
+inline StraightLine Tissue::getLineFromEdge(const Edge* e){
 	Vertex *v1 = &this->vertices[e->vertices[0]];
 	Vertex *v2 = &this->vertices[e->vertices[1]];
 	StraightLine sl;
@@ -2380,7 +2387,7 @@ StraightLine Tissue::getLineFromEdge(const Edge* e){
 	return sl;
 }
 
-StraightLine Tissue::getLineFromEdge(const Vertex* v1, const Vertex* v2){
+inline StraightLine Tissue::getLineFromEdge(const Vertex* v1, const Vertex* v2){
 	StraightLine sl;
 	sl.x1 = v1->x;
 	sl.x2 = v2->x;
@@ -2394,7 +2401,7 @@ StraightLine Tissue::getLineFromEdge(const Vertex* v1, const Vertex* v2){
 	return sl;
 }
 
-StraightLine Tissue::getLineFromEdge(double x1, double x2, double y1, double y2){
+inline StraightLine Tissue::getLineFromEdge(double x1, double x2, double y1, double y2){
 	StraightLine sl;
 	sl.x1 = x1;
 	sl.x2 = x2;
@@ -2406,16 +2413,21 @@ StraightLine Tissue::getLineFromEdge(double x1, double x2, double y1, double y2)
 	return sl;
 }
 
-bool Tissue::lines_cross(StraightLine& a, StraightLine& b){
+inline bool Tissue::lines_cross(StraightLine& a, StraightLine& b){
 	//if(a.v1 == b.v1 || a.v1 == b.v2 || a.v2 == b.v1 || a.v2 == b.v2) return false;
-	if(abs(a.slope - b.slope) < NUMERIC_THRESHOLD || (a.vertical && b.vertical)) return false;
 	double x_intersect;
-	if(a.vertical){
+	if (a.vertical && b.vertical){
+		return false;
+	}else if(a.vertical){
 		x_intersect = 0.5*(a.x1 + a.x2);
 	}else if(b.vertical){
 		x_intersect = 0.5*(b.x1 + b.x2);		
 	}else{
-		x_intersect = (b.intercept - a.intercept)/(a.slope - b.slope);
+		if(abs(a.slope - b.slope) < NUMERIC_THRESHOLD){
+			return false;
+		}else{
+			x_intersect = (b.intercept - a.intercept)/(a.slope - b.slope);
+		}
 	}
 	return ((x_intersect <= a.x1 && x_intersect >= a.x2) || (x_intersect <= a.x2 && x_intersect >= a.x1) ) && ((x_intersect <= b.x1 && x_intersect >= b.x2) || (x_intersect <= b.x2 && x_intersect >= b.x1));
 	
@@ -2598,14 +2610,14 @@ std::ostream& operator<<(std::ostream& out, const Tissue& t){
 
 //Helper functions of general use.
 //Returns true if integer n is present in array a, otherwise returns false.
-bool contains(int n, const int* a, int len){
+inline bool contains(int n, const int* a, int len){
 	for(int i = 0; i<len; i++){
 		if(n == a[i]) return true;
 	}
 	return false;
 }
 //Returns -1 if integer n is not in array a, otherwise returns index of n in a.
-int which(int n, const int* a, int len){
+inline int which(int n, const int* a, int len){
 	for(int i = 0; i<len; i++){
 		if(n == a[i]) return i;
 	}
@@ -2613,7 +2625,7 @@ int which(int n, const int* a, int len){
 }
 
 
-int count(int n, const int* a, int len){
+inline int count(int n, const int* a, int len){
 	int cont = 0;
 	for(int i = 0; i<len; i++){
 		if(n == a[i]) cont++;
@@ -2621,7 +2633,7 @@ int count(int n, const int* a, int len){
 	return cont;
 }
 //Returns index of FIRST element in array a that is not present in array b
-int element_not_in(const int* a, const int* b, int len1, int len2){
+inline int element_not_in(const int* a, const int* b, int len1, int len2){
 	bool a_in_b;
 	for(int i = 0; i<len1; i++){
 		a_in_b = false;
