@@ -268,14 +268,21 @@ void basicGRN::runge_kutta_4th(){
     GXMatrix<double> aux;
     activateAll(expression, 0);
     aux = expression + rungekutta_parts[0]*(0.5*h);
+    checkNegativeValues(aux);
+
     activateAll(aux, 1);
     aux = expression + rungekutta_parts[1]*(0.5*h);
+    checkNegativeValues(aux);
+
     activateAll(aux, 2);
     aux = expression + rungekutta_parts[2]*h;
+    checkNegativeValues(aux);
+
     activateAll(aux, 3);
     rungekutta_parts[4] = (rungekutta_parts[0] + rungekutta_parts[1]*2 + rungekutta_parts[2]*2 + rungekutta_parts[3])/6;
 
     expression += rungekutta_parts[4]*h;
+    checkNegativeValues(expression);
     // for(int c = 0; c < num_cells; c++) for(int g = 0; g < num_genes; g++) if(expression(c, g) < 0) expression(c, g) = 0; //CAREFUL! don't do this for parameters
     // And maybe change here edge values. Although if it is a waste of time to iterate over all edges when several GRN steps precede a single vertex step, 
     // it is the only way to take into account edges that are between two different cell types or at border. 
@@ -292,9 +299,21 @@ void basicGRN::intracel_getIncrement(GXMatrix<double>& current_expr, int cell, i
     //res = tanh(res);
     res = res/(res + params.km[ct][gene]);
     //Negative transcription is not possible. The only negative term is degradation.
-    res = res < 0 ? 0 - params.degr[ct][gene]*current_expr(cell, gene) : res - params.degr[ct][gene]*current_expr(cell, gene);
+    res -= params.degr[ct][gene]*current_expr(cell, gene);
     //Only some parameters can be negative
-    rungekutta_parts[k](cell, gene) = res < 0 && gene_takes_only_positive_values[gene] ? 0 : res;
+    rungekutta_parts[k](cell, gene) = res;
+}
+
+void basicGRN::checkNegativeValues(GXMatrix<double>& m){
+    for(int g = 0; g < num_genes; g++){
+        if(gene_takes_only_positive_values[g]){
+            for(int cell = 0; cell < num_cells; cell++){
+                if(m(cell, g) < 0){
+                    m(cell, g) = 0;
+                }
+            }
+        }
+    }
 }
 
 //Tested manually for various cells during runge-kutta k(0) and k(1) for 2 iterations 
@@ -417,8 +436,9 @@ void basicGRN::addCells(){
         return;
     }
     for(int i = 0; i < 5; i++) rungekutta_parts[i].add_row(cell_grid->past_divisions.size(), 0.0);
+    expression.add_row(cell_grid->past_divisions.size(), 0.0);
     DivisionRecord d;
-    vector<double> row;
+    vector<double> row(num_genes, 0.0);
     //double a;
     while(!cell_grid->past_divisions.empty()){
         d = cell_grid->past_divisions.front();
@@ -430,10 +450,10 @@ void basicGRN::addCells(){
                 expression(d.parent, g) = expression(d.parent, g)*cell_grid->cells[d.parent].area/a;
             }
 	}*/
-        expression.add_row(row);
+        expression.set_row(row, d.offspring);
         cell_grid->past_divisions.pop();
-        num_cells++;
     }
+    num_cells = expression.get_rows();
 }    
 
 GXMatrix<double> basicGRN::getExpression(){

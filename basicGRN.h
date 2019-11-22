@@ -86,6 +86,7 @@ class basicGRN {
     void simulate(double start, double end);
     void runge_kutta_4th();
     void activateAll(GXMatrix<double>& current_expr, int k);
+    void checkNegativeValues(GXMatrix<double>& m);
     void setNewParametersToCells();
     GXMatrix<double> getExpression();
     std::string exprToString();

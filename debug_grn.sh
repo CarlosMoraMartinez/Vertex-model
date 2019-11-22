@@ -1,8 +1,8 @@
 
 
 cp VertexSystem.cpp VertexSystem.h basicGRN.cpp basicGRN.h run_grn.cpp GXMatrix.h plotOps_loop.py $1
-cp $2.grn $1
-cp $3.vp $1
+cp param_files/$2.grn $1
+cp param_files/$3.vp $1
 cd $1
 
 

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 template <typename T> class GXMatrix {
  private:
@@ -19,6 +20,7 @@ template <typename T> class GXMatrix {
    // Increase size
   void add_row(std::vector<T> row);
   void add_row(unsigned n_rows, const T& val);
+  void set_row(std::vector<T> row, int pos);
 
   // Operator overloading, for "standard" mathematical matrix operations                                                                                                                                                          
   GXMatrix<T>& operator=(const GXMatrix<T>& rhs);
@@ -104,6 +106,14 @@ template <typename T>  void GXMatrix<T>::add_row(unsigned n_rows, const T& _init
 		this->mat.push_back(std::vector<T>(this->cols, _initial));
 		this->rows++;
 	}
+}
+
+template <typename T>  void GXMatrix<T>::set_row(std::vector<T> row, int pos){
+    if(pos < rows && row.size() == cols){
+        mat[pos] = row;
+    }else{
+        std::cout << "Error: tried to add row of wrong size to matrix" << std::endl;
+    }
 }
 
   // Operator overloading, for "standard" mathematical matrix operations

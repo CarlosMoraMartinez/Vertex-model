@@ -64,7 +64,7 @@ const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
 
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tcells\tedges\tneighbour_vertices\n";
-const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\tnum_vertices\tvertices\tedges\n";
+const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\tangle_longest\tangle_signal\tangle_random\tdegrees_signal\tnum_vertices\tvertices\tedges\n";
 const std::string EDGE_HEADER = "ind\ttype\tlength\ttension\tvertices\tcells\n";
 
 //Enum class to define types of cells 
