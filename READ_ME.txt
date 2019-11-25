@@ -19,9 +19,7 @@ descartes
 Additionally, the compile.sh script uses the ffmpeg utility.
 
 
-
-
-
+>
 - COMPILE AND RUN:
 
 Use:
