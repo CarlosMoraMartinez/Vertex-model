@@ -2546,10 +2546,10 @@ std::ostream& operator<<(std::ostream& out, const Vertex& v){
 
 //Overloading of << operator for CELLS. Useful to print
 std::ostream& operator<<(std::ostream& out, const Cell& c){
-	out << c.ind << "\t" << int(c.type) << "\t" << c.area << "\t" << c.preferred_area << "\t" << c.perimeter << "\t" << c.perimeter_contractility;
-       	out << c.division_angle_random_noise << "\t"; 
+	out << c.ind << "\t" << int(c.type) << "\t" << c.area << "\t" << c.preferred_area << "\t" << c.perimeter << "\t" << c.perimeter_contractility << "\t";
 	out << c.division_angle_longest << "\t"; 
 	out << c.division_angle_external << "\t";
+       	out << c.division_angle_random_noise << "\t"; 
 	out << c.division_angle_external_degrees << "\t";
 	out << c.num_vertices << "\t";
 	for(int i = 0; i < c.num_vertices; i++){  // print vertices of cell separated by ','

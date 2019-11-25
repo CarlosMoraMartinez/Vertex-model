@@ -461,7 +461,18 @@ GXMatrix<double> basicGRN::getExpression(){
 }
 
 std::string basicGRN::exprToString(){
-    return expression.toString();
+    //return expression.toString(); //Does not remove dead cells
+    std::string s = "";
+
+    for(int c = 0; c < num_cells; c++){
+        //s += "\n" + std::to_string(row) + ": ";
+        if(!cell_grid->cells[c].dead){
+            for(int g = 0; g < num_genes; g++) s += std::to_string(expression(c, g)) + "\t";
+        }
+        s += "\n";
+    }
+    return s;
+
 }
 
 void basicGRN::produceOutputs(std::string add_to_name){

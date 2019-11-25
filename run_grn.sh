@@ -19,6 +19,8 @@ g++ -o grn basicGRN.o run_grn.o VertexSystem.o #test_grn.o
 
 python plotOps_loop.py -i $1'_moved_' -i2 $2'_moved_'  -g '8'
 ffmpeg -framerate 10 -i $1'_moved_'%d.png -codec copy $1'_moved_'.avi
+ffmpeg -framerate 10 -i $1'_moved_'%d'g8'.png -codec copy $1'g8'.avi
+ffmpeg -i $1'_moved_'.avi -i $1'g8'.avi -filter_complex hstack=inputs=2  stacked.avi
 
 rm *.o
 rm grn

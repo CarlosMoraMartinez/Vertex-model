@@ -1,0 +1,124 @@
+
+#Files with this extension should contain:
+# - Type of each gene (including cell, edge and vertex properties, which for practical purposes count as genes)
+# - Parameters for each gene for each cell type (degradation rate, diffusion rate, initial expression and constant expression)
+# - Interactions between 
+
+#Syntax:
+# '#': comment
+# '>': start section
+# '<': end section (only for sections with several lines)
+# '<integer>:': Specific to cell type indicated (Cell types: blade = 0, hinge = 1, vein = 2, vein_hinge = 3)
+
+# Gene indices for mechanical properties (defined in  property_index structure, a member of basicGRN):
+# cell_preferred_area = 0;
+# unsigned int cell_perimeter_contractility = 1;
+# unsigned int edge_tension = 2;
+# division_angle_random_noise = 3; 
+# division_angle_longest = 4;
+# division_angle_external = 5;
+
+>integration constant h
+1.0
+
+>grn_time_per_step; //each iteration
+1 
+>int vertex_moves_per_step; //each iterat
+1000
+>int final_moves_accepted;
+100000000
+>int write_every_N_moves, 
+100000
+
+
+>Gene types
+#intracel = 0, diffusible = 1, cell_property = 2, edge_property = 3, vertex_property = 4};
+2	2	3	2	2	2	0	1	1
+
+>Genes that can take negative values
+#0: can be negative, 1: can't be negative
+1	1	0	1	1	1	1	1	1
+
+#PARAMETERS: ROW = CELL TYPE, COL = GENE
+#Cell types: blade = 0, hinge = 1, vein = 2, vein_hinge = 3
+>Km [expr(t+1) = expr(t) + reg/(reg + Km) - degr*expr(t) ]
+0:1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0
+1:1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0
+2:1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0
+3:1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0	1.0
+<
+>Degradation rate
+0:0.05	0.0	0.0	0.0	0.0	0.0	0.1	0.2	0.05
+1:0.05	0.0	0.0	0.0	0.0	0.0	0.1	0.2	0.05
+2:0.0	0.0	0.0	0.0	0.0	0.0	0.1	0.2	0.05
+3:0.0	0.0	0.0	0.0	0.0	0.0	0.1	0.2	0.05
+<
+>diffusion rate
+0:0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.1	0.1
+1:0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.1	0.1
+2:0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.1	0.1
+3:0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.1	0.1
+<
+>initial expression (vertex model parameters are not set with this)
+0:0.0	0.0	0.0	0.0	0.0	0.0	10	0	0
+1:0.0	0.0	0.0	0.0	0.0	0.0	5	0	0
+2:10.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	1
+3:10.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	1
+<
+>constant expression (negative means that expression is not constant, i.e., it can change at every step)
+0:-1.0	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0
+1:-1.0	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0
+2:10	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0	1.0
+3:10	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0	1.0
+<
+>Influence on division angle (0 = new edge oriented like maximum gradient; 90 = new edge oriented perpendicular to maximum gradient)
+0:0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	90.1
+1:0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0.1
+2:0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+3:0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+<
+
+
+>Cell-specific regulatory network (rows: regulated, columns: regulator)
+0:
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.05
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.5
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.05
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+1:
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	2.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.2
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+2:
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+3:
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+<
+
