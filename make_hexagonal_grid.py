@@ -298,6 +298,9 @@ def addStrecht(vertices, centers, strecht):
         centers[c] = (centers[c][0], centers[c][1], centers[c][2]*strecht, centers[c][3])
     return (vertices, centers)
 
+
+
+
 parser = argparse.ArgumentParser(description='Hexagonal grid arguments.')
 parser.add_argument('-o', '--Outname', metavar='outname', type=str, default = "hexgrid", 
                     help='Identifier. Used as prefix of all output files. ')
@@ -331,26 +334,25 @@ parser.add_argument('-k', '--Strecht', metavar='Strecht', type=float, default = 
 parser.add_argument('-j', '--Rotate', metavar='Rotate', type=float, default = 0,
                     help='Rotate the whole grid specified angles')
 
-def main():
 
-    args = parser.parse_args()
 
-    s = args.Size
-    nr = args.Rows
-    nc = args.Cols
-    ran = args.Noise
-    pull = args.Pull
-    strecht = args.Strecht
-    rotate = args.Rotate
 
-    static_vertices = args.StaticVertices
-    spring_vertices = args.Springs
-    spring_length = args.SpringLength
+def getHexGrid(**kwargs):
+    s = kwargs['Size']
+    nr = kwargs['Rows']
+    nc = kwargs['Cols']
+    ran = kwargs['Noise']
+    pull = kwargs['Pull']
+    strecht = kwargs['Strecht']
+    rotate = kwargs['Rotate']
 
-    hingelimit = args.Hinge
-    veinpos = args.Veins
-    outname = args.Outname + '_s'+str(s) + '_' + str(nr) + 'x' + str(nc) + '_n' + str(ran)
-    print('size: ', s, '; num. rows: ', nr, '; num. cols: ', nc, '; noise: ', ran, '; strecht: ', pull, '; output files: ', outname)
+    static_vertices = kwargs['StaticVertices']
+    spring_vertices = kwargs['Springs']
+    spring_length = kwargs['SpringLength']
+
+    hingelimit = kwargs['Hinge']
+    veinpos = kwargs['Veins']
+    outname = kwargs['Outname']
 
     centers, cells, vertices = getCells(s, nr, nc, pull)
 
@@ -369,6 +371,35 @@ def main():
 
     if(rotate > 0):
         vertices, centers = rotateVertices(vertices, centers, rotate)
+    return (centers, vertices, cells, springs, celltypes, outname)
+
+
+def getArgDict(args):
+    argdict = {}
+    argdict.setdefault('Size', args.Size)
+    argdict.setdefault('Rows', args.Rows)
+    argdict.setdefault('Cols', args.Cols)
+    argdict.setdefault('Noise', args.Noise)
+    argdict.setdefault('Pull', args.Pull)
+    argdict.setdefault('Strecht', args.Strecht)
+    argdict.setdefault('Rotate', args.Rotate)
+
+    argdict.setdefault('StaticVertices', args.StaticVertices)
+    argdict.setdefault('Springs', args.Springs)
+    argdict.setdefault('SpringLength', args.SpringLength)
+
+    argdict.setdefault('Hinge', args.Hinge)
+    argdict.setdefault('Veins', args.Veins)
+    argdict.setdefault('Outname', args.Outname + '_s'+str(args.Size) + '_' + str(args.Rows) + 'x' + str(args.Cols) + '_n' + str(args.Noise))
+
+    print('size: ', args.Size, '; num. rows: ', args.Rows, '; num. cols: ', args.Cols, '; noise: ', args.Noise, '; strecht: ', args.Pull, '; output files: ', argdict['Outname'])
+
+    return argdict
+
+def main():
+    args = parser.parse_args()
+    argdict = getArgDict(args)
+    centers, vertices, cells, springs, celltypes, outname = getHexGrid(**argdict)
     writeGrid(vertices, cells, centers, springs, celltypes, outname)
     plotHex(centers, vertices, cells, springs, celltypes, outname)
 
