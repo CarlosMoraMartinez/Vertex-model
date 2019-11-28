@@ -413,6 +413,7 @@ class HexGrid:
            self. vertices[v][0] = self.vertices[v][0]*strecht
         for c in range(len(self.centers)):
             self.centers[c] = (self.centers[c][0], self.centers[c][1], self.centers[c][2]*strecht, self.centers[c][3])
+
     def removeCell(self, c):
         cell_to_remove = self.cells[c]
         self.cells.pop(c)
@@ -428,14 +429,17 @@ class HexGrid:
             if(cont == 0):
                 pass
                 v_to_remove.append(v)
-        v_to_remove.sort(reverse=True)
+        v_to_remove.sort(reverse=False)
         while(v_to_remove):
             v = v_to_remove.pop()
             spring_vertices = self.removeSpringsWithVert(v)
-            self.remove_spring_vertices(spring_vertices)
-            v_to_remove = self.removeVertex(v)
+            #self.remove_spring_vertices(spring_vertices)
+            spring_vertices = self.removeVertex(v, spring_vertices)
+            if(spring_vertices):
+                v_to_remove.extend(spring_vertices)
+                v_to_remove.sort(reverse=False)
 
-    def removeVertex(self, v):
+    def removeVertex(self, v, list_to_update):
         for vert in range(v, len(self.vertices) - 1):
             newvert = self.vertices[vert  + 1][2]
             self.vertices[vert + 1][2] = vert
@@ -450,17 +454,13 @@ class HexGrid:
                     if(vspring == newvert):
                         self.springs[sind] = (vert, spring[1]) if vispring == 0 else (spring[0], vert)
                         break
+            for vvind, vv in enumerate(list_to_update):
+                if(vv == newvert):
+                    list_to_update[vvind] = vert
         self.vertices.pop()  
         self.vnum -= 1
+        return list_to_update
 
-    def remove_spring_vertices(self, spring_vertices):
-        spring_vertices.sort(reverse=True)
-        for v in spring_vertices:
-            for vert in range(v, len(self.vertices) - 1):
-                self.vertices[vert + 1][2] = self.vertices[vert][2]
-                self.vertices[vert] = self.vertices[vert + 1]
-            self.vertices.pop()
-            self.vnum -= 1
                
     def removeSpringsWithVert(self, v):
         springs_to_remove = []
@@ -468,11 +468,15 @@ class HexGrid:
             if(v in s):
                 springs_to_remove.append(ind)
         other_vertices_to_remove = []
-        springs_to_remove.sort(reverse = True)
+        springs_to_remove.sort(reverse = False)
         for ind in springs_to_remove:
-            other_vertices_to_remove.append( self.springs[ind][1] if(self.springs[ind][0] == v) else self.springs[ind][0] )
+            if(self.springs[ind][0] == v):
+                other_vertices_to_remove.append( self.springs[ind][1])
+            else:
+                 other_vertices_to_remove.append(self.springs[ind][0])
             self.removeSpring(ind)
         return other_vertices_to_remove
+
     def removeSpring(self, ind):      
         self.springs.pop(ind)        
 
