@@ -224,24 +224,47 @@ class HexGrid:
             self.vertices[i][0] = self.vertices[i][0] + np.random.uniform(-1*size*noise, size*noise)
             self.vertices[i][1] = self.vertices[i][1] + np.random.uniform(-1*size*noise, size*noise)
 
+    def plotHex2(self, save=False):
+        from matplotlib.collections import PolyCollection
+        fig, ax = plt.subplots()
+        col = np.zeros((len(self.cells), 6, 2))
+        for c, cell in enumerate(self.cells):
+            for v, vert in enumerate(cell):
+                col[c, v, :] = (self.vertices[vert][0], self.vertices[vert][1])
+        print(col.shape)
+        pc = PolyCollection(col, facecolors= [wingcols[self.celltypes[j]] for j in range(len(self.cells))], alpha = 0.4 )
+        ax.add_collection(pc)
+        ax.autoscale_view()
+        for c in self.springs:
+            plt.plot( [self.vertices[c[0]][0], self.vertices[c[1]][0]] ,  [self.vertices[c[0]][1], self.vertices[c[1]][1]], c = "red" )
+        return(fig, ax)
+
     def plotHex(self, save=True, plot=None):
         if(plot is None):
             f, ax = plt.subplots()
         else:
             f, ax = plot
-        ax.scatter([i[2] for i in self.centers], [i[3] for i in self.centers], c = [wingcols[k] for k in self.celltypes])
+        #ax.scatter([i[2] for i in self.centers], [i[3] for i in self.centers], c = [wingcols[k] for k in self.celltypes])
 
         if(len(self.centers) < 50):
             for i in range(len(self.centers)):
                 ax.annotate(i, [self.centers[i][2], self.centers[i][3]])
+
         for j, c in enumerate(self.cells):
-            for i in range(6):
-                plt.plot([self.vertices[c[i]][0], self.vertices[c[(i+1)%6]][0]] ,  [self.vertices[c[i]][1], self.vertices[c[(i+1)%6]][1]], c = wingcols[self.celltypes[j]])
+            for i in range(len(c)):
+                plt.plot([self.vertices[c[i]][0], self.vertices[c[(i+1)%len(c)]][0]] ,  [self.vertices[c[i]][1], self.vertices[c[(i+1)%len(c)]][1]], c = wingcols[self.celltypes[j]])
+
         for c in self.springs:
-            plt.plot([self.vertices[c[0]][0], self.vertices[c[1]][0]] ,  [self.vertices[c[0]][1], self.vertices[c[1]][1]], c = "red")
-        for v in self.vertices:
-            if(v[3] == 0):
-               ax.scatter(v[0], v[1], c = "red")
+            plt.plot( [self.vertices[c[0]][0], self.vertices[c[1]][0]] ,  [self.vertices[c[0]][1], self.vertices[c[1]][1]], c = "red" )
+
+        #vplotx = []
+        #vploty = []
+        #for v in self.vertices:
+        #    if(v[3] == 0):
+        #        vplotx.append(v[0])
+        #        vploty.append(v[1])
+        #ax.scatter(vplotx, vploty, c = "red")
+
         if(save):
             self.saveFig()
         return (f, ax)
@@ -427,7 +450,6 @@ class HexGrid:
                     cont+=1
                     break
             if(cont == 0):
-                pass
                 v_to_remove.append(v)
         v_to_remove.sort(reverse=False)
         while(v_to_remove):
@@ -478,7 +500,22 @@ class HexGrid:
         return other_vertices_to_remove
 
     def removeSpring(self, ind):      
-        self.springs.pop(ind)        
+        self.springs.pop(ind)  
+
+    def getShapelyPolygons(self):
+        from shapely.geometry import Polygon
+        pols = []
+        for c in self.cells:
+            pols.append(Polygon( [(self.vertices[p][0], self.vertices[p][1]) for p in c] ))   
+        return pols 
+
+    def getMax(self):
+        x = []
+        y = []
+        for v in self.vertices:
+            x.append(v[0])
+            y.append(v[1])
+        return (max(x), max(y))
 
 def getArgDict(args):
         argdict = {}
@@ -501,6 +538,7 @@ def getArgDict(args):
         print('size: ', args.Size, '; num. rows: ', args.Rows, '; num. cols: ', args.Cols, '; noise: ', args.Noise, '; strecht: ', args.Pull, '; output files: ', argdict['Outname'])
 
         return argdict
+
 
 parser = argparse.ArgumentParser(description='Hexagonal grid arguments.')
 parser.add_argument('-o', '--Outname', metavar='outname', type=str, default = "hexgrid", 
@@ -536,30 +574,9 @@ def main():
         hx = HexGrid(**argdict)
         hx.writeGrid()
         hx.plotHex()
-        hx.removeCell(0)
-        hx.writeGrid()
-        hx.plotHex()
-        hx.removeCell(1)
-        hx.writeGrid()
-        hx.plotHex()
-        hx.removeCell(2)
-        hx.writeGrid()
-        hx.plotHex()
-        hx.removeCell(20)
-        hx.writeGrid()
-        hx.plotHex()
-        hx.removeCell(0)
-        hx.writeGrid()
-        hx.plotHex()
-        hx.removeCell(0)
-        hx.writeGrid()
-        hx.plotHex()
-        hx.removeCell(len(hx.cells)-1)
-        hx.writeGrid()
-        hx.plotHex()
-        hx.removeCell(len(hx.cells)-1)
-        hx.writeGrid()
-        hx.plotHex()
+        p = hx.getShapelyPolygons() 
+        print(str(p[0].is_ring))
+        print(p)
 
 if __name__ == '__main__':
         main()
