@@ -1,8 +1,11 @@
-import matplotlib.pyplot as plt 
 import numpy as np
 import scipy.spatial as spatial
-from scipy.spatial import Voronoi, voronoi_plot_2d
+import matplotlib.pyplot as plt 
+from operator import itemgetter
 
+from matplotlib.widgets import Lasso
+from matplotlib.widgets import LassoSelector
+from scipy.spatial import Voronoi, voronoi_plot_2d
 import shapely
 from shapely.geometry import Polygon
 
@@ -25,8 +28,8 @@ def makeWingHex():
     argdict.setdefault('Outname', 'hex')
     # Make hexagonal grid
     hx = mhg.HexGrid(**argdict)
-    fig, ax = hx.plotHex2(False)
-    #fig, ax = plt.subplots()
+    #fig, ax = hx.plotHex2(False)
+    fig, ax = plt.subplots()
     im = plt.imread("wing.png")
     maxx, maxy = hx.getMax()
     ax.imshow(im, extent = [0, maxx, 0, maxy])
@@ -34,11 +37,207 @@ def makeWingHex():
     num_points, points, lines, fig, ax = getPointsBorder(fig, ax)
     plt.close()
     hx = copyModifiedStructure(points, lines, hx)
-    f, ax = hx.plotHex2()
+    f, ax, pc = hx.plotHex2()
     ax.imshow(im, extent = [0, maxx, 0, maxy])
     plotBorder(points, lines, (f, ax))
-    plt.show()
-    ax.imshow(im, extent = [0, 100, 0, 100])
+    getCellTypes(hx, pc, f, ax)
+    #plt.show()
+    f, ax, pc = hx.plotHex2()
+    ax.imshow(im, extent = [0, maxx, 0, maxy])
+    getBorders(hx, pc, f, ax)
+
+
+class getBorders:
+    def __init__(self, hx, pc, fig, ax):
+        self.finished = False
+        self.drawing = None
+        self.staticPoints = []
+        self.springPoints = []
+        self.newSpringPoints = []
+        self.springs = []
+        self.hx = hx
+        self.collection = pc
+        self.fig = fig
+        self.canvas = fig.canvas
+        self.ax = ax
+        self.cid1 = self.canvas.mpl_connect('key_press_event', self.on_key)
+        self.cid2 = self.canvas.mpl_connect('button_press_event', self.onpress)
+        print("T to set static vertices; G to set springs; R to remove static vertices or springs")
+        plt.show()
+    def on_key(self, event):
+
+        print('you pressed: ', event.key, event.xdata, event.ydata)
+        if(event.key in "tT" and not self.finished and not self.canvas.widgetlock.locked()):
+            self.drawing = "static"
+            print("Drawing Static vertices")
+        elif(event.key in "Gg" and not self.finished and not self.canvas.widgetlock.locked()):
+            self.drawing = "springs"
+            print("Drawing Springs")
+        elif(event.key in "Rr" and not self.finished and not self.canvas.widgetlock.locked()):
+            self.drawing = "remove"
+            print("Removing Static and Springs")
+        elif(event.key in "Mm" and not self.finished and not self.canvas.widgetlock.locked()):
+            self.finished = True
+            self.drawing = None
+        elif(self.finished):
+            self.fig.canvas.mpl_disconnect(self.cid1)
+            self.fig.canvas.mpl_disconnect(self.cid2)
+            plt.close()
+            return
+    def onpress(self, event):
+        print("Starting Lasso")
+
+        if self.canvas.widgetlock.locked():
+            return
+        if event.inaxes is None:
+            return
+        if self.drawing is None:
+            return
+        # acquire a lock on the widget drawing
+        self.lasso = LassoSelector(self.ax, onselect=self.callback)
+        self.canvas.widgetlock(self.lasso)
+        print("Finishing Lasso")
+
+    def callback(self, verts):
+        if(self.drawing == "static"):
+            self.setStatic(verts)
+        elif(self.drawing == "springs"):
+            self.setSprings(verts)
+        elif(self.drawing == "remove"):
+            self.removeStatic(verts)
+        #fig, ax, pc = self.hx.plotHex2(fig=(self.fig, self.ax))
+        self.canvas.draw_idle()
+        self.canvas.widgetlock.release(self.lasso)
+        del self.lasso
+        print("T to set static vertices; G to set springs; R to remove static vertices or springs")
+
+    def setStatic(self, verts):
+        for v in verts:
+            vstat = self.getClosestVert(v)
+            if(vstat not in self.staticPoints):
+                self.staticPoints.append(vstat)
+        for sp in self.staticPoints:
+            self.hx.vertices[sp][3] = 0
+        self.ax.scatter([self.hx.vertices[sp][0] for sp in self.staticPoints], [self.hx.vertices[sp][1] for sp in self.staticPoints], c="red")
+
+    def setSprings(self, verts):
+        vprevious = -1
+        spring_positions = []
+        for v in verts:
+            vstat = self.getClosestVert(v)
+            if(vstat != vprevious and vstat not in self.springPoints):
+                if(vprevious != -1):
+                    x, y = zip(*spring_positions)
+                    x = np.mean(x)
+                    y = np.mean(y)
+                    self.springs.append((vprevious, x, y)) #Vertex in grid, and coordinates of new vertex
+                spring_positions = [v] 
+                vprevious = vstat
+                self.springPoints.append(vstat)
+            elif(vstat in self.springPoints):
+                spring_positions.append(v)
+        for s in self.springs:
+            snum = self.hx.addSpring(*s)
+            self.newSpringPoints.append(snum)
+
+        for s in self.hx.springs:
+            self.ax.plot([self.hx.vertices[s[0]][0], self.hx.vertices[s[1]][0]], [self.hx.vertices[s[0]][1], self.hx.vertices[s[1]][1]], c="red")
+    def removeStatic(self, verts):
+        pass
+    def getClosestVert(self, v):   
+        dists=[(np.sqrt(np.power(v[0] - v2[0], 2) + np.power(v[1] - v2[1], 2)), v2[3]) for v2 in self.hx.vertices if v2 not in self.newSpringPoints]
+        return min(dists,key=itemgetter(0))[1]  
+
+class getCellTypes:
+
+    def __init__(self, hx, pc, fig, ax):
+        self.finished = False
+        self.celltype = None
+        self.hx = hx
+        self.collection = pc
+        self.fig = fig
+        self.canvas = fig.canvas
+        self.ax = ax
+        self.cid1 = self.canvas.mpl_connect('key_press_event', self.on_key)
+        self.cid2 = self.canvas.mpl_connect('button_press_event', self.onpress)
+        print("H to set Hinge; B to set Blade; V to set Veins (recommended last)")
+        plt.show()
+
+    def on_key(self, event):
+
+        print('you pressed: ', event.key, event.xdata, event.ydata)
+        if(event.key in "Hh" and not self.finished and not self.canvas.widgetlock.locked()):
+            self.celltype = mhg.hingetype
+            print("Drawing Hinge")
+        elif(event.key in "Vv" and not self.finished and not self.canvas.widgetlock.locked()):
+            self.celltype = mhg.veintype
+            print("Drawing Vein")
+        elif(event.key in "Bb" and not self.finished and not self.canvas.widgetlock.locked()):
+            self.celltype = mhg.bladetype
+            print("Drawing Blade")
+        elif(event.key in "Mm" and not self.finished and not self.canvas.widgetlock.locked()):
+            self.finished = True
+            self.celltype = None
+        elif(self.finished):
+            self.fig.canvas.mpl_disconnect(self.cid1)
+            self.fig.canvas.mpl_disconnect(self.cid2)
+            plt.close()
+            return
+    def onpress(self, event):
+        print("Starting Lasso")
+
+        if self.canvas.widgetlock.locked():
+            return
+        if event.inaxes is None:
+            return
+        if self.celltype is None:
+            return
+        # acquire a lock on the widget drawing
+        self.lasso = Lasso(event.inaxes,
+                           (event.xdata, event.ydata),
+                           self.callback)
+        self.canvas.widgetlock(self.lasso)
+        print("Finishing Lasso")
+    def callback(self, verts):
+        newtypes = []
+        try:
+            lim = Polygon(verts)
+            hxpol = self.hx.getShapelyPolygons()
+            for i, cell in enumerate(hxpol):
+                if(lim.contains(cell)):
+                    newtypes.append((i, self.changeType(self.hx.celltypes[i])))
+                    #self.hx.celltypes[i] = self.changeType(self.hx.celltypes[i])
+                elif(lim.overlaps(cell)):
+                    if(lim.intersection(cell).area/cell.area >= 0.5):
+                        newtypes.append((i, self.changeType(self.hx.celltypes[i])))
+                        #self.hx.celltypes[i] = self.changeType(self.hx.celltypes[i])
+        except:
+            print("Error: Error drawing shape")
+            self.canvas.widgetlock.release(self.lasso)
+            del self.lasso
+            return
+        for i, t in newtypes:
+            self.hx.celltypes[i] = t
+        self.canvas.widgetlock.release(self.lasso)
+        del self.lasso
+        #fig, ax, pc = self.hx.plotHex2(fig=(self.fig, self.ax))
+        self.collection.set_facecolors(self.hx.getColors())
+        self.canvas.draw_idle()
+        print("H to set Hinge; B to set Blade; V to set Veins (recommended last)")
+
+    def changeType(self, t):   
+        newt = self.celltype  
+        if(newt == mhg.veintype):
+            if(t == mhg.hingetype):
+                newt = mhg.veinhinge
+        return newt
+
+
+
+###
+
+###
+
 
 
 def makeWingVoronoi():
@@ -247,6 +446,9 @@ def getPointsBorder(fig, ax):
     cid2 = fig.canvas.mpl_connect('button_press_event', onclick)
     plt.show()
     return (num_points, points, lines, fig, ax)
+
+
+
 
 #makeWingVoronoi()
 makeWingHex()

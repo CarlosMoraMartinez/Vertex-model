@@ -224,9 +224,12 @@ class HexGrid:
             self.vertices[i][0] = self.vertices[i][0] + np.random.uniform(-1*size*noise, size*noise)
             self.vertices[i][1] = self.vertices[i][1] + np.random.uniform(-1*size*noise, size*noise)
 
-    def plotHex2(self, save=False):
+    def plotHex2(self, fig=None, save=False):
         from matplotlib.collections import PolyCollection
-        fig, ax = plt.subplots()
+        if(fig is None):
+            fig, ax = plt.subplots()
+        else:
+            fig, ax = fig
         col = np.zeros((len(self.cells), 6, 2))
         for c, cell in enumerate(self.cells):
             for v, vert in enumerate(cell):
@@ -237,8 +240,21 @@ class HexGrid:
         ax.autoscale_view()
         for c in self.springs:
             plt.plot( [self.vertices[c[0]][0], self.vertices[c[1]][0]] ,  [self.vertices[c[0]][1], self.vertices[c[1]][1]], c = "red" )
-        return(fig, ax)
+        return(fig, ax, pc)
 
+    def getPolCollection(self):
+        from matplotlib.collections import PolyCollection
+        fig, ax = plt.subplots()
+        col = np.zeros((len(self.cells), 6, 2))
+        for c, cell in enumerate(self.cells):
+            for v, vert in enumerate(cell):
+                col[c, v, :] = (self.vertices[vert][0], self.vertices[vert][1])
+        print(col.shape)
+        pc = PolyCollection(col, facecolors= [wingcols[self.celltypes[j]] for j in range(len(self.cells))], alpha = 0 )
+        return pc
+
+    def getColors(self):
+        return [wingcols[self.celltypes[j]] for j in range(len(self.cells))]
     def plotHex(self, save=True, plot=None):
         if(plot is None):
             f, ax = plt.subplots()
@@ -410,7 +426,11 @@ class HexGrid:
                         ind = len(self.vertices)  
                         self.vertices.append([x, y, ind, 0])
                         self.springs.append((v_to_fix, ind))
-
+    def addSpring(self, v, x, y):
+        ind = len(self.vertices)
+        self.vertices.append([x, y, ind, 0])
+        self.springs.append((v, ind)) 
+        return ind       
     def addCellType(self):
         nr, nc = (self.nr, self.nc)
         if(self.veinpos != ''):
@@ -516,6 +536,7 @@ class HexGrid:
             x.append(v[0])
             y.append(v[1])
         return (max(x), max(y))
+
 
 def getArgDict(args):
         argdict = {}
