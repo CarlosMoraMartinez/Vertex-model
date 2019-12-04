@@ -1,41 +1,33 @@
-import numpy as np
-import scipy.spatial as spatial
-import matplotlib.pyplot as plt 
 from operator import itemgetter
 
-from matplotlib.widgets import Lasso
-from matplotlib.widgets import LassoSelector
+import numpy as np
+import scipy.spatial as spatial
 from scipy.spatial import Voronoi, voronoi_plot_2d
+import matplotlib.pyplot as plt 
+from matplotlib.widgets import Slider, Button, Lasso, LassoSelector
 import shapely
 from shapely.geometry import Polygon
 
 import make_hexagonal_grid as mhg
 
 def makeWingHex():
-    argdict = {}
-    argdict.setdefault('Size', 3)
-    argdict.setdefault('Rows', 100)
-    argdict.setdefault('Cols', 200)
-    argdict.setdefault('Noise', 0.3)
-    argdict.setdefault('Pull', 0)
-    argdict.setdefault('Strecht', 1.1)
-    argdict.setdefault('Rotate', 0)
-    argdict.setdefault('StaticVertices', '')
-    argdict.setdefault('Springs', '')
-    argdict.setdefault('SpringLength', 0)
-    argdict.setdefault('Hinge', -1)
-    argdict.setdefault('Veins', '')
-    argdict.setdefault('Outname', 'hex')
+    shz = setHexagonSize("wing.png")
     # Make hexagonal grid
-    hx = mhg.HexGrid(**argdict)
+    #hx = mhg.HexGrid(**argdict)
+    hx = shz.hx
+    im = shz.im
     #fig, ax = hx.plotHex2(False)
     fig, ax = plt.subplots()
-    im = plt.imread("wing.png")
+    #im = plt.imread("wing.png")
     maxx, maxy = hx.getMax()
     ax.imshow(im, extent = [0, maxx, 0, maxy])
+
+    #hx = setHexagonSize(hx, f, ax)
+
     # Draw border by hand 
     num_points, points, lines, fig, ax = getPointsBorder(fig, ax)
     plt.close()
+
     hx = copyModifiedStructure(points, lines, hx)
     f, ax, pc = hx.plotHex2()
     ax.imshow(im, extent = [0, maxx, 0, maxy])
@@ -47,6 +39,98 @@ def makeWingHex():
     getBorders(hx, pc, f, ax)
 
 
+
+class setHexagonSize:
+
+    def __init__(self, imfile):
+
+        self.im = plt.imread(imfile)
+        self.imratio = self.im.shape[0]/self.im.shape[1]
+
+        self.argdict = {}
+        self.argdict.setdefault('Size', 3)
+        self.argdict.setdefault('Rows', int(1.1*200*self.imratio))
+        self.argdict.setdefault('Cols', 200)
+        self.argdict.setdefault('Noise', 0.3)
+        self.argdict.setdefault('Pull', 0)
+        self.argdict.setdefault('Strecht', 1.1)
+        self.argdict.setdefault('Rotate', 0)
+        self.argdict.setdefault('StaticVertices', '')
+        self.argdict.setdefault('Springs', '')
+        self.argdict.setdefault('SpringLength', 0)
+        self.argdict.setdefault('Hinge', -1)
+        self.argdict.setdefault('Veins', '')
+        self.argdict.setdefault('Outname', 'hex')
+        self.defaultArgs = self.argdict.copy()
+
+        # Make hexagonal grid
+
+        self.fig, self.ax = plt.subplots()
+        plt.subplots_adjust(left=0.25, bottom=0.25)
+        self.canvas = self.fig.canvas
+        self.cid1 = self.canvas.mpl_connect('key_press_event', self.on_key)
+
+        self.makeAndAddToPlot()
+
+        self.axcolor = 'lightgoldenrodyellow'
+        self.axrows = plt.axes([0.25, 0.05, 0.65, 0.03], facecolor=self.axcolor)
+        self.axnoise = plt.axes([0.25, 0.10, 0.65, 0.03], facecolor=self.axcolor)
+        self.axstrecht = plt.axes([0.25, 0.15, 0.65, 0.03], facecolor=self.axcolor)
+        self.axrotate = plt.axes([0.25, 0.2, 0.65, 0.03], facecolor=self.axcolor)
+
+
+        self.scols = Slider(self.axrows, 'Num. Cols', 5, 1000, valinit=self.argdict["Rows"], valstep=1)
+        self.snoise = Slider(self.axnoise, 'Noise', 0, 0.5, valinit=self.argdict["Noise"], valstep=0.025)
+        self.sstrecht = Slider(self.axstrecht, 'Strecht', 0.2, 5, valinit=self.argdict["Strecht"],valstep=0.05)
+        self.srotate = Slider(self.axrotate, 'Rotate', -30, 30, valinit=self.argdict["Strecht"],valstep=1)
+
+        self.scols.on_changed(self.update) 
+        self.snoise.on_changed(self.update)
+        self.sstrecht.on_changed(self.update) 
+        self.srotate.on_changed(self.update)
+
+        self.resetax = plt.axes([0.01, 0.025, 0.1, 0.04])
+        self.button = Button(self.resetax, 'Reset', color=self.axcolor, hovercolor='0.975')
+        self.button.on_clicked(self.reset)
+
+
+        plt.show()
+
+    def update(self, val):
+        self.ax.clear()
+        self.argdict['Rows'] = (self.scols.val*self.imratio*self.sstrecht.val).astype(int) 
+        self.argdict['Cols']  =  self.scols.val.astype(int)
+        self.argdict['Noise'] = self.snoise.val
+        self.argdict['Strecht'] = self.sstrecht.val
+        self.argdict['Rotate'] =  self.srotate.val
+        self.makeAndAddToPlot() 
+
+
+    def reset(self, event):
+        self.argdict = self.defaultArgs.copy()
+        self.scols.reset() 
+        self.snoise.reset() 
+        self.sstrecht.reset() 
+        self.srotate.reset() 
+
+    def makeAndAddToPlot(self):
+        self.hx = mhg.HexGrid(**self.argdict)
+        self.maxx, self.maxy = self.hx.getMax()
+        self.ax.imshow(self.im, extent = [0, self.maxx, 0, self.maxy])
+        self.hx.plotHex2((self.fig, self.ax), False, 0.3)
+        self.canvas.draw_idle()
+      
+    def on_key(self, event):
+        print('you pressed: ', event.key, event.xdata, event.ydata)
+        if(event.key in "Mm"):
+            self.fig.canvas.mpl_disconnect(self.cid1)
+            plt.close()
+            return
+
+
+
+
+
 class getBorders:
     def __init__(self, hx, pc, fig, ax):
         self.finished = False
@@ -54,7 +138,8 @@ class getBorders:
         self.staticPoints = []
         self.springPoints = []
         self.newSpringPoints = []
-        self.springs = []
+        self.springPlotRefs = dict()
+        self.pointPlotRefs = dict()
         self.hx = hx
         self.collection = pc
         self.fig = fig
@@ -62,7 +147,7 @@ class getBorders:
         self.ax = ax
         self.cid1 = self.canvas.mpl_connect('key_press_event', self.on_key)
         self.cid2 = self.canvas.mpl_connect('button_press_event', self.onpress)
-        print("T to set static vertices; G to set springs; R to remove static vertices or springs")
+        print("T to set static vertices; Vv to set springs; Jj to remove static vertices or springs")
         plt.show()
     def on_key(self, event):
 
@@ -70,10 +155,10 @@ class getBorders:
         if(event.key in "tT" and not self.finished and not self.canvas.widgetlock.locked()):
             self.drawing = "static"
             print("Drawing Static vertices")
-        elif(event.key in "Gg" and not self.finished and not self.canvas.widgetlock.locked()):
+        elif(event.key in "Vv" and not self.finished and not self.canvas.widgetlock.locked()):
             self.drawing = "springs"
             print("Drawing Springs")
-        elif(event.key in "Rr" and not self.finished and not self.canvas.widgetlock.locked()):
+        elif(event.key in "Jj" and not self.finished and not self.canvas.widgetlock.locked()):
             self.drawing = "remove"
             print("Removing Static and Springs")
         elif(event.key in "Mm" and not self.finished and not self.canvas.widgetlock.locked()):
@@ -109,7 +194,7 @@ class getBorders:
         self.canvas.draw_idle()
         self.canvas.widgetlock.release(self.lasso)
         del self.lasso
-        print("T to set static vertices; G to set springs; R to remove static vertices or springs")
+        print("T to set static vertices; Vv to set springs; Jj to remove static vertices or springs")
 
     def setStatic(self, verts):
         for v in verts:
@@ -118,35 +203,101 @@ class getBorders:
                 self.staticPoints.append(vstat)
         for sp in self.staticPoints:
             self.hx.vertices[sp][3] = 0
-        self.ax.scatter([self.hx.vertices[sp][0] for sp in self.staticPoints], [self.hx.vertices[sp][1] for sp in self.staticPoints], c="red")
+        self.updatePlot()
+        #self.ax.scatter([self.hx.vertices[sp][0] for sp in self.staticPoints], [self.hx.vertices[sp][1] for sp in self.staticPoints], c="red")
 
     def setSprings(self, verts):
         vprevious = -1
         spring_positions = []
+        springs = []
         for v in verts:
             vstat = self.getClosestVert(v)
+            if(vstat == -1):
+                continue
             if(vstat != vprevious and vstat not in self.springPoints):
                 if(vprevious != -1):
                     x, y = zip(*spring_positions)
                     x = np.mean(x)
                     y = np.mean(y)
-                    self.springs.append((vprevious, x, y)) #Vertex in grid, and coordinates of new vertex
+                    springs.append((vprevious, x, y)) #Vertex in grid, and coordinates of new vertex
                 spring_positions = [v] 
                 vprevious = vstat
                 self.springPoints.append(vstat)
             elif(vstat in self.springPoints):
                 spring_positions.append(v)
-        for s in self.springs:
+        for s in springs:
             snum = self.hx.addSpring(*s)
             self.newSpringPoints.append(snum)
+        self.updatePlot()
+
+    def updatePlot(self):
+        for sl in self.springPlotRefs.values():
+            self.ax.lines.remove(sl)
+        self.springPlotRefs.clear()
+        for i, s in enumerate(self.hx.springs):
+            spref = self.ax.plot([self.hx.vertices[s[0]][0], self.hx.vertices[s[1]][0]], [self.hx.vertices[s[0]][1], self.hx.vertices[s[1]][1]], c="red")
+            self.springPlotRefs.setdefault(i, spref[0])
+
+        for pp in self.pointPlotRefs.values():
+            pp.set_visible(False)
+        self.pointPlotRefs.clear()
+        for sp in self.staticPoints:
+            ref = self.ax.scatter(self.hx.vertices[sp][0], self.hx.vertices[sp][1], c="red")
+            self.pointPlotRefs.setdefault(sp, ref)
+        self.canvas.draw_idle()
+
+    def removeStatic(self, verts):
+        springs_to_remove = []
+        verts_to_remove = []
+        verts_to_movable = []
+
+        #Look for springs to remove and vertices to set as movable
+        for v in verts:
+            vstat = self.getClosestVert(v, 0)#get the non-movable colsest vertex
+            if(vstat == -1):
+                continue
+            spr = self.hx.getSpringWithVertex(vstat)
+            if(spr == -1):
+                if(vstat not in verts_to_movable):
+                    verts_to_movable.append(vstat)
+                    #self.staticPoints.remove(vstat)
+            elif(vstat not in verts_to_remove):
+                springs_to_remove.append(spr)
+                verts_to_remove.append(vstat)
+
+        verts_to_remove.sort(reverse=True)
+        springs_to_remove.sort(reverse=True)
+        
+        #Set vertices to movable
+        for v in verts_to_movable:
+            self.hx.vertices[v][3] = 1 
+
+        #Remove springs and vertices that are only in springs
+        self.hx.removeSpringVertices(springs_to_remove, verts_to_remove)
+
+        ##Now update lists
+        self.newSpringPoints.clear()
+        self.springPoints.clear() 
+        self.staticPoints.clear()
 
         for s in self.hx.springs:
-            self.ax.plot([self.hx.vertices[s[0]][0], self.hx.vertices[s[1]][0]], [self.hx.vertices[s[0]][1], self.hx.vertices[s[1]][1]], c="red")
-    def removeStatic(self, verts):
-        pass
-    def getClosestVert(self, v):   
-        dists=[(np.sqrt(np.power(v[0] - v2[0], 2) + np.power(v[1] - v2[1], 2)), v2[3]) for v2 in self.hx.vertices if v2 not in self.newSpringPoints]
+            for v in s:
+                if(self.hx.vertices[v][3] == 1):
+                    self.springPoints.append(v)
+                else:
+                    self.newSpringPoints.append(v)
+        for v in self.hx.vertices:
+            if(v[3] == 0):
+                if(v[2] not in self.newSpringPoints):
+                    self.staticPoints.append(v[2])
+        self.updatePlot()
+
+    def getClosestVert(self,v, movable=1):   
+        dists=[(np.sqrt(np.power(v[0] - v2[0], 2) + np.power(v[1] - v2[1], 2)), v2[2]) for v2 in self.hx.vertices if v2[3] == movable]
+        if(len(dists) == 0):
+            return -1
         return min(dists,key=itemgetter(0))[1]  
+
 
 class getCellTypes:
 

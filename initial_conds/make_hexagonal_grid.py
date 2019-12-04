@@ -166,17 +166,26 @@ class HexGrid:
         return (x + size*np.cos(angle_rad), y + size*np.sin(angle_rad))
 
     def rotateVertices(self):
+        xmin, ymin = self.getMin()
+        xmax, ymax = self.getMax()
+        xorigin = 0.5*(xmin + xmax)
+        yorigin = 0.5*(ymin + ymax)
         angle = self.rotate*np.pi/180
         for v in range(len(self.vertices)):
-            xnew = self.vertices[v][0]*np.cos(angle) - self.vertices[v][1]*np.sin(angle)
-            ynew = self.vertices[v][1]*np.cos(angle) + self.vertices[v][0]*np.sin(angle)
+            dx = self.vertices[v][0] - xorigin
+            dy = self.vertices[v][1] - yorigin
+            xnew = dx*np.cos(angle) - dy*np.sin(angle) + xorigin
+            ynew = dy*np.cos(angle) + dx*np.sin(angle) + yorigin
             self.vertices[v][0] = xnew 
             self.vertices[v][1] = ynew
         for c in range(len(self.centers)):
-            xnew = self.centers[c][2]*np.cos(angle) - self.centers[c][3]*np.sin(angle)
-            ynew = self.centers[c][3]*np.cos(angle) + self.centers[c][2]*np.sin(angle)
+            dx = self.centers[c][2] - xorigin
+            dy = self.centers[c][3] - yorigin
+            xnew = dx*np.cos(angle) - dy*np.sin(angle) + xorigin
+            ynew = dy*np.cos(angle) + dx*np.sin(angle) + yorigin
             newtup = (self.centers[c][0], self.centers[c][1],xnew, ynew)
             self.centers[c] = newtup 
+
     def getCells(self):
         nrow = self.nr
         ncol = self.nc
@@ -224,7 +233,7 @@ class HexGrid:
             self.vertices[i][0] = self.vertices[i][0] + np.random.uniform(-1*size*noise, size*noise)
             self.vertices[i][1] = self.vertices[i][1] + np.random.uniform(-1*size*noise, size*noise)
 
-    def plotHex2(self, fig=None, save=False):
+    def plotHex2(self, fig=None, save=False, alpha=0.4):
         from matplotlib.collections import PolyCollection
         if(fig is None):
             fig, ax = plt.subplots()
@@ -235,7 +244,8 @@ class HexGrid:
             for v, vert in enumerate(cell):
                 col[c, v, :] = (self.vertices[vert][0], self.vertices[vert][1])
         print(col.shape)
-        pc = PolyCollection(col, facecolors= [wingcols[self.celltypes[j]] for j in range(len(self.cells))], alpha = 0.4 )
+        pc = PolyCollection(col, facecolors= [wingcols[self.celltypes[j]] for j in range(len(self.cells))], alpha = alpha)
+        pc.set_edgecolors("black")
         ax.add_collection(pc)
         ax.autoscale_view()
         for c in self.springs:
@@ -426,11 +436,22 @@ class HexGrid:
                         ind = len(self.vertices)  
                         self.vertices.append([x, y, ind, 0])
                         self.springs.append((v_to_fix, ind))
+
     def addSpring(self, v, x, y):
         ind = len(self.vertices)
         self.vertices.append([x, y, ind, 0])
-        self.springs.append((v, ind)) 
+        self.springs.append([v, ind]) 
+        self.vnum+=1
         return ind       
+
+    def getSpringWithVertex(self, v):
+        res = -1
+        for i, s in enumerate(self.springs):
+            if(v in s):
+                res = i
+                break
+        return res
+
     def addCellType(self):
         nr, nc = (self.nr, self.nc)
         if(self.veinpos != ''):
@@ -503,7 +524,15 @@ class HexGrid:
         self.vnum -= 1
         return list_to_update
 
-               
+    def removeSpringVertices(self, s, v):         
+        #v.sort(reverse=True) #Assumes they are sorted
+        #s.sort(reverse=True)
+        for vert in v:
+            self.removeVertex(vert, [])
+        for spr in s:
+            self.springs.pop(spr)
+
+    
     def removeSpringsWithVert(self, v):
         springs_to_remove = []
         for ind, s in enumerate(self.springs):
@@ -537,6 +566,13 @@ class HexGrid:
             y.append(v[1])
         return (max(x), max(y))
 
+    def getMin(self):
+        x = []
+        y = []
+        for v in self.vertices:
+            x.append(v[0])
+            y.append(v[1])
+        return (min(x), min(y))
 
 def getArgDict(args):
         argdict = {}
