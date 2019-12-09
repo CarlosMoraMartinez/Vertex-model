@@ -94,6 +94,25 @@ def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, n
     plt.savefig(name + '.png')
     plt.clf()
 
+##Not tested, probably doesn't works
+def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name):
+    from matplotlib.collections import PolyCollection
+    fig, ax = plt.subplots()
+    #col = np.zeros((len(grid), 6, 2))
+    pc = PolyCollection(grid, facecolors= [wingcols[celltypes[j]] for j in range(len(grid))], alpha = 0.6)
+    pc.set_edgecolors("black")
+    ax.add_collection(pc)
+    ax.autoscale_view()
+    for s in sprList:
+        ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color = RED)
+    for p in pointsList.keys():
+        if(pointsList[p][2] == 0):
+            ax.scatter(pointsList[p][0], pointsList[p][1], color = RED)       
+    if(add_vnums):
+        for i in pointsList.keys():
+            ax.annotate(i, pointsList[i][0:2])
+    plt.savefig(name + '.png')
+    plt.clf()
 
 
 def plot_expr(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name, color_expr):
@@ -157,7 +176,7 @@ def readExpr(name):
 parser = argparse.ArgumentParser(description='Plot grid arguments.')
 parser.add_argument('-i', '--Inputname', metavar='inputname', type=str, default = "hexgrid", 
                     help='Identifier. Used as prefix of input files of cell coordinates. ')
-parser.add_argument('-i2', '--Input_expr', metavar='input_expr', type=str, default = "testgrn", 
+parser.add_argument('-i2', '--Input_expr', metavar='input_expr', type=str, default = "", 
                     help='Identifier. Used as prefix of input files of gene expression. ')
 parser.add_argument('-s', '--Start_index', metavar='start', type=int, default = 0, 
                     help='First file to read')
@@ -175,23 +194,24 @@ def main():
     args = parser.parse_args()
     plot_cell_types = args.plotCellTypes
     add_vnums = args.write_vertex_number
-    color_expr = [int(i) for i in args.genes_to_plot_expression.split(',') ]
+    color_expr = [int(i) for i in args.genes_to_plot_expression.split(',') if i != '']
     for fnum in range(args.Start_index, args.End_index):
-        if(not os.path.isfile(args.Inputname + str(fnum) + ".points") or not os.path.isfile(args.Inputname + str(fnum) + ".cells")):
+        if(fnum >= 0):
+            name = args.Inputname + str(fnum)
+        else:
+            name = args.Inputname
+        if(not os.path.isfile(name + ".points") or not os.path.isfile(name + ".cells")):
             break;
-        name = args.Inputname + str(fnum)
         numPoints, pointsList = readPointsFile(name)
         numCells, polygonList, celltypes = readCellsFile(name, plot_cell_types, pointsList)
         numsprings, sprList = readSprings(name)
-        if(len(color_expr) > 0):
-            xprList = readExpr(args.Input_expr + str(fnum))
         ########################################################################################################################
         # Plotting the final polygons
         ########################################################################################################################
-
         plot_grid(111, polygonList, pointsList, sprList, add_vnums, celltypes, [] ,name)  
-        plot_expr(111, polygonList, pointsList, sprList, add_vnums, celltypes, xprList, name, color_expr)
-
+        if(len(color_expr) > 0 and args.Input_expr != ""):
+            xprList = readExpr(args.Input_expr + str(fnum))
+            plot_expr(111, polygonList, pointsList, sprList, add_vnums, celltypes, xprList, name, color_expr)
         print(fnum)
 
 
