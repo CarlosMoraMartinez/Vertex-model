@@ -21,6 +21,9 @@ hingetype = 1
 veintype = 2
 veinhinge = 3
 wingcols = ['blue', 'green', 'black', 'gray']
+springcols = ['red', 'yellow', 'purple', 'pink', 'brown']
+
+DEFAULT_SPRING_KIND = 0
 
 class HexGrid:
     """
@@ -237,6 +240,7 @@ class HexGrid:
         from matplotlib.collections import PolyCollection
         if(fig is None):
             fig, ax = plt.subplots()
+            fig.suptitle(self.outname, fontsize=16)
         else:
             fig, ax = fig
         col = np.zeros((len(self.cells), 6, 2))
@@ -281,7 +285,7 @@ class HexGrid:
                 plt.plot([self.vertices[c[i]][0], self.vertices[c[(i+1)%len(c)]][0]] ,  [self.vertices[c[i]][1], self.vertices[c[(i+1)%len(c)]][1]], c = wingcols[self.celltypes[j]])
 
         for c in self.springs:
-            plt.plot( [self.vertices[c[0]][0], self.vertices[c[1]][0]] ,  [self.vertices[c[0]][1], self.vertices[c[1]][1]], c = "red" )
+            plt.plot( [self.vertices[c[0]][0], self.vertices[c[1]][0]] ,  [self.vertices[c[0]][1], self.vertices[c[1]][1]], c = springcols[c[2]] )
 
         #vplotx = []
         #vploty = []
@@ -404,7 +408,7 @@ class HexGrid:
                 y =  self.vertices[v_to_fix][1]
                 ind = len(self.vertices)  
                 self.vertices.append([x, y, ind, 0])
-                self.springs.append((v_to_fix, ind))
+                self.springs.append((v_to_fix, ind, DEFAULT_SPRING_KIND))
         for i in tops:
                 cnum  = self.cells[nc*(nr-1) + i]
                 v_to_fix = cnum[4]
@@ -412,7 +416,7 @@ class HexGrid:
                 y =  self.vertices[v_to_fix][1] + spring_length  
                 ind = len(self.vertices)
                 self.vertices.append([x, y, ind, 0])
-                self.springs.append((v_to_fix, ind))
+                self.springs.append((v_to_fix, ind, DEFAULT_SPRING_KIND))
         for i in bottoms:
                 cnum  = self.cells[i]
                 v_to_fix = cnum[1]
@@ -420,7 +424,7 @@ class HexGrid:
                 y =  self.vertices[v_to_fix][1] - spring_length  
                 ind = len(self.vertices)
                 self.vertices.append([x, y, ind, 0])
-                self.springs.append((v_to_fix, ind))
+                self.springs.append((v_to_fix, ind, DEFAULT_SPRING_KIND))
         for i in rights:
                 cnum  = self.cells[nc*i + nc - 1]
                 if(i == nr-1 and i%2 == 1):
@@ -435,12 +439,12 @@ class HexGrid:
                         y =  self.vertices[v_to_fix][1]
                         ind = len(self.vertices)  
                         self.vertices.append([x, y, ind, 0])
-                        self.springs.append((v_to_fix, ind))
+                        self.springs.append((v_to_fix, ind, DEFAULT_SPRING_KIND))
 
-    def addSpring(self, v, x, y):
+    def addSpring(self, v, x, y, kind=DEFAULT_SPRING_KIND):
         ind = len(self.vertices)
         self.vertices.append([x, y, ind, 0])
-        self.springs.append([v, ind]) 
+        self.springs.append([v, ind, kind]) 
         self.vnum+=1
         return ind       
 
@@ -574,6 +578,96 @@ class HexGrid:
             y.append(v[1])
         return (min(x), min(y))
 
+    def copyModifiedStructure(self, points, lines):
+        from shapely.geometry import Polygon
+        hxpol = self.getShapelyPolygons()
+        lim = Polygon(points)
+        cells_to_use = []
+        cells_to_fit = []
+        for i, cell in enumerate(hxpol):
+            if(lim.contains(cell)):
+                cells_to_use.append(i)
+            elif(lim.overlaps(cell)): 
+                arearatio = lim.intersection(cell).area/cell.area
+                if(arearatio > 0.2):
+                        cells_to_fit.append(i)
+                if(arearatio > 0.8):
+                        cells_to_use.append(i)
+                    #pass
+        cells_to_use.sort()
+        cells_to_fit.sort()
+
+        cells = []
+        vertices = []
+        vertDict = dict()
+        centers= []
+        celltypes= []
+        springs= []
+
+        vnum = 0
+    
+        for cind in cells_to_use:
+            c = self.cells[cind] 
+            for i, v in enumerate(c):
+                if(v in vertDict):
+                    c[i] = vertDict[v]
+                else:
+                    vertDict.setdefault(v, vnum)
+                    c[i] = vnum
+                    vertices.append( self.vertices[v] )
+                    vertices[vnum][2] = vnum
+                    vnum+=1                
+            cells.append(c)
+            #print([vertices[vv] for vv in c])
+            celltypes.append(self.celltypes[cind])
+            centers.append(self.centers[cind])
+        '''
+        for cind in cells_to_fit:
+            intersection = lim.intersection(hxpol[cind])
+            c = self.cells[cind] 
+            newcell = []
+            for i, v in enumerate(c):
+
+                pcell = Point(self.vertices[v][0], self.vertices[v][1])
+                print("PCELL: ", pcell)
+                if(intersection.touches(pcell)): ##Add this point to cell
+                    if(v in vertDict):
+                        newcell.append(vertDict[v])
+                    else:
+                        vertDict.setdefault(v, vnum)
+                        newcell.append(vnum)
+                        vertices.append( self.vertices[v] )
+                        vertices[vnum][2] = vnum
+                        vnum+=1   
+            if(len(newcell) > 3):             
+                cells.append(newcell)
+                #print([vertices[vv] for vv in newcell])
+                celltypes.append(self.celltypes[cind])
+                centers.append(self.centers[cind])
+            '''        
+    
+        for s in self.springs:
+            isthere = 0 if s[0] in vertDict else 1 if s[1] in vertDict else -1
+            if(isthere == 0):
+                newspring = (vertDict[s[0]], vnum)
+                vertDict.setdefault(s[1], vnum)
+                vertices.append( self.vertices[s[1]] )
+                vertices[vnum][2] = vnum
+                vnum+=1                
+            elif(isthere == 1):
+                newspring = (vnum, vertDict[s[1]])
+                vertDict.setdefault(s[0], vnum)
+                vertices.append( self.vertices[s[0]] )
+                vertices[vnum][2] = vnum
+                vnum+=1    
+                  
+        self.cells = cells
+        self.vertices = vertices
+        self.springs = springs
+        self.celltypes = celltypes
+        self.centers = centers
+        return self    
+
 def getArgDict(args):
         argdict = {}
         argdict.setdefault('Size', args.Size)
@@ -631,9 +725,6 @@ def main():
         hx = HexGrid(**argdict)
         hx.writeGrid()
         hx.plotHex()
-        p = hx.getShapelyPolygons() 
-        print(str(p[0].is_ring))
-        print(p)
 
 if __name__ == '__main__':
         main()

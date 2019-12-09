@@ -123,7 +123,7 @@ def plotHex(centers, vertices, cells, springs, celltypes, outname):
     for v in vertices:
         if(v[3] == 0):
            ax.scatter(v[0], v[1], c = "red")
-
+    return (f, ax)
 
     dirname = ''
     if(not os.path.isdir(outname)):

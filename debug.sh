@@ -1,5 +1,8 @@
+cp VertexSystem.cpp VertexSystem.h vertex_cmm.cpp plotOps_loop.py 'param_files/'$2'.vp' $1
+cd $1
+
 g++ -ggdb -std=c++11 -c VertexSystem.cpp
 g++ -ggdb -std=c++11 -c vertex_cmm.cpp
 g++ -o vertex vertex_cmm.o VertexSystem.o
-gdb --args vertex gm0_s3.0_3x3_n0.3 2000 1000 #winglike2_s3.25_20x20_n0.4 100000000 1000000
+gdb --args vertex $1 $2 10000 100 #winglike2_s3.25_20x20_n0.4 100000000 1000000
 

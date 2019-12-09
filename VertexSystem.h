@@ -34,6 +34,8 @@ const float DIVISION_ANGLE_RANDOM_NOISE = 0.3; //1 = variation of 360ºC (comple
 const float DIVISION_ANGLE_LONGEST_AXIS = 0.7;
 const float DIVISION_ANGLE_EXTERNAL = 0.0; // 
 const float DIVISION_ANGLE_EXTERNAL_DEGREES = 0;
+const float CELL_CYCLE_LIMIT = 10;
+
 
 const float LENGTH_ROTATED_EDGE = 0.5*T1_TRANSITION_CRITICAL_DISTANCE*1.2; //after a t1 transition, rotated edge length is multiplied by twice this constant
 
@@ -58,13 +60,16 @@ const bool DIVISION_ACTIVE = true;
 const bool T2_ACTIVE = true;
 const bool JOIN_EDGES_ACTIVE = true;
 const bool CONTROL_CELLS_2SIDES = true; 
-const int MOVE_TRIALS = 100;  //Times it tries to move a vertex before it quids because always makes edges to cross
+const bool AUTONOMOUS_CELL_CYCLE = true;
+const bool CELL_CYCLE_CONTROLS_SIZE = true;
+const bool TIME_CONTROLS_SIZE = false;
+const int MOVE_TRIALS = 100;  //Times it tries to move a vertex before it quits because always makes edges to cross
 
 const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
 
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tcells\tedges\tneighbour_vertices\n";
-const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\tangle_longest\tangle_signal\tangle_random\tdegrees_signal\tnum_vertices\tvertices\tedges\n";
+const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\tangle_longest\tangle_signal\tangle_random\tdegrees_signal\tmax_area\tcell_cycle_state\tcell_cycle_limit\tcan_divide\tnum_vertices\tvertices\tedges\n";
 const std::string EDGE_HEADER = "ind\ttype\tlength\ttension\tvertices\tcells\n";
 
 //Enum class to define types of cells 
@@ -103,6 +108,10 @@ struct Cell{
 	float division_angle_longest;
 	float division_angle_external; 
 	float division_angle_external_degrees;
+	float max_area;
+	float cell_cycle_state;
+	float cell_cycle_limit;
+	bool can_divide;
 	double centroid_x, centroid_y;
 	int edges[MAX_SIDES_PER_CELL];
 	int vertices[MAX_SIDES_PER_CELL];
@@ -150,6 +159,8 @@ typedef std::queue<Rearrangement> rearrangement_q;
 typedef std::queue<DivisionRecord> divisionrecord_q;
 
 typedef std::map<CellType, double> cell_type_param;
+typedef std::map<int, double> spring_type_param;
+
 
 class Tissue{
         friend class basicGRN;
@@ -161,6 +172,7 @@ class Tissue{
 		void initialize_params(std::string params_file="");
 		double read_real_par(std::vector<std::string>::iterator& it);
 		cell_type_param read_celltype_par(std::vector<std::string>::iterator& it, std::string::size_type sz);
+                spring_type_param read_springtype_par(std::vector<std::string>::iterator& it, std::string::size_type sz);
 		void set_default_simulation_params();
 
 		void simulate(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif);
@@ -219,26 +231,23 @@ class Tissue{
 		float temperature_positive_energy;
 		float temperature_negative_energy; 
 		cell_type_param line_tension;
-		//float line_tension_blade;
-		//float line_tension_hinge;
-		//float line_tension_vein_hinge;
-		//float line_tension_vein_blade;
 		cell_type_param line_tension_tissue_boundary;
-		//float line_tension_tissue_boundary;
-		float spring_constant;
+
+		//float spring_constant;
+                spring_type_param spring_type_constants;
 		cell_type_param perimeter_contract;
-		//float perimeter_contract_blade;
-		//float perimeter_contract_hinge;
+
 		float t1_transition_critical_distance; 
 		float t2_transition_critical_area;
-		float max_cell_area;	
+		//float max_cell_area;	
 		float max_edge_length; 
-		cell_type_param preferred_area_initial, preferred_area_final;
-		//float preferred_area_initial;
-		//float preferred_area_final;
-		//float preferred_area_hinge;
+		cell_type_param preferred_area_initial, preferred_area_final, max_cell_area;
+
 		cell_type_param division_angle_longest_axis, division_angle_random_noise, division_angle_external, division_angle_external_degrees;
-		//float division_angle_random_noise; 
+
+		cell_type_param cell_cycle_limit;
+		bool autonomous_cell_cycle, cell_cycle_controls_size, time_controls_size;
+
 		float length_rotated_edge; 
 
 		//Data structures
@@ -298,6 +307,10 @@ class Tissue{
 		//methods used by T2 and join_edges
 		void removeConnectionCell(int elm, int* elements, int length);
 		void make_remove_size2cell(int cell);
+
+		//Other
+		void advanceCellCycle(int vertex_moved);
+		void advanceSizeWithTime(int vertex_moved);
 };
 
 //functions of general use

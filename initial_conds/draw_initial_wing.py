@@ -1,48 +1,45 @@
 from operator import itemgetter
+import sys
 
 import numpy as np
 import scipy.spatial as spatial
 from scipy.spatial import Voronoi, voronoi_plot_2d
 import matplotlib.pyplot as plt 
-from matplotlib.widgets import Slider, Button, Lasso, LassoSelector
+from matplotlib.widgets import Slider, Button, Lasso, LassoSelector, TextBox
 import shapely
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, Point
 
 import make_hexagonal_grid as mhg
 
-def makeWingHex():
-    shz = setHexagonSize("wing.png")
+def makeWingHex(wname):
     # Make hexagonal grid
-    #hx = mhg.HexGrid(**argdict)
-    hx = shz.hx
-    im = shz.im
-    #fig, ax = hx.plotHex2(False)
+    hx, im = setHexagonSize("wing.png", wname).getGrid()
     fig, ax = plt.subplots()
-    #im = plt.imread("wing.png")
+    fig.suptitle(wname, fontsize=16)
     maxx, maxy = hx.getMax()
     ax.imshow(im, extent = [0, maxx, 0, maxy])
 
-    #hx = setHexagonSize(hx, f, ax)
-
     # Draw border by hand 
-    num_points, points, lines, fig, ax = getPointsBorder(fig, ax)
+    num_points, points, lines, fig, ax = getPointsBorder(fig, ax).getData()
     plt.close()
-
-    hx = copyModifiedStructure(points, lines, hx)
+    hx = hx.copyModifiedStructure(points, lines)
     f, ax, pc = hx.plotHex2()
     ax.imshow(im, extent = [0, maxx, 0, maxy])
     plotBorder(points, lines, (f, ax))
+
+    #Set cell types: hinge and veins
     getCellTypes(hx, pc, f, ax)
-    #plt.show()
     f, ax, pc = hx.plotHex2()
     ax.imshow(im, extent = [0, maxx, 0, maxy])
-    getBorders(hx, pc, f, ax)
 
+    #Set borders: static vertices and springs
+    getBorders(hx, pc, f, ax)
+    hx.writeGrid()
 
 
 class setHexagonSize:
 
-    def __init__(self, imfile):
+    def __init__(self, imfile, hxname):
 
         self.im = plt.imread(imfile)
         self.imratio = self.im.shape[0]/self.im.shape[1]
@@ -60,13 +57,14 @@ class setHexagonSize:
         self.argdict.setdefault('SpringLength', 0)
         self.argdict.setdefault('Hinge', -1)
         self.argdict.setdefault('Veins', '')
-        self.argdict.setdefault('Outname', 'hex')
+        self.argdict.setdefault('Outname', hxname)
         self.defaultArgs = self.argdict.copy()
 
         # Make hexagonal grid
 
         self.fig, self.ax = plt.subplots()
         plt.subplots_adjust(left=0.25, bottom=0.25)
+        self.fig.suptitle(self.defaultArgs['Outname'], fontsize=16)
         self.canvas = self.fig.canvas
         self.cid1 = self.canvas.mpl_connect('key_press_event', self.on_key)
 
@@ -127,6 +125,8 @@ class setHexagonSize:
             plt.close()
             return
 
+    def getGrid(self):
+        return (self.hx, self.im)
 
 
 
@@ -140,6 +140,7 @@ class getBorders:
         self.newSpringPoints = []
         self.springPlotRefs = dict()
         self.pointPlotRefs = dict()
+        self.springType = 0
         self.hx = hx
         self.collection = pc
         self.fig = fig
@@ -147,8 +148,21 @@ class getBorders:
         self.ax = ax
         self.cid1 = self.canvas.mpl_connect('key_press_event', self.on_key)
         self.cid2 = self.canvas.mpl_connect('button_press_event', self.onpress)
+
+        plt.subplots_adjust(bottom=0.2)
+        self.axbox = plt.axes([0.1, 0.05, 0.8, 0.075])
+
         print("T to set static vertices; Vv to set springs; Jj to remove static vertices or springs")
         plt.show()
+
+    def submitText(self, text):
+        self.springType = int(text)
+        self.canvas.widgetlock.release(self.text_box)
+        print("New springs will be of type: ", self.springType)
+        del self.text_box
+        self.axbox.clear()
+        self.canvas.draw_idle()
+
     def on_key(self, event):
 
         print('you pressed: ', event.key, event.xdata, event.ydata)
@@ -161,6 +175,12 @@ class getBorders:
         elif(event.key in "Jj" and not self.finished and not self.canvas.widgetlock.locked()):
             self.drawing = "remove"
             print("Removing Static and Springs")
+        elif (event.key in "Nn" and not self.finished and not self.canvas.widgetlock.locked()):
+            self.text_box = TextBox(self.axbox, 'Spring type', initial=str(self.springType))
+            self.text_box.on_submit(self.submitText)
+            self.canvas.widgetlock(self.text_box)   
+            self.canvas.draw_idle()   
+            print("Getting new type of Springs")      
         elif(event.key in "Mm" and not self.finished and not self.canvas.widgetlock.locked()):
             self.finished = True
             self.drawing = None
@@ -194,7 +214,7 @@ class getBorders:
         self.canvas.draw_idle()
         self.canvas.widgetlock.release(self.lasso)
         del self.lasso
-        print("T to set static vertices; Vv to set springs; Jj to remove static vertices or springs")
+        print("T to set static vertices; Vv to set springs; Jj to remove static vertices or springs; Nn to set spring type")
 
     def setStatic(self, verts):
         for v in verts:
@@ -219,7 +239,7 @@ class getBorders:
                     x, y = zip(*spring_positions)
                     x = np.mean(x)
                     y = np.mean(y)
-                    springs.append((vprevious, x, y)) #Vertex in grid, and coordinates of new vertex
+                    springs.append((vprevious, x, y, self.springType)) #Vertex in grid, and coordinates of new vertex
                 spring_positions = [v] 
                 vprevious = vstat
                 self.springPoints.append(vstat)
@@ -235,7 +255,7 @@ class getBorders:
             self.ax.lines.remove(sl)
         self.springPlotRefs.clear()
         for i, s in enumerate(self.hx.springs):
-            spref = self.ax.plot([self.hx.vertices[s[0]][0], self.hx.vertices[s[1]][0]], [self.hx.vertices[s[0]][1], self.hx.vertices[s[1]][1]], c="red")
+            spref = self.ax.plot([self.hx.vertices[s[0]][0], self.hx.vertices[s[1]][0]], [self.hx.vertices[s[0]][1], self.hx.vertices[s[1]][1]], c=mhg.springcols[s[2]])
             self.springPlotRefs.setdefault(i, spref[0])
 
         for pp in self.pointPlotRefs.values():
@@ -379,7 +399,7 @@ class getCellTypes:
     def changeType(self, t):   
         newt = self.celltype  
         if(newt == mhg.veintype):
-            if(t == mhg.hingetype):
+            if(t == mhg.hingetype or t == mhg.veinhinge):
                 newt = mhg.veinhinge
         return newt
 
@@ -501,105 +521,55 @@ def removeCellsOutside(points, lines, hx):
         hx.removeCell(i)
     return hx
 
-def copyModifiedStructure(points, lines, hx):
-    hxpol = hx.getShapelyPolygons()
-    lim = Polygon(points)
-    cells_to_use = []
-    cells_to_fit = []
-    for i, cell in enumerate(hxpol):
-        if(lim.contains(cell)):
-            cells_to_use.append(i)
-        elif(lim.overlaps(cell)):
-            if(lim.intersection(cell).area/cell.area > 0.2):
-                    cells_to_fit.append(i)
-    cells_to_use.sort()
-    cells_to_fit.sort()
+   
 
-    cells = []
-    vertices = []
-    vertDict = dict()
-    centers= []
-    celltypes= []
-    springs= []
+class getPointsBorder():
+    def __init__(self, fig, ax):
+        self.points = []
+        self.lines = []
+        self.num_points = 0
+        self.finished = False
+        self.fig = fig
+        self.ax = ax
 
-    vnum = 0
-    for cind in cells_to_use:
-        c = hx.cells[cind] 
-        for i, v in enumerate(c):
-            if(v in vertDict):
-                c[i] = vertDict[v]
-            else:
-                vertDict.setdefault(v, vnum)
-                c[i] = vnum
-                vertices.append( hx.vertices[v] )
-                vertices[vnum][2] = vnum
-                vnum+=1                
-        cells.append(c)
-        celltypes.append(hx.celltypes[cind])
-        centers.append(hx.centers[cind])
-    for s in hx.springs:
-        isthere = 0 if s[0] in vertDict else 1 if s[1] in vertDict else -1
-        if(isthere == 0):
-            newspring = (vertDict[s[0]], vnum)
-            vertDict.setdefault(s[1], vnum)
-            vertices.append( hx.vertices[s[1]] )
-            vertices[vnum][2] = vnum
-            vnum+=1                
-        elif(isthere == 1):
-            newspring = (vnum, vertDict[s[1]])
-            vertDict.setdefault(s[0], vnum)
-            vertices.append( hx.vertices[s[0]] )
-            vertices[vnum][2] = vnum
-            vnum+=1                   
-    hx.cells = cells
-    hx.vertices = vertices
-    hx.springs = springs
-    hx.celltypes = celltypes
-    hx.centers = centers
-    return hx       
+        self.cid1 = self.fig.canvas.mpl_connect('key_press_event', self.on_key)
+        self.cid2 = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
+        plt.show()
 
-def getPointsBorder(fig, ax):
-    points = []
-    lines = []
-    num_points = 0
-    finished = False
-    def onclick(event):
-        nonlocal num_points
-        nonlocal finished
-        if(not finished):
+    def onclick(self, event):
+        if(not self.finished):
             print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %
                    ('double' if event.dblclick else 'single', event.button,
                    event.x, event.y, event.xdata, event.ydata))
-            points.append([event.xdata, event.ydata])
-            ax.scatter([event.xdata], [event.ydata], color = "blue")
-            if(num_points > 0):
-                lines.append([num_points - 1, num_points])
-                ax.plot([points[num_points - 1][0], points[num_points][0]], [points[num_points - 1][1], points[num_points][1]], color = "black")
-            fig.canvas.draw()
-            num_points += 1
-    def on_key(event):
-        nonlocal finished
-        nonlocal num_points
+            self.points.append([event.xdata, event.ydata])
+            self.ax.scatter([event.xdata], [event.ydata], color = "blue")
+            if(self.num_points > 0):
+                self.lines.append([self.num_points - 1, self.num_points])
+                self.ax.plot([self.points[self.num_points - 1][0], self.points[self.num_points][0]], [self.points[self.num_points - 1][1], self.points[self.num_points][1]], color = "black")
+            self.fig.canvas.draw()
+            self.num_points += 1
+    def on_key(self, event):
         print('you pressed', event.key, event.xdata, event.ydata)
-        if(event.key in "mM" and not finished):
-            finished = True
-            nonlocal cid2
-            fig.canvas.mpl_disconnect(cid2)
-            lines.append([num_points - 1, 0])
-            ax.plot([points[num_points - 1][0], points[0][0]], [points[num_points - 1][1], points[0][1]], color = "black")
-            fig.canvas.draw()
-        elif(finished):
-            nonlocal cid1
-            fig.canvas.mpl_disconnect(cid1)
+        if(event.key in "mM" and not self.finished):
+            self.finished = True
+            self.fig.canvas.mpl_disconnect(self.cid2)
+            self.lines.append([self.num_points - 1, 0])
+            self.ax.plot([self.points[self.num_points - 1][0], self.points[0][0]], [self.points[self.num_points - 1][1], self.points[0][1]], color = "black")
+            self.fig.canvas.draw()
+        elif(self.finished):
+            self.fig.canvas.mpl_disconnect(self.cid1)
             plt.close()
             return
-    cid1 = fig.canvas.mpl_connect('key_press_event', on_key)
-    cid2 = fig.canvas.mpl_connect('button_press_event', onclick)
-    plt.show()
-    return (num_points, points, lines, fig, ax)
-
-
+    def getData(self):
+        return (self.num_points, self.points, self.lines, self.fig, self.ax)
 
 
 #makeWingVoronoi()
-makeWingHex()
+def main():
+    makeWingHex(sys.argv[1])
+
+if __name__ == '__main__':
+    main()
+
+
+
