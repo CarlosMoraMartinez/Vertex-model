@@ -63,6 +63,7 @@ const bool CONTROL_CELLS_2SIDES = true;
 const bool AUTONOMOUS_CELL_CYCLE = true;
 const bool CELL_CYCLE_CONTROLS_SIZE = true;
 const bool TIME_CONTROLS_SIZE = false;
+const bool STATIC_PRESENT = false;
 const int MOVE_TRIALS = 100;  //Times it tries to move a vertex before it quits because always makes edges to cross
 
 const bool REPORT_T1 = false;

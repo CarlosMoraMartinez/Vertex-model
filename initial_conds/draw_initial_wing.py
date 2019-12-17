@@ -5,27 +5,34 @@ import numpy as np
 import scipy.spatial as spatial
 from scipy.spatial import Voronoi, voronoi_plot_2d
 import matplotlib.pyplot as plt 
-from matplotlib.widgets import Slider, Button, Lasso, LassoSelector, TextBox
+from matplotlib.widgets import Slider, Button, Lasso, LassoSelector, TextBox, PolygonSelector
 import shapely
 from shapely.geometry import Polygon, Point
 
 import make_hexagonal_grid as mhg
 
+
+inputname = "wing.png"
+
+
 def makeWingHex(wname):
     # Make hexagonal grid
-    hx, im = setHexagonSize("wing.png", wname).getGrid()
+    hx, im = setHexagonSize(inputname, wname).getGrid()
     fig, ax = plt.subplots()
     fig.suptitle(wname, fontsize=16)
     maxx, maxy = hx.getMax()
     ax.imshow(im, extent = [0, maxx, 0, maxy])
 
     # Draw border by hand 
-    num_points, points, lines, fig, ax = getPointsBorder(fig, ax).getData()
+    border = getPointsBorder2(fig, ax, hx)
+    border.disconnect()
+    num_points, points, lines, fig, ax, hx = border.getData()
     plt.close()
-    hx = hx.copyModifiedStructure(points, lines)
     f, ax, pc = hx.plotHex2()
     ax.imshow(im, extent = [0, maxx, 0, maxy])
-    plotBorder(points, lines, (f, ax))
+    border.correctBorderManually((f, ax))
+
+    
 
     #Set cell types: hinge and veins
     getCellTypes(hx, pc, f, ax)
@@ -35,6 +42,7 @@ def makeWingHex(wname):
     #Set borders: static vertices and springs
     getBorders(hx, pc, f, ax)
     hx.writeGrid()
+
 
 
 class setHexagonSize:
@@ -91,7 +99,7 @@ class setHexagonSize:
         self.button = Button(self.resetax, 'Reset', color=self.axcolor, hovercolor='0.975')
         self.button.on_clicked(self.reset)
 
-
+        print("Select parameters. Press 'm' to continue")
         plt.show()
 
     def update(self, val):
@@ -152,7 +160,7 @@ class getBorders:
         plt.subplots_adjust(bottom=0.2)
         self.axbox = plt.axes([0.1, 0.05, 0.8, 0.075])
 
-        print("T to set static vertices; Vv to set springs; Jj to remove static vertices or springs")
+        print("T to set static vertices; V to set springs; J to remove static vertices or springs; M to continue")
         plt.show()
 
     def submitText(self, text):
@@ -184,6 +192,7 @@ class getBorders:
         elif(event.key in "Mm" and not self.finished and not self.canvas.widgetlock.locked()):
             self.finished = True
             self.drawing = None
+            print("Press M to continue")
         elif(self.finished):
             self.fig.canvas.mpl_disconnect(self.cid1)
             self.fig.canvas.mpl_disconnect(self.cid2)
@@ -214,7 +223,7 @@ class getBorders:
         self.canvas.draw_idle()
         self.canvas.widgetlock.release(self.lasso)
         del self.lasso
-        print("T to set static vertices; Vv to set springs; Jj to remove static vertices or springs; Nn to set spring type")
+        print("T to set static vertices; V to set springs; J to remove static vertices or springs; N to set spring type; M to continue")
 
     def setStatic(self, verts):
         for v in verts:
@@ -318,7 +327,6 @@ class getBorders:
             return -1
         return min(dists,key=itemgetter(0))[1]  
 
-
 class getCellTypes:
 
     def __init__(self, hx, pc, fig, ax):
@@ -331,7 +339,7 @@ class getCellTypes:
         self.ax = ax
         self.cid1 = self.canvas.mpl_connect('key_press_event', self.on_key)
         self.cid2 = self.canvas.mpl_connect('button_press_event', self.onpress)
-        print("H to set Hinge; B to set Blade; V to set Veins (recommended last)")
+        print("H to set Hinge; B to set Blade; V to set Veins (recommended last); M to continue")
         plt.show()
 
     def on_key(self, event):
@@ -339,16 +347,17 @@ class getCellTypes:
         print('you pressed: ', event.key, event.xdata, event.ydata)
         if(event.key in "Hh" and not self.finished and not self.canvas.widgetlock.locked()):
             self.celltype = mhg.hingetype
-            print("Drawing Hinge")
+            print("Drawing Hinge. Drag mouse to draw.")
         elif(event.key in "Vv" and not self.finished and not self.canvas.widgetlock.locked()):
             self.celltype = mhg.veintype
-            print("Drawing Vein")
+            print("Drawing Vein. Drag mouse to draw.")
         elif(event.key in "Bb" and not self.finished and not self.canvas.widgetlock.locked()):
             self.celltype = mhg.bladetype
-            print("Drawing Blade")
+            print("Drawing Blade. Drag mouse to draw.")
         elif(event.key in "Mm" and not self.finished and not self.canvas.widgetlock.locked()):
             self.finished = True
             self.celltype = None
+            print("Press M to continue")
         elif(self.finished):
             self.fig.canvas.mpl_disconnect(self.cid1)
             self.fig.canvas.mpl_disconnect(self.cid2)
@@ -414,7 +423,7 @@ class getCellTypes:
 def makeWingVoronoi():
     npoints = 2000
     fig, ax = plt.subplots()
-    im = plt.imread("wing.png")    
+    im = plt.imread(inputname)    
     ax.imshow(im, extent = [0, 100, 0, 100])
     num_points, points, lines, fig, ax = getPointsBorder(fig, ax)
     lim = Polygon(points)
@@ -496,11 +505,6 @@ def generatePointsInsideShape(npoints, lim):
     return ranpoints
   
 
-def plotBorder(points, lines, fig):
-    f, ax = fig
-    ax.plot([points[len(points) - 1][0], points[0][0]], [points[len(points) - 1][1], points[0][1]], color = "black")
-    for i in range(len(points) - 1):
-         ax.plot([points[i][0], points[i+1][0]], [points[i][1], points[i+1][1]], color = "black")
 
 def removeCellsOutside(points, lines, hx):
     hxpol = hx.getShapelyPolygons()
@@ -522,6 +526,11 @@ def removeCellsOutside(points, lines, hx):
     return hx
 
    
+def plotBorder(points, lines, fig):
+    f, ax = fig
+    ax.plot([points[len(points) - 1][0], points[0][0]], [points[len(points) - 1][1], points[0][1]], color = "black")
+    for i in range(len(points) - 1):
+         ax.plot([points[i][0], points[i+1][0]], [points[i][1], points[i+1][1]], color = "black")
 
 class getPointsBorder():
     def __init__(self, fig, ax):
@@ -555,6 +564,7 @@ class getPointsBorder():
             self.fig.canvas.mpl_disconnect(self.cid2)
             self.lines.append([self.num_points - 1, 0])
             self.ax.plot([self.points[self.num_points - 1][0], self.points[0][0]], [self.points[self.num_points - 1][1], self.points[0][1]], color = "black")
+            print("Press M to continue")
             self.fig.canvas.draw()
         elif(self.finished):
             self.fig.canvas.mpl_disconnect(self.cid1)
@@ -562,6 +572,83 @@ class getPointsBorder():
             return
     def getData(self):
         return (self.num_points, self.points, self.lines, self.fig, self.ax)
+
+
+class getPointsBorder2():
+    def __init__(self, fig, ax, hx):
+        self.points = []
+        self.lines = []
+        self.num_points = 0
+        self.finished = False
+        self.fig = fig
+        self.ax = ax
+        self.hx = hx
+        self.cid1 = None
+        self.cid2 = None
+        self.borderpoints = None
+        self.borderscatter = None
+
+        self.poly = PolygonSelector(ax, self.onselect)
+        self.dist = lambda x1, x2, y1, y2: ((x1-x2)**2 + (y1-y2)**2)**0.5
+        self.point_selected = -1
+        self.point_in_border = -1
+        print("Draw border with mouse: click in each point. Close polygon and close window to continue")
+        plt.show()
+
+    def getData(self):
+        return (self.num_points, self.points, self.lines, self.fig, self.ax, self.hx)
+
+    def onselect(self, verts):
+        self.points = verts
+        self.num_points = len(self.points)
+        previous = len(self.points) - 1
+        for i, p in enumerate(verts):
+            self.lines.append([previous, i])
+            previous = i
+        #self.poly.disconnect_events()
+    def disconnect(self):
+        self.poly.disconnect_events()
+        self.hx = self.hx.copyModifiedStructure(self.points, self.lines)
+    def plotBorder(self, fig=None):
+        if(fig is not None):
+            self.fig, self.ax = fig
+        self.ax.plot([self.points[len(self.points) - 1][0], self.points[0][0]], [self.points[len(self.points) - 1][1], self.points[0][1]], color = "black")
+        for i in range(len(self.points) - 1):
+            self.ax.plot([self.points[i][0], self.points[i+1][0]], [self.points[i][1], self.points[i+1][1]], color = "black")
+
+    def correctBorderManually(self, fig):
+        if(fig is not None):
+            self.fig, self.ax = fig
+        self.borderpoints = self.hx.getBorderPoints()
+
+        self.borderscatter = [self.ax.scatter(self.hx.vertices[p][0],  self.hx.vertices[p][1], color = "green") for p in self.borderpoints]
+        
+        self.ax.scatter([self.hx.vertices[p][0] for p in self.borderpoints],  [self.hx.vertices[p][1] for p in self.borderpoints], color = "green")
+        self.cid1 = self.fig.canvas.mpl_connect('key_press_event', self.on_key)
+        self.cid2 = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
+        plt.show()
+
+    def on_key(self, event):
+        print('you pressed', event.key, event.xdata, event.ydata)
+        if(event.key in "mM"):
+            self.fig.canvas.mpl_disconnect(self.cid2)
+            self.fig.canvas.mpl_disconnect(self.cid1)
+            plt.close()
+
+    def onclick(self, event):
+        if(self.point_selected < 0):
+            dists = [self.dist(event.xdata, self.hx.vertices[v][0], event.ydata, self.hx.vertices[v][1]) for v in self.borderpoints] 
+            self.point_in_border = np.argmin(dists)
+            self.point_selected = self.borderpoints[self.point_in_border]
+
+        else:
+            self.hx.vertices[self.point_selected][0] = event.xdata
+            self.hx.vertices[self.point_selected][1] = event.ydata 
+            self.borderscatter[self.point_in_border].set_offsets([event.xdata, event.ydata])
+            #self.borderscatter[].get_offsets()[self.point_selected, 1] = event.ydata   
+            self.point_selected = -1
+            self.fig.canvas.draw_idle()
+
 
 
 #makeWingVoronoi()

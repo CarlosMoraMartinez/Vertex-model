@@ -1,4 +1,4 @@
-import sys
+#import sys
 import os
 import argparse
 
@@ -194,7 +194,7 @@ class HexGrid:
         ncol = self.nc
         size = self.s
         pull = self.pull
-        max_coord = self.__class__.height(size)*(ncol+1)
+        #max_coord = self.__class__.height(size)*(ncol+1)
         self.centers = [ (j-1, i-1, self.__class__.width(size)*i + self.__class__.width(size)*0.5*(j%2) , self.__class__.height(size)*0.75*j)  for j in range(1, nrow + 1) for i in range(1, ncol + 1)]
         for i, j, x, y in self.centers:
             cell = []
@@ -287,13 +287,13 @@ class HexGrid:
         for c in self.springs:
             plt.plot( [self.vertices[c[0]][0], self.vertices[c[1]][0]] ,  [self.vertices[c[0]][1], self.vertices[c[1]][1]], c = springcols[c[2]] )
 
-        #vplotx = []
-        #vploty = []
-        #for v in self.vertices:
-        #    if(v[3] == 0):
-        #        vplotx.append(v[0])
-        #        vploty.append(v[1])
-        #ax.scatter(vplotx, vploty, c = "red")
+        vplotx = []
+        vploty = []
+        for v in self.vertices:
+            if(v[3] == 0):
+                vplotx.append(v[0])
+                vploty.append(v[1])
+        ax.scatter(vplotx, vploty, c = "red")
 
         if(save):
             self.saveFig()
@@ -591,7 +591,7 @@ class HexGrid:
                 arearatio = lim.intersection(cell).area/cell.area
                 if(arearatio > 0.2):
                         cells_to_fit.append(i)
-                if(arearatio > 0.8):
+                if(arearatio > 0.7):
                         cells_to_use.append(i)
                     #pass
         cells_to_use.sort()
@@ -660,13 +660,43 @@ class HexGrid:
                 vertices.append( self.vertices[s[0]] )
                 vertices[vnum][2] = vnum
                 vnum+=1    
-                  
+            springs.append(newspring)     
         self.cells = cells
         self.vertices = vertices
         self.springs = springs
         self.celltypes = celltypes
         self.centers = centers
+        #self.adaptToBorders(points, lines)#Doesnt give good results
         return self    
+
+    def adaptToBorders(self, points, lines, precision=100):
+        print(lines)
+        dist = lambda x1, x2, y1, y2: ((x1-x2)**2 + (y1-y2)**2)**0.5
+        for a, b in lines:
+            sx = np.linspace(points[a][0], points[b][0], precision)
+            sy = np.linspace(points[a][1], points[b][1], precision)
+            vert = -1 
+            linepoints = []
+            for p in range(precision):
+                distances = [dist(sx[p], v[0], sy[p], v[1]) for v in self.vertices]
+                closest = np.argmin(distances)
+                if(closest == vert):
+                    linepoints.append(p)
+                elif(vert == -1):
+                    vert = closest
+                    linepoints.append(p)
+                else: 
+                    self.vertices[vert][0] = np.mean(sx[linepoints])
+                    self.vertices[vert][1] = np.mean(sy[linepoints])
+                    linepoints = [p]
+                    vert = closest
+    def getBorderPoints(self):
+        touchedcells = np.zeros(len(self.vertices))
+        for c in self.cells:
+            for v in c:
+                touchedcells[v] += 1
+        return [i for i in range(len(self.vertices)) if touchedcells[i] > 0 and touchedcells[i] < 3]
+
 
 def getArgDict(args):
         argdict = {}

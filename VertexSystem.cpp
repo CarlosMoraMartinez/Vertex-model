@@ -538,15 +538,15 @@ void Tissue::setEdgeType(int e){
 			edges[e].can_transition = false;
 		}else if(cells[c1].type == CellType::vein_blade && cells[c2].type == CellType::vein_blade){ 
 			edges[e].type = EdgeType::vein;
-			edges[e].tension = line_tension[CellType::vein_blade];
+			edges[e].tension = line_tension[CellType::blade]; //vein_blade is only for vein border
 			edges[e].can_transition = false;
 		}else if(cells[c1].type == CellType::vein_hinge && cells[c2].type == CellType::vein_hinge){
 			edges[e].type = EdgeType::vein;
-			edges[e].tension = line_tension[CellType::vein_hinge];
+			edges[e].tension = line_tension[CellType::hinge]; //vein_hinge is only for vein border
 			edges[e].can_transition = false;
 		}else if((cells[c1].type == CellType::vein_blade && cells[c2].type == CellType::vein_hinge) || (cells[c1].type == CellType::vein_hinge && cells[c2].type == CellType::vein_blade) ){ 
 			edges[e].type = EdgeType::vein;
-			edges[e].tension = 0.5*(line_tension[CellType::vein_hinge] + line_tension[CellType::vein_blade]);
+			edges[e].tension = 0.5*(line_tension[CellType::hinge] + line_tension[CellType::blade]);//vein_hinge and vein_blade are only for vein border
 			edges[e].can_transition = false;
 		}
 }
@@ -804,7 +804,7 @@ bool Tissue::tryMoveVertex(std::default_random_engine& generator, std::uniform_r
 	int vertex_to_move;
 	do{
 		vertex_to_move = std::rand() % static_cast<int>(vertices.size());
-	}while(vertices[vertex_to_move].dead || !vertices[vertex_to_move].movable); // A or static dead vertex cannot be selected
+	}while(vertices[vertex_to_move].dead || (!vertices[vertex_to_move].movable && STATIC_PRESENT || vertices[vertex_to_move].cells[0] == EMPTY_CONNECTION)); // A or static dead vertex cannot be selected
 
 	double old_x = vertices[vertex_to_move].x;
 	double old_y = vertices[vertex_to_move].y;
@@ -863,7 +863,6 @@ void Tissue::advanceCellCycle(int vertex_moved){
 void Tissue::advanceSizeWithTime(int vertex_moved){
 	int caux;
 	double time_factor = static_cast<double>(counter_moves_accepted)/max_accepted_movements;
-	cout << "time f: " << time_factor << endl;
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
 		caux = vertices[vertex_moved].cells[i];
 		if(caux == EMPTY_CONNECTION) continue;
@@ -1092,7 +1091,8 @@ void Tissue::make_t1_at_border_inwards(Rearrangement& r){
 	edges[edge].cells[1] = sp2->ind;
 	//cout << "K\n";
 	//10) Change edge tension and type
-	if(sp1->type == CellType::vein_blade){
+	setEdgeType(edge);
+	/*if(sp1->type == CellType::vein_blade){
 		if(sp2->type == CellType::blade){
 			edges[edge].type = EdgeType::vein_blade;
 			edges[edge].tension = line_tension[CellType::vein_blade];
@@ -1114,7 +1114,7 @@ void Tissue::make_t1_at_border_inwards(Rearrangement& r){
 	}else{
 		edges[edge].type = EdgeType::blade;
 		edges[edge].tension = line_tension[CellType::blade];;
-	}
+	}*/
 
 	//cout << "L\n";
 
@@ -1418,6 +1418,7 @@ bool Tissue::getDivisionPoints(const int cell, double &x1, double &x2, double &y
 	for(int i = 0; i < cells[cell].num_vertices - 1; i++){
 		for(int j  = i + 1; j < cells[cell].num_vertices; j++){
 			dist = distance(cells[cell].vertices[i], cells[cell].vertices[j]);
+			//cout << "    Comparing: " << cells[cell].vertices[i] << " and " << cells[cell].vertices[j] << ". Dist: " << dist << ", Current max: " << max_dist << endl;
 			if(dist > max_dist){ // || max_dist < 0
 				max_dist = dist;
 				mv1 = cells[cell].vertices[i];
@@ -1445,8 +1446,8 @@ bool Tissue::getDivisionPoints(const int cell, double &x1, double &x2, double &y
 		//WARNING! This is a not very elegant fix of the problem of vertical lines (they have infinite slope), and can happen in other parts of the program
 		final_angle += 0.01;
 	}
-	/*	
-	cout << "\ncell: " << cell << " of type " << static_cast<int>(cells[cell].type) << "; v1: " << mv1 << ", v2: " << mv2 << ", final_angle: " << 180*final_angle/M_PI << endl;
+
+	/*cout << "\ncell: " << cell << " of type " << static_cast<int>(cells[cell].type) << "; v1: " << mv1 << ", v2: " << mv2 << ", final_angle: " << 180*final_angle/M_PI << endl;
 	cout << "- angle hertwig: " << 180*angle_hertwig/M_PI << endl;
         cout << "- cell angle_longest: " << cells[cell].division_angle_longest << ", atan2 longest: " << 180*atan2(vertices[mv1].y - vertices[mv2].y, vertices[mv1].x - vertices[mv2].x)/M_PI << endl;
         cout << "- random angle final: " << random_angle << ", random angle proportion: " << cells[cell].division_angle_random_noise << endl;
@@ -2588,9 +2589,24 @@ void Tissue::writeSpringsFile(std::string fname){
 	fname = fname + SPRING_FILE_EXTENSION;
 	ofstream fo;
 	fo.open(fname);
+	bool typefound = false;
 	fo << num_springs << "\n";
 	for(Edge s: springs){
-		if(!s.dead) fo << s.vertices[0] << "\t" << s.vertices[1] << "\n";
+		if(!s.dead){
+			fo << s.vertices[0] << "\t" << s.vertices[1] << "\t";
+                        for(auto const& springtype : spring_type_constants){
+				if(abs(springtype.second - s.tension) < 0.001){
+					fo << springtype.first;
+					typefound = true;
+					break;
+				}
+			}
+			if(!typefound){
+				fo << 0;
+			}
+			fo << "\n";
+			typefound = false;
+		}
 	}
 	fo.close();
 }
