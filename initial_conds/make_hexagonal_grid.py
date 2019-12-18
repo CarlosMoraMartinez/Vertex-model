@@ -127,6 +127,7 @@ class HexGrid:
         self.springs = []
         self.celltypes = []
         self.vnum = 0
+        self.plotcol = None
 
         self.getCells()
 
@@ -250,7 +251,7 @@ class HexGrid:
         print(col.shape)
         pc = PolyCollection(col, facecolors= [wingcols[self.celltypes[j]] for j in range(len(self.cells))], alpha = alpha)
         pc.set_edgecolors("black")
-        ax.add_collection(pc)
+        self.plotcol = ax.add_collection(pc)
         ax.autoscale_view()
         for c in self.springs:
             plt.plot( [self.vertices[c[0]][0], self.vertices[c[1]][0]] ,  [self.vertices[c[0]][1], self.vertices[c[1]][1]], c = "red" )

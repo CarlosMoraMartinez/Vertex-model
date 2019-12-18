@@ -24,7 +24,7 @@ def makeWingHex(wname):
     ax.imshow(im, extent = [0, maxx, 0, maxy])
 
     # Draw border by hand 
-    border = getPointsBorder2(fig, ax, hx)
+    border = getPointsBorder2(fig, ax, hx, im, maxx, maxy)
     border.disconnect()
     num_points, points, lines, fig, ax, hx = border.getData()
     plt.close()
@@ -32,8 +32,8 @@ def makeWingHex(wname):
     ax.imshow(im, extent = [0, maxx, 0, maxy])
     border.correctBorderManually((f, ax))
 
-    
-
+    f, ax, pc = hx.plotHex2()
+    ax.imshow(im, extent = [0, maxx, 0, maxy])
     #Set cell types: hinge and veins
     getCellTypes(hx, pc, f, ax)
     f, ax, pc = hx.plotHex2()
@@ -332,6 +332,8 @@ class getCellTypes:
     def __init__(self, hx, pc, fig, ax):
         self.finished = False
         self.celltype = None
+        self.moving_point = False
+        self.point_selected = -1
         self.hx = hx
         self.collection = pc
         self.fig = fig
@@ -339,7 +341,9 @@ class getCellTypes:
         self.ax = ax
         self.cid1 = self.canvas.mpl_connect('key_press_event', self.on_key)
         self.cid2 = self.canvas.mpl_connect('button_press_event', self.onpress)
-        print("H to set Hinge; B to set Blade; V to set Veins (recommended last); M to continue")
+        self.dist = lambda x1, x2, y1, y2: ((x1-x2)**2 + (y1-y2)**2)**0.5
+
+        print("H to set Hinge; B to set Blade; V to set Veins (recommended last); Z to move a point; M to continue")
         plt.show()
 
     def on_key(self, event):
@@ -358,6 +362,13 @@ class getCellTypes:
             self.finished = True
             self.celltype = None
             print("Press M to continue")
+        elif(event.key in "Zz" and not self.finished and not self.canvas.widgetlock.locked()):
+            if(not self.moving_point): 
+                self.moving_point = True
+                print("Move point")
+            else:
+                self.moving_point = False
+                print("Finished moving points")               
         elif(self.finished):
             self.fig.canvas.mpl_disconnect(self.cid1)
             self.fig.canvas.mpl_disconnect(self.cid2)
@@ -369,6 +380,9 @@ class getCellTypes:
         if self.canvas.widgetlock.locked():
             return
         if event.inaxes is None:
+            return
+        if self.moving_point:
+            self.movePoint(event)
             return
         if self.celltype is None:
             return
@@ -403,7 +417,7 @@ class getCellTypes:
         #fig, ax, pc = self.hx.plotHex2(fig=(self.fig, self.ax))
         self.collection.set_facecolors(self.hx.getColors())
         self.canvas.draw_idle()
-        print("H to set Hinge; B to set Blade; V to set Veins (recommended last)")
+        print("H to set Hinge; B to set Blade; V to set Veins (recommended last); Z to move points")
 
     def changeType(self, t):   
         newt = self.celltype  
@@ -412,170 +426,25 @@ class getCellTypes:
                 newt = mhg.veinhinge
         return newt
 
+    def movePoint(self, event):
+        if(self.point_selected < 0):
+            dists = [self.dist(event.xdata, v[0], event.ydata, v[1]) for v in self.hx.vertices] 
+            self.point_selected = np.argmin(dists)
 
+        else:
+            self.hx.vertices[self.point_selected][0] = event.xdata
+            self.hx.vertices[self.point_selected][1] = event.ydata 
+            self.ax.collections.clear()
+            self.fig, self.ax, self.collection = self.hx.plotHex2((self.fig, self.ax))
+            self.point_selected = -1
+            self.fig.canvas.draw_idle() 
 
 ###
 
 ###
-
-
-
-def makeWingVoronoi():
-    npoints = 2000
-    fig, ax = plt.subplots()
-    im = plt.imread(inputname)    
-    ax.imshow(im, extent = [0, 100, 0, 100])
-    num_points, points, lines, fig, ax = getPointsBorder(fig, ax)
-    lim = Polygon(points)
-    ranpoints = generatePointsInsideShape(npoints, lim)
-    vor = Voronoi(ranpoints)
-    f, ax = plt.subplots()
-    voronoi_plot_2d(vor, ax=ax)
-    plotBorder(points, lines, (f, ax))
-    plt.show()
-
-    vor = improveVoronoi(vor, lim)
-
-    #print(vor.regions)
-    #plotVorManual(vor, points, lines)
-    f, ax = plt.subplots()
-    voronoi_plot_2d(vor=vor, ax=ax)
-    plotBorder(points, lines, (f, ax))
-    plt.show()
-
-def improveVoronoi(vor, lim, iters=10):
-    for i in range(iters):
-        cents = getCentroids(vor)
-        vor = Voronoi(cents)
-    return vor
-
-def getCentroids(vor):
-    centroids = []
-    for r in vor.regions:
-        if(-1 in r or len(r) < 3): 
-            continue
-        pol = []
-        #print(r)
-        for p in r:
-            pol.append((vor.vertices[p, 0], vor.vertices[p, 1]))
-        shpol = Polygon(pol)
-        #print (shpol)
-        centroids.append((shpol.centroid.x, shpol.centroid.y))
-    return centroids
-
-def filterVoronoi(vor, lim):
-    filtered_regions = []
-    for r in vor.regions:
-        flag = True
-        for p in r:
-            if(-1 in vor.vertices[p]):
-                flag = False
-                break
-            x = vor.vertices[p, 0]
-            y = vor.vertices[p, 1]
-            shpoint = shapely.geometry.Point(x, y)
-            if(not lim.contains(shpoint)):
-                flag = False
-                break
-        if(flag):
-            filtered_regions.append(r)
-    vor.regions = filtered_regions
-    return vor
-            
-def plotVorManual(vor, points, lines):
-    f, ax = plt.subplots()
-    plotBorder(points, lines, (f, ax))
-    for r in vor.regions:
-        for p in range(len(r) - 1):
-            ax.plot(vor.vertices[r[p]], vor.vertices[r[p+1]] , c = "red")
-        #ax.plot(vor.vertices[r[len(r)-1]], vor.vertices[r[0]] , c = "red")
-    plt.show()
-              
-
-
-def generatePointsInsideShape(npoints, lim):
-    xmin, xmax, ymin, ymax = (min(lim.exterior.xy[0]), max(lim.exterior.xy[0]), min(lim.exterior.xy[1]), max(lim.exterior.xy[1]))
-    ranpoints = []
-    while(len(ranpoints) < npoints):
-        ranx = np.random.uniform(low = xmin, high = xmax)
-        rany = np.random.uniform(low = ymin, high = ymax)  
-        shpoint = shapely.geometry.Point(ranx, rany)
-        if(lim.contains(shpoint)):
-            ranpoints.append((ranx, rany))
-    return ranpoints
-  
-
-
-def removeCellsOutside(points, lines, hx):
-    hxpol = hx.getShapelyPolygons()
-    lim = Polygon(points)
-    cells_to_remove = []
-    cells_to_fit = []
-    for i, cell in enumerate(hxpol):
-        if(not lim.contains(cell)):
-            if(lim.overlaps(cell)):
-                if(lim.intersection(cell).area/cell.area < 0.5):
-                    cells_to_remove.append(i)
-                else:
-                    cells_to_fit.append(i)
-            else:
-                cells_to_remove.append(i)
-    cells_to_remove.sort(reverse = True)
-    for i in cells_to_remove:
-        hx.removeCell(i)
-    return hx
-
-   
-def plotBorder(points, lines, fig):
-    f, ax = fig
-    ax.plot([points[len(points) - 1][0], points[0][0]], [points[len(points) - 1][1], points[0][1]], color = "black")
-    for i in range(len(points) - 1):
-         ax.plot([points[i][0], points[i+1][0]], [points[i][1], points[i+1][1]], color = "black")
-
-class getPointsBorder():
-    def __init__(self, fig, ax):
-        self.points = []
-        self.lines = []
-        self.num_points = 0
-        self.finished = False
-        self.fig = fig
-        self.ax = ax
-
-        self.cid1 = self.fig.canvas.mpl_connect('key_press_event', self.on_key)
-        self.cid2 = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
-        plt.show()
-
-    def onclick(self, event):
-        if(not self.finished):
-            print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %
-                   ('double' if event.dblclick else 'single', event.button,
-                   event.x, event.y, event.xdata, event.ydata))
-            self.points.append([event.xdata, event.ydata])
-            self.ax.scatter([event.xdata], [event.ydata], color = "blue")
-            if(self.num_points > 0):
-                self.lines.append([self.num_points - 1, self.num_points])
-                self.ax.plot([self.points[self.num_points - 1][0], self.points[self.num_points][0]], [self.points[self.num_points - 1][1], self.points[self.num_points][1]], color = "black")
-            self.fig.canvas.draw()
-            self.num_points += 1
-    def on_key(self, event):
-        print('you pressed', event.key, event.xdata, event.ydata)
-        if(event.key in "mM" and not self.finished):
-            self.finished = True
-            self.fig.canvas.mpl_disconnect(self.cid2)
-            self.lines.append([self.num_points - 1, 0])
-            self.ax.plot([self.points[self.num_points - 1][0], self.points[0][0]], [self.points[self.num_points - 1][1], self.points[0][1]], color = "black")
-            print("Press M to continue")
-            self.fig.canvas.draw()
-        elif(self.finished):
-            self.fig.canvas.mpl_disconnect(self.cid1)
-            plt.close()
-            return
-    def getData(self):
-        return (self.num_points, self.points, self.lines, self.fig, self.ax)
-
 
 class getPointsBorder2():
-    def __init__(self, fig, ax, hx):
+    def __init__(self, fig, ax, hx, im, maxx, maxy):
         self.points = []
         self.lines = []
         self.num_points = 0
@@ -583,15 +452,23 @@ class getPointsBorder2():
         self.fig = fig
         self.ax = ax
         self.hx = hx
+        self.im = im
+        self.maxx = maxx
+        self.maxy = maxy
         self.cid1 = None
         self.cid2 = None
         self.borderpoints = None
         self.borderscatter = None
+        self.movePointBlocked = False
 
         self.poly = PolygonSelector(ax, self.onselect)
         self.dist = lambda x1, x2, y1, y2: ((x1-x2)**2 + (y1-y2)**2)**0.5
+        self.dist_to_line = lambda x1, x2, px, y1, y2, py: abs( px*(y2-y1) - py*(x2-x1) - y2*x1 + x2*y1)/(((x2-x1)**2 + (y2-y1)**2)**0.5)
+        self.closestInLine_x = lambda a, b, c, x, y: (b*(b*x - a*y) - a*c)/(a**2 + b**2)
+        self.closestInLine_y = lambda a, b, c, x, y: (a*(-b*x + a*y) - b*c)/(a**2 + b**2)
         self.point_selected = -1
         self.point_in_border = -1
+        self.finished = False
         print("Draw border with mouse: click in each point. Close polygon and close window to continue")
         plt.show()
 
@@ -601,7 +478,7 @@ class getPointsBorder2():
     def onselect(self, verts):
         self.points = verts
         self.num_points = len(self.points)
-        previous = len(self.points) - 1
+        previous = self.num_points - 1
         for i, p in enumerate(verts):
             self.lines.append([previous, i])
             previous = i
@@ -609,6 +486,7 @@ class getPointsBorder2():
     def disconnect(self):
         self.poly.disconnect_events()
         self.hx = self.hx.copyModifiedStructure(self.points, self.lines)
+        self.correctBorderAutomatically()
     def plotBorder(self, fig=None):
         if(fig is not None):
             self.fig, self.ax = fig
@@ -616,9 +494,44 @@ class getPointsBorder2():
         for i in range(len(self.points) - 1):
             self.ax.plot([self.points[i][0], self.points[i+1][0]], [self.points[i][1], self.points[i+1][1]], color = "black")
 
+    def correctBorderAutomatically(self):
+        self.borderpoints = self.hx.getBorderPoints()
+        for p in self.borderpoints:
+            distances = np.zeros((len(self.lines) , 9))
+            for i, l in enumerate(self.lines):
+                p1, p2 = l
+                distances[i, 0] = self.dist_to_line(self.points[p1][0], self.points[p2][0], self.hx.vertices[p][0], self.points[p1][1], self.points[p2][1], self.hx.vertices[p][1])
+                distances[i, 1] = (self.points[p2][1] - self.points[p1][1])/(self.points[p2][0] - self.points[p1][0])#m
+                distances[i, 2] = self.points[p2][1] - distances[i, 1]*self.points[p2][0]#n
+                distances[i, 3] = -1*distances[i, 1] #a
+                distances[i, 4] = 1 #b
+                distances[i, 5] = -1*distances[i, 2] #c
+                distances[i, 6] = self.closestInLine_x(distances[i, 3], distances[i, 4], distances[i, 5], self.hx.vertices[p][0], self.hx.vertices[p][1])#newx
+                distances[i, 7] = self.closestInLine_y(distances[i, 3], distances[i, 4], distances[i, 5], self.hx.vertices[p][0], self.hx.vertices[p][1])#newy
+                distances[i, 8] = self.putPointInside(distances[i, 6], distances[i, 7], self.points[p1][0], self.points[p1][1], self.points[p2][0], self.points[p2][1], self.hx.vertices[p][0], self.hx.vertices[p][1])
+                #distances[i, 8] = self.dist(self.hx.vertices[p][0], self.points[p2][0], self.hx.vertices[p][1], self.points[p2][1])
+            distances = distances[distances[:,0].argsort()]
+            closestline = -1
+            for i in range(len(self.lines)):
+                if(distances[i, 8] > 0):
+                    closestline = i 
+                    break
+
+            if(closestline > -1):
+                self.hx.vertices[p][0] = distances[closestline, 6] 
+                self.hx.vertices[p][1] = distances[closestline, 7]
+            #print("Vertex %d: x=%f y=%f; newx:%f, newy:%f, y in eq: %f"%( p, self.hx.vertices[p][0], self.hx.vertices[p][1], newx, newy, m*newx+n))
+
+    def putPointInside(self, x, y, x1, y1, x2, y2, oldx, oldy):
+        if((x >= x1 and x <= x2) or (x >= x2 and x <= x1)):
+            return 1
+        else:
+            return -1
+
     def correctBorderManually(self, fig):
         if(fig is not None):
             self.fig, self.ax = fig
+        self.plotBorder(fig)
         self.borderpoints = self.hx.getBorderPoints()
 
         self.borderscatter = [self.ax.scatter(self.hx.vertices[p][0],  self.hx.vertices[p][1], color = "green") for p in self.borderpoints]
@@ -626,6 +539,7 @@ class getPointsBorder2():
         self.ax.scatter([self.hx.vertices[p][0] for p in self.borderpoints],  [self.hx.vertices[p][1] for p in self.borderpoints], color = "green")
         self.cid1 = self.fig.canvas.mpl_connect('key_press_event', self.on_key)
         self.cid2 = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
+        print("Select border points to move. Z to stop/resume selection (useful to zoom etc); M to exit")
         plt.show()
 
     def on_key(self, event):
@@ -633,9 +547,21 @@ class getPointsBorder2():
         if(event.key in "mM"):
             self.fig.canvas.mpl_disconnect(self.cid2)
             self.fig.canvas.mpl_disconnect(self.cid1)
+            self.finished = True
             plt.close()
-
+        elif(event.key in "zZ"):
+            if(self.movePointBlocked):
+                print("Border Point Selector Unblocked")
+                self.movePointBlocked = False
+            else:
+                print("Border Point Selector Blocked")
+                self.movePointBlocked = True
+        print("Select border points to move. Z to stop/resume selection (useful to zoom etc); M to exit")
     def onclick(self, event):
+        if event.inaxes is None:
+            return
+        if(self.movePointBlocked):
+            return
         if(self.point_selected < 0):
             dists = [self.dist(event.xdata, self.hx.vertices[v][0], event.ydata, self.hx.vertices[v][1]) for v in self.borderpoints] 
             self.point_in_border = np.argmin(dists)
@@ -644,11 +570,12 @@ class getPointsBorder2():
         else:
             self.hx.vertices[self.point_selected][0] = event.xdata
             self.hx.vertices[self.point_selected][1] = event.ydata 
-            self.borderscatter[self.point_in_border].set_offsets([event.xdata, event.ydata])
-            #self.borderscatter[].get_offsets()[self.point_selected, 1] = event.ydata   
+            self.ax.collections.clear()
+            self.hx.plotHex2((self.fig, self.ax))
+            self.borderscatter = [self.ax.scatter(self.hx.vertices[p][0],  self.hx.vertices[p][1], color = "green") for p in self.borderpoints]
             self.point_selected = -1
             self.fig.canvas.draw_idle()
-
+        print("Select border points to move. Z to stop/resume selection (useful to zoom etc); M to exit")
 
 
 #makeWingVoronoi()
