@@ -25,6 +25,7 @@ hingetype = 1
 veintype = 2
 veinhinge = 3
 wingcols = ['blue', 'green', 'black', 'gray']
+springcols = ['red', 'yellow', 'purple', 'pink', 'brown']
 
 
 GM = (sqrt(5)-1.0)/2.0
@@ -59,7 +60,13 @@ def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, n
     # In order to plot a MultiPolygon object, I need to iterate over each oplygon
     fig = plt.figure(1, figsize=(5,5), dpi=90)
     ax = fig.add_subplot(plot_pos)
+    x, y, t = zip(*pointsList.values())
+    #ww = max(x)*1.05
+    #hh = max(y)*1.05
+    #aa = max([ww, hh])
+    ax.set_aspect('equal')
     count = 0
+    #ax.scatter(aa, aa, alpha=0.1)
     for k, element in enumerate(grid):
         count += 1
         polygon = Polygon(element)
@@ -84,35 +91,46 @@ def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, n
         ax.add_patch(patch)
     for s in sprList:
         ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color = RED)
-    for p in pointsList.keys():
-        if(pointsList[p][2] == 0):
-            ax.scatter(pointsList[p][0], pointsList[p][1], color = RED)
+    #for p in pointsList.keys():
+    #    if(pointsList[p][2] == 0):
+    #        ax.scatter(pointsList[p][0], pointsList[p][1], color = RED)
        
     if(add_vnums):
         for i in pointsList.keys():
-            ax.annotate(i, pointsList[i][0:2])
-    plt.savefig(name + '.png')
+            ax.annotate(i, pointsList[i][0:2], fontsize = 'xx-small')
+    plt.savefig(name + '.svg', format='svg', dpi=1200)
+    plt.savefig(name + '.png', format='png')
     plt.clf()
 
 ##Not tested, probably doesn't works
-def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name):
+def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name, figg=None):
     from matplotlib.collections import PolyCollection
-    fig, ax = plt.subplots()
+
+    if(figg is None):
+        fig, ax = plt.subplots()
+        ax.set_aspect('equal')
+    else:
+        fig, ax = figg
+        ax.collections.clear()
     #col = np.zeros((len(grid), 6, 2))
     pc = PolyCollection(grid, facecolors= [wingcols[celltypes[j]] for j in range(len(grid))], alpha = 0.6)
     pc.set_edgecolors("black")
     ax.add_collection(pc)
-    ax.autoscale_view()
+
     for s in sprList:
-        ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color = RED)
-    for p in pointsList.keys():
-        if(pointsList[p][2] == 0):
-            ax.scatter(pointsList[p][0], pointsList[p][1], color = RED)       
+        spcolor = springcols[int(s[2])] if len(s) > 2 else RED
+        ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color = spcolor)
+    #for p in pointsList.keys():
+    #    if(pointsList[p][2] == 0):
+    #        ax.scatter(pointsList[p][0], pointsList[p][1], color = RED)       
     if(add_vnums):
         for i in pointsList.keys():
             ax.annotate(i, pointsList[i][0:2])
+
     plt.savefig(name + '.png')
-    plt.clf()
+    plt.savefig(name + '.svg', format='svg', dpi=1200)
+    return (fig, ax)
+    
 
 
 def plot_expr(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name, color_expr):
@@ -147,7 +165,7 @@ def readCellsFile(name, plot_cell_types, pointsList):
         polygonIndex = [indPoint for indPoint in cellsFile.readline().split() if int(indPoint) >= 0]
         if(plot_cell_types):
             celltypes.append(int(polygonIndex.pop())) #CAREFUL: if cells file does not have type, will produce error
-        polygonCoords = [list(pointsList[coord]) for coord in polygonIndex]
+        polygonCoords = [[pointsList[coord][0], pointsList[coord][1]] for coord in polygonIndex]
         polygonList.append(polygonCoords)
     cellsFile.close()
     return (numCells, polygonList, celltypes)
@@ -195,6 +213,7 @@ def main():
     plot_cell_types = args.plotCellTypes
     add_vnums = args.write_vertex_number
     color_expr = [int(i) for i in args.genes_to_plot_expression.split(',') if i != '']
+    fig = None
     for fnum in range(args.Start_index, args.End_index):
         if(fnum >= 0):
             name = args.Inputname + str(fnum)
@@ -208,11 +227,12 @@ def main():
         ########################################################################################################################
         # Plotting the final polygons
         ########################################################################################################################
-        plot_grid(111, polygonList, pointsList, sprList, add_vnums, celltypes, [] ,name)  
+        print("%d files read..."%fnum)
+        fig = plot_grid2(111, polygonList, pointsList, sprList, add_vnums, celltypes, [] ,name)  
         if(len(color_expr) > 0 and args.Input_expr != ""):
             xprList = readExpr(args.Input_expr + str(fnum))
             plot_expr(111, polygonList, pointsList, sprList, add_vnums, celltypes, xprList, name, color_expr)
-        print(fnum)
+        print("%d printed"%fnum)
 
 
 if __name__ == '__main__':

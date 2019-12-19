@@ -1,5 +1,6 @@
 from operator import itemgetter
 import sys
+import argparse
 
 import numpy as np
 import scipy.spatial as spatial
@@ -15,42 +16,61 @@ import make_hexagonal_grid as mhg
 inputname = "wing.png"
 
 
-def makeWingHex(wname):
+def makeWingHex(args):
     # Make hexagonal grid
-    hx, im = setHexagonSize(inputname, wname).getGrid()
+    hx, im = setHexagonSize(args).getGrid()
     fig, ax = plt.subplots()
-    fig.suptitle(wname, fontsize=16)
+    fig.suptitle(hx.outname, fontsize=16)
     maxx, maxy = hx.getMax()
+    if(len(hx.inputname) > 0):
+        maxx*=1.1
+        maxy*=1.1
     ax.imshow(im, extent = [0, maxx, 0, maxy])
+    hx.writeGrid(add='_a')
 
     # Draw border by hand 
-    border = getPointsBorder2(fig, ax, hx, im, maxx, maxy)
-    border.disconnect()
-    num_points, points, lines, fig, ax, hx = border.getData()
-    plt.close()
-    f, ax, pc = hx.plotHex2()
-    ax.imshow(im, extent = [0, maxx, 0, maxy])
-    border.correctBorderManually((f, ax))
-
+    if(len(hx.inputname) == 0):
+        border = getPointsBorder2(fig, ax, hx, im, maxx, maxy)
+        border.disconnect()
+        num_points, points, lines, fig, ax, hx = border.getData()
+        plt.close()
+        f, ax, pc = hx.plotHex2()
+        ax.imshow(im, extent = [0, maxx, 0, maxy])
+        border.correctBorderManually((f, ax))
+        hx.writeGrid(add='_b')
+    else:
+        plt.close()
     f, ax, pc = hx.plotHex2()
     ax.imshow(im, extent = [0, maxx, 0, maxy])
     #Set cell types: hinge and veins
     getCellTypes(hx, pc, f, ax)
     f, ax, pc = hx.plotHex2()
     ax.imshow(im, extent = [0, maxx, 0, maxy])
+    hx.writeGrid(add='_c')
 
     #Set borders: static vertices and springs
     getBorders(hx, pc, f, ax)
     hx.writeGrid()
-
+    f, ax, pc = hx.plotHex2(save=True)
+    plt.show()
 
 
 class setHexagonSize:
 
-    def __init__(self, imfile, hxname):
+    def __init__(self, args):
 
+        imfile = args.Inputimage 
+        inputfile = args.Inputname
+        print("IN: ", inputfile, ", len: ", len(inputfile))
+        hxname = args.Outname
+        
         self.im = plt.imread(imfile)
         self.imratio = self.im.shape[0]/self.im.shape[1]
+        if(len(inputfile) > 0):
+            self.im[:,:,:] = 255
+            self.editing = True
+        else:
+            self.editing = False
 
         self.argdict = {}
         self.argdict.setdefault('Size', 3)
@@ -66,6 +86,8 @@ class setHexagonSize:
         self.argdict.setdefault('Hinge', -1)
         self.argdict.setdefault('Veins', '')
         self.argdict.setdefault('Outname', hxname)
+        self.argdict.setdefault('Read', inputfile)
+ 
         self.defaultArgs = self.argdict.copy()
 
         # Make hexagonal grid
@@ -99,29 +121,34 @@ class setHexagonSize:
         self.button = Button(self.resetax, 'Reset', color=self.axcolor, hovercolor='0.975')
         self.button.on_clicked(self.reset)
 
-        print("Select parameters. Press 'm' to continue")
+        print("Select parameters. Press 'm' to continue (Inactive for editing)")
         plt.show()
 
     def update(self, val):
-        self.ax.clear()
-        self.argdict['Rows'] = (self.scols.val*self.imratio*self.sstrecht.val).astype(int) 
-        self.argdict['Cols']  =  self.scols.val.astype(int)
-        self.argdict['Noise'] = self.snoise.val
-        self.argdict['Strecht'] = self.sstrecht.val
-        self.argdict['Rotate'] =  self.srotate.val
-        self.makeAndAddToPlot() 
+        if(not self.editing):
+            self.ax.clear()
+            self.argdict['Rows'] = (self.scols.val*self.imratio*self.sstrecht.val).astype(int) 
+            self.argdict['Cols']  =  self.scols.val.astype(int)
+            self.argdict['Noise'] = self.snoise.val
+            self.argdict['Strecht'] = self.sstrecht.val
+            self.argdict['Rotate'] =  self.srotate.val
+            self.makeAndAddToPlot() 
 
 
     def reset(self, event):
-        self.argdict = self.defaultArgs.copy()
-        self.scols.reset() 
-        self.snoise.reset() 
-        self.sstrecht.reset() 
-        self.srotate.reset() 
+        if(not self.editing):
+            self.argdict = self.defaultArgs.copy()
+            self.scols.reset() 
+            self.snoise.reset() 
+            self.sstrecht.reset() 
+            self.srotate.reset() 
 
     def makeAndAddToPlot(self):
         self.hx = mhg.HexGrid(**self.argdict)
         self.maxx, self.maxy = self.hx.getMax()
+        if(self.editing):
+            self.maxx*=1.1
+            self.maxy*=1.1
         self.ax.imshow(self.im, extent = [0, self.maxx, 0, self.maxy])
         self.hx.plotHex2((self.fig, self.ax), False, 0.3)
         self.canvas.draw_idle()
@@ -150,6 +177,7 @@ class getBorders:
         self.pointPlotRefs = dict()
         self.springType = 0
         self.hx = hx
+        self.borderpoints = [self.hx.vertices[i] for i in self.hx.getBorderPoints()]
         self.collection = pc
         self.fig = fig
         self.canvas = fig.canvas
@@ -213,6 +241,8 @@ class getBorders:
         print("Finishing Lasso")
 
     def callback(self, verts):
+        self.canvas.widgetlock.release(self.lasso)
+        del self.lasso
         if(self.drawing == "static"):
             self.setStatic(verts)
         elif(self.drawing == "springs"):
@@ -221,8 +251,6 @@ class getBorders:
             self.removeStatic(verts)
         #fig, ax, pc = self.hx.plotHex2(fig=(self.fig, self.ax))
         self.canvas.draw_idle()
-        self.canvas.widgetlock.release(self.lasso)
-        del self.lasso
         print("T to set static vertices; V to set springs; J to remove static vertices or springs; N to set spring type; M to continue")
 
     def setStatic(self, verts):
@@ -321,8 +349,12 @@ class getBorders:
                     self.staticPoints.append(v[2])
         self.updatePlot()
 
-    def getClosestVert(self,v, movable=1):   
-        dists=[(np.sqrt(np.power(v[0] - v2[0], 2) + np.power(v[1] - v2[1], 2)), v2[2]) for v2 in self.hx.vertices if v2[3] == movable]
+    def getClosestVert(self,v, movable=1, onlyBorder=True):
+        if(onlyBorder):
+            search=self.borderpoints
+        else:
+            search=self.hx.vertices   
+        dists=[(np.sqrt(np.power(v[0] - v2[0], 2) + np.power(v[1] - v2[1], 2)), v2[2]) for v2 in search if v2[3] == movable]
         if(len(dists) == 0):
             return -1
         return min(dists,key=itemgetter(0))[1]  
@@ -343,13 +375,13 @@ class getCellTypes:
         self.cid2 = self.canvas.mpl_connect('button_press_event', self.onpress)
         self.dist = lambda x1, x2, y1, y2: ((x1-x2)**2 + (y1-y2)**2)**0.5
 
-        print("H to set Hinge; B to set Blade; V to set Veins (recommended last); Z to move a point; M to continue")
+        print("N to set Hinge; B to set Blade; V to set Veins (recommended last); Z to move a point; M to continue")
         plt.show()
 
     def on_key(self, event):
 
         print('you pressed: ', event.key, event.xdata, event.ydata)
-        if(event.key in "Hh" and not self.finished and not self.canvas.widgetlock.locked()):
+        if(event.key in "Nn" and not self.finished and not self.canvas.widgetlock.locked()):
             self.celltype = mhg.hingetype
             print("Drawing Hinge. Drag mouse to draw.")
         elif(event.key in "Vv" and not self.finished and not self.canvas.widgetlock.locked()):
@@ -393,6 +425,8 @@ class getCellTypes:
         self.canvas.widgetlock(self.lasso)
         print("Finishing Lasso")
     def callback(self, verts):
+        self.canvas.widgetlock.release(self.lasso)
+        del self.lasso
         newtypes = []
         try:
             lim = Polygon(verts)
@@ -407,17 +441,17 @@ class getCellTypes:
                         #self.hx.celltypes[i] = self.changeType(self.hx.celltypes[i])
         except:
             print("Error: Error drawing shape")
-            self.canvas.widgetlock.release(self.lasso)
-            del self.lasso
+            #self.canvas.widgetlock.release(self.lasso)
+            #del self.lasso
             return
         for i, t in newtypes:
             self.hx.celltypes[i] = t
-        self.canvas.widgetlock.release(self.lasso)
-        del self.lasso
+        #self.canvas.widgetlock.release(self.lasso)
+        #del self.lasso
         #fig, ax, pc = self.hx.plotHex2(fig=(self.fig, self.ax))
         self.collection.set_facecolors(self.hx.getColors())
         self.canvas.draw_idle()
-        print("H to set Hinge; B to set Blade; V to set Veins (recommended last); Z to move points")
+        print("N to set Hinge; B to set Blade; V to set Veins (recommended last); Z to move points")
 
     def changeType(self, t):   
         newt = self.celltype  
@@ -577,10 +611,17 @@ class getPointsBorder2():
             self.fig.canvas.draw_idle()
         print("Select border points to move. Z to stop/resume selection (useful to zoom etc); M to exit")
 
-
+parser = argparse.ArgumentParser(description='Wing Drawer arguments.')
+parser.add_argument('-o', '--Outname', metavar='outname', type=str, default = "hexgrid", 
+                                        help='Identifier. Used as prefix of all output files. ')
+parser.add_argument('-i', '--Inputname', metavar='inputname', type=str, default = "", 
+                                        help='Identifier. Used as prefix to read files. ')
+parser.add_argument('-w', '--Inputimage', metavar='inputimage', type=str, default = inputname, 
+                                        help='Use this image to draw on it. ')
 #makeWingVoronoi()
 def main():
-    makeWingHex(sys.argv[1])
+    args = parser.parse_args()
+    makeWingHex(args)
 
 if __name__ == '__main__':
     main()

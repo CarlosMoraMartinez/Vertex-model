@@ -105,6 +105,7 @@ class HexGrid:
     height = lambda size: 2 * size
 
     def __init__(self, **kwargs):
+        self.__args = kwargs
         self.s = kwargs['Size']
         self.nr = kwargs['Rows']
         self.nc = kwargs['Cols']
@@ -120,6 +121,7 @@ class HexGrid:
         self.hingelimit = kwargs['Hinge']
         self.veinpos = kwargs['Veins']
         self.outname = kwargs['Outname']
+        self.inputname = kwargs['Read']
 
         self.centers = []
         self.vertices = []
@@ -129,20 +131,23 @@ class HexGrid:
         self.vnum = 0
         self.plotcol = None
 
-        self.getCells()
-
-        if(self.ran > 0):
-            self.addNoise()
-        if(self.strecht > 0):
-            self.addStrecht()
-        if(self.static_vertices != ''):
-            self.addStatic()
-        if(self.hingelimit != -1 or self.veinpos != ''):
-            self.addCellType()
+        if(kwargs['Read'] != ""):
+            self.loadData() 
         else:
-            self.celltypes = [bladetype for c in self.cells]
+            self.getCells()
 
-        if(self.rotate > 0):
+            if(self.ran > 0):
+                self.addNoise()
+            if(self.strecht > 0):
+                self.addStrecht()
+            if(self.static_vertices != ''):
+                self.addStatic()
+            if(self.hingelimit != -1 or self.veinpos != ''):
+                self.addCellType()
+            else:
+                self.celltypes = [bladetype for c in self.cells]
+
+            if(self.rotate > 0):
                 self.rotateVertices()
 
     def __iter__(self):
@@ -153,6 +158,59 @@ class HexGrid:
     def getData(self):
         return (self.centers, self.vertices, self.cells, self.springs, self.celltypes, self.outname)
 
+    def loadData(self):
+        self.vnum, self.vertices = self.readPointsFile()
+        #print("verts", self.vertices)
+        self.cells, self.celltypes = self.readCellsFile()
+        #print("CELLS: ", self.cells)
+        self.springs = self.readSprings()
+        #print("sprs", self.springs)
+        self.centers = self.readCenters()
+
+    def readPointsFile(self):
+        pointsFile = open(self.inputname + ".points", "r")
+        numPoints = int(pointsFile.readline())
+
+        # This is the list of points
+        pointsList = []#np.zeros((numPoints,2))
+        for row in range(numPoints):
+            ll = pointsFile.readline().split()
+            pointsList.append([float(ll[0]), float(ll[1]), int(ll[2]), int(ll[3])])
+        pointsFile.close()
+        return (numPoints, pointsList)
+
+    def readCellsFile(self):
+        cellsFile = open(self.inputname + ".cells", "r")
+        numCells, numVerticesCell = [int(each) for each in cellsFile.readline().split()]
+
+        polygonList = []
+        celltypes = []
+        for row in range(numCells):
+            polygonIndex = [int(indPoint) for indPoint in cellsFile.readline().split() if int(indPoint) >= 0]
+            celltypes.append(polygonIndex.pop()) #CAREFUL: if cells file does not have type, will produce error
+            polygonList.append(polygonIndex)
+        cellsFile.close()
+        return (polygonList, celltypes)
+
+    def readSprings(self):
+        sprList = [] #just in case
+        numsprings = 0
+        try:
+            springsfile = open(self.inputname + ".spr", "r")
+            numsprings = int(springsfile.readline())
+            sprList = [[int(j) for j in springsfile.readline().split('\t')] for i in range(numsprings) ]
+            springsfile.close()
+        except:
+            print("no springs (.spr) file")
+        return sprList
+    def readCenters(self):  
+        try:    
+            centFile = open(self.inputname + ".cent", "r")   
+            centers = [[int(c[0]), int(c[1]), float(c[2]), float(c[3])] for c in centFile.readline().split()]
+        except: 
+            print("no centers (.cent) file")
+            centers = []
+        return centers
     @staticmethod
     def getPoint(x, y, size, i):
         angle_deg = -1*60*(i + 1) + 30
@@ -244,6 +302,7 @@ class HexGrid:
             fig.suptitle(self.outname, fontsize=16)
         else:
             fig, ax = fig
+        ax.set_aspect('equal')
         col = np.zeros((len(self.cells), 6, 2))
         for c, cell in enumerate(self.cells):
             for v, vert in enumerate(cell):
@@ -254,7 +313,11 @@ class HexGrid:
         self.plotcol = ax.add_collection(pc)
         ax.autoscale_view()
         for c in self.springs:
-            plt.plot( [self.vertices[c[0]][0], self.vertices[c[1]][0]] ,  [self.vertices[c[0]][1], self.vertices[c[1]][1]], c = "red" )
+            sscolor = "red" if len(c) < 3 else springcols[c[2]]
+            plt.plot( [self.vertices[c[0]][0], self.vertices[c[1]][0]] ,  [self.vertices[c[0]][1], self.vertices[c[1]][1]], c = sscolor)
+
+        if(save):
+            self.saveFig()
         return(fig, ax, pc)
 
     def getPolCollection(self):
@@ -311,10 +374,11 @@ class HexGrid:
         else:
             dirname = self.outname + '/'
         plt.savefig(dirname + self.outname + '.png')
+        plt.savefig(dirname + self.outname + '.svg', format='svg', dpi=1200)
         plt.show()
 
 
-    def writeGrid(self):
+    def writeGrid(self, add=''):
         dirname = ''
         if(not os.path.isdir(self.outname)):
             try:
@@ -324,26 +388,26 @@ class HexGrid:
                 print ("Creation of the directory %s failed" % self.outname)
         else:
             dirname = self.outname + '/'
-        f = open(dirname + self.outname + vert_ext,  'w')
+        f = open(dirname + self.outname + add + vert_ext,  'w')
         f.write(str(len(self.vertices)))
         f.write('\n')
         for v in self.vertices:
             f.write('\t'.join([str(i) for i in v]))
             f.write('\n')
         f.close()
-        f = open(dirname + self.outname + cell_ext,  'w')
+        f = open(dirname + self.outname + add +  cell_ext,  'w')
         f.write(str(len(self.cells)) + "\t" + str(6))
         f.write('\n')
         for i, c in enumerate(self.cells):
             f.write('\t'.join([str(i) for i in c]))
             f.write('\t-999\t' + str(self.celltypes[i]) + '\n')
         f.close()
-        f = open(dirname + self.outname + cent_ext,  'w')
+        f = open(dirname + self.outname + add +  cent_ext,  'w')
         for c in self.centers:
             f.write('\t'.join([str(i) for i in c]))
             f.write('\n')
         f.close()
-        f = open(dirname + self.outname + spring_ext,  'w')
+        f = open(dirname + self.outname + add + spring_ext,  'w')
         f.write(str(len(self.springs)) + '\n')
         for c in self.springs:
             f.write('\t'.join([str(i) for i in c]))

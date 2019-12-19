@@ -804,14 +804,14 @@ bool Tissue::tryMoveVertex(std::default_random_engine& generator, std::uniform_r
 	int vertex_to_move;
 	do{
 		vertex_to_move = std::rand() % static_cast<int>(vertices.size());
-	}while(vertices[vertex_to_move].dead || (!vertices[vertex_to_move].movable && STATIC_PRESENT || vertices[vertex_to_move].cells[0] == EMPTY_CONNECTION)); // A or static dead vertex cannot be selected
+	}while(vertices[vertex_to_move].dead || !vertices[vertex_to_move].movable); //(!vertices[vertex_to_move].movable && STATIC_PRESENT || vertices[vertex_to_move].cells[0] == EMPTY_CONNECTION)); // A or static dead vertex cannot be selected
 
 	double old_x = vertices[vertex_to_move].x;
 	double old_y = vertices[vertex_to_move].y;
 	double old_energy = calculateEnergy(vertices[vertex_to_move]); //Calculate again because it is not updated every time a cell area changes etc
 	double angle, radius, new_x, new_y;
 	double move_prob;
-	bool cell_borders_cross;
+	bool cell_borders_cross = false;
 	int cross_trials = 0;
 	do{
 		angle = 2*M_PI*unif(generator);
@@ -822,7 +822,7 @@ bool Tissue::tryMoveVertex(std::default_random_engine& generator, std::uniform_r
 		move_prob = vertices[vertex_to_move].energy <= old_energy? 
 							exp((vertices[vertex_to_move].energy - old_energy)/temperature_negative_energy) : 
 							exp(-(vertices[vertex_to_move].energy - old_energy)/temperature_positive_energy) ;
-		cell_borders_cross = check_if_edges_cross(vertex_to_move);
+		//cell_borders_cross = check_if_edges_cross(vertex_to_move);
 		if(cell_borders_cross) moveVertex(vertices[vertex_to_move], old_x, old_y);
 		cross_trials++;
 		if(cross_trials > MOVE_TRIALS) return false;
@@ -1379,7 +1379,7 @@ void Tissue::make_divide_cell(Rearrangement& r){
 	cells[cell].perimeter = calculateCellPerimeter(cells[cell]);
 
 	//Finally, check whether new vertices should be static
-	int num_static_neighbours = 0;
+	/*int num_static_neighbours = 0;
 	int aux_nei;
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
 		aux_nei = vertices[newvind1].neighbour_vertices[i];
@@ -1392,6 +1392,7 @@ void Tissue::make_divide_cell(Rearrangement& r){
 		if(aux_nei != EMPTY_CONNECTION && aux_nei != newvind1) if(!vertices[aux_nei].movable) num_static_neighbours++;
 	}
 	if(num_static_neighbours >= 2) vertices[newvind2].movable = false;
+	*/
 	counter_divisions++;
 
 	if(REPORT_DIV) writeAllData(simname + "_div_2" + to_string(counter_divisions));
