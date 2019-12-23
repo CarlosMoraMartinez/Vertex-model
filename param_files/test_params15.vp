@@ -4,30 +4,30 @@
 >min_range_vertex_movement
 0.0
 >max_range_vertex_movement
-0.02
+0.04
 >temperature_positive_energy
-0.02
+0.005
 >temperature_negative_energy
- 0.1
+0.1
 #>spring_constant
 #2.0
 >t1_transition_critical_distance
  0.01
 >length_rotated_edge
- 0.012;
+0.012
 >t2_transition_critical_area
-2.0
+0.2
 #>max_cell_area
 #22
 >max_edge_length
- 10
+10
 
 >AUTONOMOUS_CELL_CYCLE
 1
 >CELL_CYCLE_CONTROLS_SIZE
 -1
 >TIME_CONTROLS_SIZE (can't be true if CELL_CYCLE_CONTROLS_SIZE is true; is overriden)
--1
+1
 >time_decrease_exponent (at each move, a cell proportion of (final size - starting size) is multiplied by exp(-(x**THIS_PARAM))), where x is current_move/final_moves
 0.5
 
@@ -53,16 +53,16 @@
 3:0.6
 <
 >preferred_area_initial
-0:30.0
+0:40.0
 1:15.0
-2:30.0
+2:40.0
 3:15.0
 <
 >preferred_area_final
-0:5.0
-1:5.0
-2:5.0
-3:5.0
+0:15.0
+1:15.0
+2:15.0
+3:15.0
 <
 
 >division_angle_random_noise
@@ -94,21 +94,21 @@
 0:0.35
 1:0.55
 2:1.55
-3:2
+3:2.0
 <
 
 >max_cell_area
-0:50
-1:50
-2:50
-3:50
+0:70
+1:70
+2:100
+3:100
 <
 
 >cell_cycle_limit
-0:10
-1:10
-2:10
-3:10
+0:1000
+1:1000
+2:1000
+3:1000
 <
 
 

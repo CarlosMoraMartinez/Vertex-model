@@ -149,8 +149,8 @@ def readPointsFile(name):
 
     # This is the list of points
     pointsList = {}#np.zeros((numPoints,2))
-    for row in range(numPoints):
-        ll = pointsFile.readline().split()
+    for row in pointsFile:
+        ll = row.split()
         pointsList[ll[2]] = [float(ll[0]), float(ll[1]), int(ll[3])]
     pointsFile.close()
     return (numPoints, pointsList)
@@ -161,8 +161,8 @@ def readCellsFile(name, plot_cell_types, pointsList):
 
     polygonList = []
     celltypes = []
-    for row in range(numCells):
-        polygonIndex = [indPoint for indPoint in cellsFile.readline().split() if int(indPoint) >= 0]
+    for row in cellsFile:
+        polygonIndex = [indPoint for indPoint in row.split() if int(indPoint) >= 0]
         if(plot_cell_types):
             celltypes.append(int(polygonIndex.pop())) #CAREFUL: if cells file does not have type, will produce error
         polygonCoords = [[pointsList[coord][0], pointsList[coord][1]] for coord in polygonIndex]
@@ -176,7 +176,8 @@ def readSprings(name):
     try:
         springsfile = open(name + ".spr", "r")
         numsprings = int(springsfile.readline())
-        sprList = [[str(int(j)) for j in springsfile.readline().split('\t')] for i in range(numsprings) ]
+        #sprList = [[str(int(j)) for j in springsfile.readline().split('\t')] for i in range(numsprings) ]
+        sprList = [[str(int(j)) for j in line.split('\t')] for line in springsfile ]
         springsfile.close()
     except:
         print("no springs (.spr) file")

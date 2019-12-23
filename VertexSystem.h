@@ -35,6 +35,7 @@ const float DIVISION_ANGLE_LONGEST_AXIS = 0.7;
 const float DIVISION_ANGLE_EXTERNAL = 0.0; // 
 const float DIVISION_ANGLE_EXTERNAL_DEGREES = 0;
 const float CELL_CYCLE_LIMIT = 10;
+const float TIME_DECREASE_EXPONENT = 0.5; //Only active if TIME_CONTROLS_SIZE
 
 
 const float LENGTH_ROTATED_EDGE = 0.5*T1_TRANSITION_CRITICAL_DISTANCE*1.2; //after a t1 transition, rotated edge length is multiplied by twice this constant
@@ -60,6 +61,7 @@ const bool DIVISION_ACTIVE = true;
 const bool T2_ACTIVE = true;
 const bool JOIN_EDGES_ACTIVE = true;
 const bool CONTROL_CELLS_2SIDES = true; 
+const bool CHECK_EDGES_CROSS_AFTER_MOVE = false;
 const bool AUTONOMOUS_CELL_CYCLE = true;
 const bool CELL_CYCLE_CONTROLS_SIZE = true;
 const bool TIME_CONTROLS_SIZE = false;
@@ -248,6 +250,7 @@ class Tissue{
 
 		cell_type_param cell_cycle_limit;
 		bool autonomous_cell_cycle, cell_cycle_controls_size, time_controls_size;
+		float time_decrease_exponent;
 
 		float length_rotated_edge; 
 
@@ -308,6 +311,7 @@ class Tissue{
 		//methods used by T2 and join_edges
 		void removeConnectionCell(int elm, int* elements, int length);
 		void make_remove_size2cell(int cell);
+		void killCellWith2Vertices(int cell);
 
 		//Other
 		void advanceCellCycle(int vertex_moved);
