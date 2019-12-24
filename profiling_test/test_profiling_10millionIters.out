@@ -1,0 +1,58 @@
+Testing random generators - unif()
+Testing random generators - rand()
+Testing sum in vector
+Result: 1.75908e+12
+Testing sum in array
+Result: 1.75908e+12
+Testing sum in map
+Result: 1.75908e+12
+Testing sum in array - function
+Result: 1.75908e+12
+Testing sum in array - inline function
+Result: 1.75908e+12
+Testing realocating vector
+Final number: 99999
+Final number: 99999
+Final number: 99999
+Final number: 99999
+Final number: 99999
+Final number: 99999
+Final number: 99999
+Final number: 99999
+Final number: 99999
+Final number: 99999
+Testing mathematical function (distance) - main
+Result: 55445.1
+Testing mathematical function (distance) - function
+Result: 55445.1
+Testing mathematical function (distance) - function Inline
+Result: 55445.1
+Testing sum in vector
+Result: 12641
+Testing sum in array
+Result: 12641
+Testing sum in map
+Result: 12641
+Testing sum in array - function
+Result: 12641
+Testing sum in array - inline function
+Result: 12641
+Finished
+***
+gen unif():0.0687246
+gen rand():0.0086694
+sum Vector '+=x² - x + x³':0.437166
+sum Array '+=x² - x + x³':0.395013
+sum Map() '+=x² - x + x³':2.56751
+sum Array func() '+=x² - x + x³':0.403714
+sum Array inline() '+=x² - x + x³':0.402726
+sum Vector '+=x'0.0198878
+sum Array '+=x':0.0102428
+sum Map() '+=x':0.735881
+sum Array func() '+=x':0.0140065
+sum Array inline() '+=x':0.0140212
+alloc Vector():2836.1
+distance main:0.0158328
+distance func:0.0172473
+distance func inline:0.0176361
+***
