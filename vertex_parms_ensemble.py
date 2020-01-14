@@ -1,5 +1,6 @@
 import sys
 import os
+import argparse
 
 import numpy as np
 
@@ -12,11 +13,18 @@ PAR_BEGIN = '>'
 CELLTYPE_SEP = ':'
 DISJOINT_SEP = ','
 SEQ_SEP = ';'
+RANDOM_VALUE = '?'
 
 OUTPUT_CELLTYPE_BEGIN = '>'
 OUTPUT_CELLTYPE_END = '<'
 OUTPUT_PAR_BEGIN = '>'
 OUTPUT_EXTENSION = '.vp'
+
+def getNum(string):
+    if('.' in string):
+        return float(string)
+    else: 
+        return int(string)
 
 class paramContainer:
 
@@ -86,9 +94,124 @@ class paramContainer:
         f.write(s)
         f.close()
 
+class paramRandomContainer(paramContainer):
+    def __init__(self, fname, outname, ran):
+        self.fname = fname
+        self.outname = outname
+        self.ran = ran
+        rawstrings = self.readFile(fname)
+        self.params = []
+        i = 0
+        while(i < len(rawstrings)):
+            par = []
+            if(rawstrings[i].startswith(CELLTYPE_PAR_BEGIN)):
+                par.append(rawstrings[i].strip(CELLTYPE_PAR_BEGIN))
+                i+=1
+                while(not rawstrings[i].startswith(CELLTYPE_PAR_END)):
+                    par.append(rawstrings[i])
+                    i+=1   
+                parobj = randomCellPar(par, self.ran)
+                i+=1       
+                self.params.append(parobj)      
+            elif(rawstrings[i].startswith(PAR_BEGIN)):
+                par.append(rawstrings[i])
+                par.append(rawstrings[i + 1])
+                parobj = randomPar(par, self.ran)
+                i+=2
+                self.params.append(parobj)    
+            else:
+                print("Error: line not recognized")
+                i+=1
+    def produceOutputs(self):
+        from itertools import product
+        allnames = [p.name for p in self.params]
+        for i in range(self.ran):
+            vals = []
+            for p in self.params:
+                if(type(p.value) is dict):
+                    d = dict()
+                    for k, v in zip(p.value.keys(), p.value.values()):
+                        if(p.atomic[k]):
+                            print(p.name, ", cell ", k, ", atomic")
+                            d.setdefault(k, v)
+                        else:
+                            print(p.name, ", cell ", k, ", not atomic")
+                            d.setdefault(k, v[i])
+                    vals.append(d)
+                else:
+                    if(p.atomic):
+                        print(p.name, ", atomic")
+                        vals.append(p.value)
+                    else:
+                        print(p.name, ", not atomic")
+                        vals.append(p.value[i])
+            parset = dict(zip(allnames, vals))
+            print("\n\n")
+            self.writeFile(parset, self.outname + '_' + str(i))
 
-        print(parset)   
-        print("\n\n\n")     
+class randomPar:
+    def __init__(self, parlist, ran):
+        self.name = parlist[0].strip(PAR_BEGIN)
+        self.ran = ran
+        self.atomic, self.value = self.getvalue(parlist[1])
+    def getvalue(self, parlist):
+        if(RANDOM_VALUE in self.name):
+            vv = parlist.split(SEQ_SEP)
+            s = getNum(vv[0])
+            e = getNum(vv[1])
+            if(type(s) is float):
+                value = np.random.uniform(s, e, self.ran)
+            else:
+                value = np.random.random_integers(s, e, self.ran)
+            if(self.ran > 1):
+                atomic = False
+            else:
+                atomic = True
+        else:
+            value = getNum(parlist)
+            atomic = True
+        return (atomic, value)
+    def __str__(self):
+        s = OUTPUT_PAR_BEGIN + self.name + '\n'
+        s += str(self.value)
+        return s
+
+class randomCellPar(randomPar):
+    def __init__(self, parlist, ran):
+        self.name = parlist.pop(0).strip(PAR_BEGIN)
+        self.ran = ran
+        self.value = dict()
+        self.atomic = dict()
+        if(CELL_TYPE_PRODUCT in self.name):
+            for p in parlist:
+                p = p.split(CELLTYPE_SEP)
+                if(SEQ_SEP  in p[1]):
+                    at, val = self.getvalue(p[1])
+                else:
+                    at = True
+                    val = getNum(p[1])
+                self.atomic.setdefault(p[0], at)
+                self.value.setdefault(p[0], val)
+        else:
+            at0 = None
+            val0 = None
+            for p in parlist:
+                p = p.split(CELLTYPE_SEP)
+                if(SEQ_SEP  in p[1] and val0 is None):
+                    at0, val0 = self.getvalue(p[1])
+                    at, val = (at0, val0)
+                elif(SEQ_SEP in p[1]):
+                    at, val = (at0, val0)
+                else:
+                    at = True
+                    val = getNum(p[1])
+                self.atomic.setdefault(p[0], at)
+                self.value.setdefault(p[0], val)
+    def __str__(self):
+        s = OUTPUT_CELLTYPE_BEGIN + self.name + '\n'
+        for k, v in zip(self.value.keys(), self.value.values()):
+            s += k + ':' + str(v) + '\n'
+        return s
 
 class param:
     def __init__(self, parlist):
@@ -101,26 +224,20 @@ class param:
         elements1 = string.split(DISJOINT_SEP)
         if(len(elements1) == 1 and not SEQ_SEP in elements1[0]):
             atomic = True
-            value = self.getNum(elements1[0])
+            value = getNum(elements1[0])
         else:
             atomic = False
             value = []
             for i in elements1:
                 if(SEQ_SEP in i):
                     i = i.split(SEQ_SEP)
-                    for j in np.linspace(self.getNum(i[0]), self.getNum(i[1]), self.getNum(i[2])):
+                    for j in np.linspace(getNum(i[0]), getNum(i[1]), getNum(i[2])):
                         if('.' not in i[0]):
                             j = int(j)
                         value.append(j)
                 else:
-                    value.append(self.getNum(i))
+                    value.append(getNum(i))
         return(atomic, value)
-
-    def getNum(self, string):
-        if('.' in string):
-            return float(string)
-        else: 
-            return int(string)
     def __iter__(self):
         return self
     def __next__(self):
@@ -212,24 +329,23 @@ class cellTypeParam(param):
         return s
 
 
-
-
-
-class test:
-    def __init__(self, a):
-        self.value = [i for i in range(a)]
-        self.i = 0
-        self.iterating = False
-    def __iter__(self):
-        self.iterating = True
-        while (self.iterating):
-            yield self.value[self.i]
-            self.i = (self.i + 1)%len(self.value)
-
-
+parser = argparse.ArgumentParser(description='Generate folder with ensemble of parameter files for VertexSystem. The input file is the standard .vp, except that ranges can be specified with start;end;size, and specific values can be specified with n0,n1,n2, etc. Additionally, for CellType parameters, the symbol % in the name indicates that all combinations of values will be used for this parameter (if ommitted, vectors of values for each cell type should be of equal size or size 1).')
+parser.add_argument('-o', '--Outname', metavar='outname', type=str, default = "hexgrid", 
+                                        help='Identifier. Used as prefix of all output files. ')
+parser.add_argument('-i', '--Inputname', metavar='inputname', type=str, default = "", 
+                                        help='Identifier. Used as prefix to read files. ')
+parser.add_argument('-r', '--Random', metavar='randompars', type=int, default = 0, 
+                                        help='Random set of parameters (1) or specified combinations (0). 0 is default. Only parameters with a ? symbol in their name will be randomly set.')
 
 def main():
-    p = paramContainer(sys.argv[1], sys.argv[2])
+    args = parser.parse_args()
+    iname = args.Inputname
+    oname = args.Outname
+    ran = args.Random
+    if(ran == 0):
+        p = paramContainer(iname, oname)
+    else:
+        p = paramRandomContainer(iname, oname, ran)
     p.produceOutputs()
 
 
