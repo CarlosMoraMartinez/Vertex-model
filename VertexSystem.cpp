@@ -1003,7 +1003,6 @@ void Tissue::performRearrangements(){
 void Tissue::make_t1_at_border_inwards(Rearrangement& r){
 	int edge = r.element_index;
 	if(edges[edge].length > T1_TRANSITION_CRITICAL_DISTANCE) return; //Check that condition is still true (other rearrangements could have taken place since detection)
-
 	Vertex* v1 = &vertices[ edges[edge].vertices[0] ];
 	Vertex* v2 = &vertices[ edges[edge].vertices[1] ];
 	//cout << "A, v1: " << v1->ind << " v2: " << v2->ind << endl;
@@ -1029,7 +1028,6 @@ void Tissue::make_t1_at_border_inwards(Rearrangement& r){
 	t1_rotate_edge90degrees(v1, v2, edge);
 	//cout << "D\n";
 	//Determine which cell goes with which point. Compare new point locations of v1 and v2 with all the neighbours of v1 and v2. 
-
 	double dist1 = t1_inwards_get_dist_sum(v1, v2, cc1, sp1, sp2);
 	double dist2 = t1_inwards_get_dist_sum(v2, v1, cc1, sp2, sp1);
 
@@ -1073,7 +1071,7 @@ void Tissue::make_t1_at_border_inwards(Rearrangement& r){
 	//cout << "G\n";
 	//2)Remove edge from cell that was common to both vertices
 	for(int i = which(edge, cc1->edges, MAX_SIDES_PER_CELL); i < cc1->num_vertices; i++) cc1->edges[i] = i == MAX_SIDES_PER_CELL-1 ? EMPTY_CONNECTION : cc1->edges[i+1];
-
+        if(edge == 307) cout << "    D - Edge 307: " << v1->edges[0] << ", " <<  v1->edges[1]<< ", " << v1->edges[2] << "; " << v2->edges[0] << ", " <<   v2->edges[1] << ", " <<  v2->edges[2] << endl;
 	//3) Remove one of the vertices from each of the cells that were common to both vertices
 	for(int i = which(v2->ind, cc1->vertices, cc1->num_vertices); i < cc1->num_vertices; i++) cc1->vertices[i] = i == MAX_SIDES_PER_CELL-1 ? EMPTY_CONNECTION : cc1->vertices[i+1];
 	cc1->num_vertices--;
@@ -1081,7 +1079,7 @@ void Tissue::make_t1_at_border_inwards(Rearrangement& r){
 	//4) Add edge to cells that were touched only by one of the vertices
 	sp1->edges[sp1->num_vertices] = edge;
 	sp2->edges[sp2->num_vertices] = edge;
-
+        if(edge == 307) cout << "    E - Edge 307: " << v1->edges[0] << ", " <<  v1->edges[1]<< ", " << v1->edges[2] << "; " << v2->edges[0]<< ", " <<   v2->edges[1] << ", " <<  v2->edges[2] << endl;
 	//5) Update neighbours 
 	int remove_from_v1, remove_from_v2;
 	t1_inwards_update_neighbours(v1, v2, edge, common_cell1, only_v1, only_v2, remove_from_v1, remove_from_v2);
@@ -1093,10 +1091,10 @@ void Tissue::make_t1_at_border_inwards(Rearrangement& r){
 	//7) Add v1 to cell that was specific to v2, and v2 to cell that was specific to v1. 
 	t1_add_vertices_to_cells(v1, v2, sp2, remove_from_v2);
 	t1_add_vertices_to_cells(v2, v1, sp1, remove_from_v1);
-
+        if(edge == 307) cout << "    F - Edge 307: " << v1->edges[0] << ", " <<  v1->edges[1]<< ", " << v1->edges[2] << "; " << v2->edges[0]<< ", " <<   v2->edges[1] << ", " <<  v2->edges[2] << endl;
 	//8)Update edge lengths and areas.
 	t1_update_sizes(v1, v2, edge);
-
+        if(edge == 307) cout << "    G- Edge 307: " << v1->edges[0] << ", " <<  v1->edges[1]<< ", " << v1->edges[2] << "; " << v2->edges[0]<< ", " <<   v2->edges[1] << ", " <<  v2->edges[2] << endl;
 	//9) Update cells in edge
 	edges[edge].cells[0] = sp1->ind;
 	edges[edge].cells[1] = sp2->ind;
@@ -1690,8 +1688,8 @@ void Tissue::make_t1(Rearrangement& r){
 void Tissue::t1_update_sizes(Vertex* v1, Vertex* v2, int edge){
 
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
-		if(v1->edges[i] != edge) this->edges[v1->edges[i]].length = distance(this->edges[v1->edges[i]].vertices[0], this->edges[v1->edges[i]].vertices[1]);
-		if(v2->edges[i] != edge) this->edges[v2->edges[i]].length = distance(this->edges[v2->edges[i]].vertices[0], this->edges[v2->edges[i]].vertices[1]);	
+		if(v1->edges[i] != edge && v1->edges[i] != EMPTY_CONNECTION) this->edges[v1->edges[i]].length = distance(this->edges[v1->edges[i]].vertices[0], this->edges[v1->edges[i]].vertices[1]);
+		if(v2->edges[i] != edge && v2->edges[i] != EMPTY_CONNECTION) this->edges[v2->edges[i]].length = distance(this->edges[v2->edges[i]].vertices[0], this->edges[v2->edges[i]].vertices[1]);	
 	}
 
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
@@ -1699,7 +1697,7 @@ void Tissue::t1_update_sizes(Vertex* v1, Vertex* v2, int edge){
 			this->cells[v1->cells[i]].area = calculateCellArea(this->cells[v1->cells[i]]);
 			this->cells[v1->cells[i]].perimeter = calculateCellPerimeter(this->cells[v1->cells[i]]);
 		}
-	if(v2->cells[i] != EMPTY_CONNECTION){
+		if(v2->cells[i] != EMPTY_CONNECTION){
 			this->cells[v2->cells[i]].area = calculateCellArea(this->cells[v2->cells[i]]);
 			this->cells[v2->cells[i]].perimeter =calculateCellPerimeter(this->cells[v2->cells[i]]);
 		}
@@ -2361,10 +2359,14 @@ void Tissue::make_t2(Rearrangement& r){
 
 void Tissue::killCellWith2Vertices(int cell){
 
+	if(cells[cell].dead){
+		cout << "*<< 2 side cell already dead: " << cell << ">>*" << endl;
+		return;
+	}
 	//Get neighbouring vertices
 	int vnei1 = -1, vnei2 = -1, enei1 = -1, enei2 = -1; //enei1 will join vnei1 and vnei2; enei2 will die
 	int auxcell1 = -1, auxcell2 = -1;
-	Cell *c = &cells[cell];
+	Cell *c = &cells[cell];	
 	Edge *e1 = &edges[cells[cell].edges[0]];
 	Edge *e2 = &edges[cells[cell].edges[1]];	
 	Vertex *v1 = &vertices[cells[cell].vertices[0]];
@@ -2397,7 +2399,7 @@ void Tissue::killCellWith2Vertices(int cell){
 		v2 = &vertices[cells[cell].vertices[0]];	
 		v1 = &vertices[cells[cell].vertices[1]];	
 	}
-	cout << "E , enei1: " << enei1 << ", enei2: " << enei2 << endl;
+	cout << "*<<\n\nE , enei1: " << enei1 << ", enei2: " << enei2 << endl;
 	cout << VERTEX_HEADER;
 	cout << "    v1: " << *v1 << endl;
 	cout << "    v2: " << *v2 << endl;
@@ -2501,7 +2503,7 @@ void Tissue::killCellWith2Vertices(int cell){
 			killCellWith2Vertices(auxcell2);
 		}
 	}
-	cout << "    KILLED SIZE 2 CELL: " << cell << endl;
+	cout << "    KILLED SIZE 2 CELL: " << cell << endl << "<<*" << endl;
 	return;
 
 }//Kill cell with 2 edges

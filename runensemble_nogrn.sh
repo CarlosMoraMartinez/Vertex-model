@@ -1,7 +1,7 @@
 
 maxCPU=30
 i=0
-wingarray=(wing1D wingDumpy2)
+wingarray=(wing2C wing2Cdumpy) #(wing1D wingDumpy2)
 
 mkdir $3
 cp VertexSystem.cpp VertexSystem.h vertex_cmm.cpp plotOps_loop.py compile.sh $3

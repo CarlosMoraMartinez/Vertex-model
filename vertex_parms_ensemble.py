@@ -216,6 +216,7 @@ class randomCellPar(randomPar):
 class param:
     def __init__(self, parlist):
         self.name = parlist[0].strip(PAR_BEGIN)
+        print(self.name)
         self.atomic, self.value = self.processParam(parlist[1])
         self.iterstatus = 0
         self.finished_at_least_once = False
@@ -265,6 +266,7 @@ class param:
 class cellTypeParam(param):
     def __init__(self, parlist):
         self.name = parlist.pop(0)
+        print(self.name)
         if(self.name.startswith(CELL_TYPE_PRODUCT)):
             self.product = True
             self.len = None
