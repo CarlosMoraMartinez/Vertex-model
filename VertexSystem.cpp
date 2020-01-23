@@ -22,6 +22,7 @@ Tissue::Tissue() : num_cells(0), num_vertices(0), num_edges(0),  counter_move_tr
 	step_mode = false;
 
 	set_default_simulation_params();
+	setHingeMinAndMaxPositions();
 }
 
 //Constructor that reads vertex positions and cells from two different files, and initializes all variables using constants defined in VertexSystem.h
@@ -73,6 +74,7 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  in
 	//Also initializes cell area and vertex energy
 	set_default_params();
 	cout << "parameters set to cells\n";
+	setHingeMinAndMaxPositions();
 }
 
 Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements,  int write_every_N_moves) : num_cells(0), num_vertices(0), num_edges(0),  counter_move_trials(0), counter_moves_accepted(0), counter_t1(0), counter_t1_abortions(0), counter_edges_removed(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0){
@@ -123,6 +125,7 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 	//No file with parameters, therefore use constants defined in VertexSystem.h.
 	//Also initializes cell area and vertex energy
 	set_default_params();
+	setHingeMinAndMaxPositions();
 }
 
 void Tissue::set_default_simulation_params(){
@@ -136,6 +139,12 @@ void Tissue::set_default_simulation_params(){
 	cell_cycle_controls_size = CELL_CYCLE_CONTROLS_SIZE;
 	time_controls_size = TIME_CONTROLS_SIZE;
 	time_decrease_exponent = TIME_DECREASE_EXPONENT;
+	xcoord_controls_size = XCOORD_CONTROLS_SIZE;
+	xcoord_decrease_exponent = XCOORD_DECREASE_EXPONENT;
+
+	energy_term1 = ENERGY_TERM1;
+	energy_term2 = ENERGY_TERM2;
+	energy_term3 = ENERGY_TERM3;
 
 	line_tension.insert(pair<CellType, double>(CellType::blade, LINE_TENSION_BLADE));
 	line_tension.insert(pair<CellType, double>(CellType::hinge, LINE_TENSION_HINGE));
@@ -271,6 +280,11 @@ void Tissue::initialize_params(std::string params_file){
 	max_range_vertex_movement = read_real_par(it);
 	temperature_positive_energy = read_real_par(it);
 	temperature_negative_energy = read_real_par(it);
+
+	energy_term1 = read_real_par(it);
+	energy_term2 = read_real_par(it);
+	energy_term3 = read_real_par(it);
+
 	//spring_constant = read_real_par(it);
 	t1_transition_critical_distance = read_real_par(it);
 	length_rotated_edge = read_real_par(it);
@@ -282,6 +296,8 @@ void Tissue::initialize_params(std::string params_file){
 	time_controls_size = read_real_par(it) > 0;
 	time_controls_size = cell_cycle_controls_size ? false : time_controls_size;
 	time_decrease_exponent = read_real_par(it);
+	xcoord_controls_size = read_real_par(it) > 0;
+	xcoord_decrease_exponent = read_real_par(it);
 
 	line_tension = read_celltype_par(it, sz);
 	line_tension_tissue_boundary = read_celltype_par(it, sz);
@@ -397,6 +413,8 @@ void Tissue::initialize_cells(std::ifstream& inp){
 	c.dead=false;
 	c.can_divide = !this->autonomous_cell_cycle;
 	c.cell_cycle_state = 0;
+	c.centroid_x = 0;
+	c.centroid_y = 0;
 	int cell_count = 0;
 	while(getline(inp, s)){ //Each row in file represents a cell
 		vert_count = 0; //Store number of vertices read so far for this cell
@@ -656,6 +674,8 @@ int Tissue::newCell(){
 	cells[c].num_vertices = 0;
 	cells[c].cell_cycle_state = 0;
 	cells[c].can_divide = !autonomous_cell_cycle;
+	cells[c].centroid_x = 0;
+	cells[c].centroid_y = 0;
 	this->num_cells++;
 	//if (!dead_cells.empty()) dead_cells.pop();
 	return c;		
@@ -710,6 +730,30 @@ void Tissue::setAcceptedMovements(int mv){
 void Tissue::setStepMode(bool mode, int steps){
 	this->write_every_N_moves = steps;
 	this->step_mode = mode;
+}
+
+
+
+void Tissue::setHingeMinAndMaxPositions(){
+	calculateCellCentroid(cells[0]);
+	double min, max;
+	bool set = false;
+	for(Cell c: cells){
+		if(c.type == CellType::hinge || c.type == CellType::vein_hinge){
+			calculateCellCentroid(c);
+			if(set){
+				if(c.centroid_x < min) min = c.centroid_x;
+				else if(c.centroid_x > max) max = c.centroid_x;
+			}else{
+				min = c.centroid_x;
+				max = c.centroid_x;
+				set = true;
+			}
+		}	
+	}
+	hinge_min_xpos = min;
+	hinge_max_xpos = max;
+	cout << "Min hinge position: " << hinge_min_xpos << "; Max hinge position: " << hinge_max_xpos << endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -779,7 +823,7 @@ inline double Tissue::calculateEnergy(Vertex& v){
 		if(v.cells[i] != EMPTY_CONNECTION) term3 += 0.5*cells[v.cells[i]].perimeter_contractility * pow(cells[v.cells[i]].perimeter, 2)/cells[v.cells[i]].preferred_area;
 	}
 
-	return 0.5*term1 + term2 + term3;
+	return 0.5*term1*energy_term1 + term2*energy_term2 + term3*energy_term3;
 }
 
 //
@@ -843,8 +887,12 @@ bool Tissue::tryMoveVertex(std::default_random_engine& generator, std::uniform_r
 		if(autonomous_cell_cycle){ //NOTE: Maybe make this before detecting changes so the effect is immediate? Otherwise cells have to wait until next round
 			advanceCellCycle(vertex_to_move);
 		}
-		if(time_controls_size){
+		if(time_controls_size && !xcoord_controls_size){
 			advanceSizeWithTime(vertex_to_move);			
+		}else if(time_controls_size && xcoord_controls_size){
+			advanceSizeWithXcoordAndTime(vertex_to_move);
+		}else if(xcoord_controls_size){
+			advanceSizeWithXcoord(vertex_to_move);
 		}
 		return true;
 	}else{
@@ -853,6 +901,56 @@ bool Tissue::tryMoveVertex(std::default_random_engine& generator, std::uniform_r
 	}
 	
 }
+
+
+void Tissue::advanceSizeWithXcoordAndTime(int vertex_moved){
+	int caux;
+	double time_factor = static_cast<double>(counter_moves_accepted)/max_accepted_movements;
+	time_factor = 1 - exp(-pow(time_factor, time_decrease_exponent));
+	float pos_factor = 0, aux_area;
+
+	for(int i = 0; i < CELLS_PER_VERTEX; i++){
+		caux = vertices[vertex_moved].cells[i];
+		if(caux == EMPTY_CONNECTION) continue;
+		cells[caux].preferred_area = preferred_area_initial[cells[caux].type] + (preferred_area_final[cells[caux].type] - preferred_area_initial[cells[caux].type]) * time_factor; //Caution: problems if step_mode is on
+		if(cells[caux].type == CellType::vein_hinge){
+			calculateCellCentroid(cells[caux]);
+			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
+			pos_factor = pos_factor < 0 ? 0 : pos_factor/(hinge_max_xpos - hinge_min_xpos);
+			aux_area = preferred_area_initial[CellType::vein_blade] + (preferred_area_final[CellType::vein_blade] - preferred_area_initial[CellType::vein_blade]) * time_factor;
+			cells[caux].preferred_area += (aux_area - cells[caux].preferred_area)*(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)));
+		}else if(cells[caux].type == CellType::hinge){
+			calculateCellCentroid(cells[caux]);
+			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
+			pos_factor = pos_factor < 0 ? 0 : pos_factor/(hinge_max_xpos - hinge_min_xpos);
+			aux_area = preferred_area_initial[CellType::blade] + (preferred_area_final[CellType::blade] - preferred_area_initial[CellType::blade]) * time_factor;
+			cells[caux].preferred_area += (aux_area - cells[caux].preferred_area)*(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)));
+		}
+	}
+}//advanceSizeWithTimeAndXcoord
+
+void Tissue::advanceSizeWithXcoord(int vertex_moved){
+	int caux;
+	float pos_factor = 0;
+
+	for(int i = 0; i < CELLS_PER_VERTEX; i++){
+		caux = vertices[vertex_moved].cells[i];
+		if(caux == EMPTY_CONNECTION) continue;
+		if(cells[caux].type == CellType::vein_hinge){
+			calculateCellCentroid(cells[caux]);
+			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
+			pos_factor = pos_factor < 0 ? 0 : pos_factor/(hinge_max_xpos - hinge_min_xpos);
+			cells[caux].preferred_area = preferred_area_initial[CellType::vein_hinge] + (preferred_area_initial[CellType::vein_blade] - preferred_area_initial[CellType::vein_hinge])*(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)));
+			//cout << "HingeVein cell: " << " x abs = " << cells[caux].centroid_x << ", x rel = " << pos_factor << ", pref area = " << cells[caux].preferred_area << endl;
+		}else if(cells[caux].type == CellType::hinge){
+			calculateCellCentroid(cells[caux]);
+			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
+			pos_factor = pos_factor < 0 ? 0 : pos_factor/(hinge_max_xpos - hinge_min_xpos);
+			cells[caux].preferred_area = preferred_area_initial[CellType::hinge] + (preferred_area_initial[CellType::blade] - preferred_area_initial[CellType::hinge])*(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)));
+			//cout << "Hinge cell: " << " x abs = " << cells[caux].centroid_x << ", x rel = " << pos_factor << ", pref area = " << cells[caux].preferred_area << endl;
+		}
+	}
+}//advanceSizeWithXcoord
 
 void Tissue::advanceCellCycle(int vertex_moved){
 	int caux;
@@ -872,7 +970,7 @@ void Tissue::advanceCellCycle(int vertex_moved){
 void Tissue::advanceSizeWithTime(int vertex_moved){
 	int caux;
 	double time_factor = static_cast<double>(counter_moves_accepted)/max_accepted_movements;
-	time_factor = exp(-pow(time_factor, time_decrease_exponent));
+	time_factor = 1 - exp(-pow(time_factor, time_decrease_exponent));
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
 		caux = vertices[vertex_moved].cells[i];
 		if(caux == EMPTY_CONNECTION) continue;
@@ -887,7 +985,8 @@ void Tissue::produceOutputs(std::string add_to_name){
 	writeCellsFile(fname);
 	writePointsFile(fname);
 	if(num_springs > 0) writeSpringsFile(fname);
-	writeAllData(fname);
+	//writeAllData(fname); //THIS IS USEFUL TO DEBUG, BUT THE FORMAT IS NOT READ BY PLOTTING PROGRAM
+	writeCellDataTable(fname);
 }
 
 void Tissue::simulate(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif){
@@ -901,7 +1000,6 @@ void Tissue::simulate(std::default_random_engine& generator, std::uniform_real_d
 			counter_moves_accepted++;	
 			performRearrangements();	// Performs any transition/rearrangement needed
 			if(counter_moves_accepted % write_every_N_moves == 0 && ! step_mode) produceOutputs(); //&& counter_moves_accepted > 70000
-			//else if(counter_moves_accepted >= 4730400) produceOutputs("moved" + std::to_string(counter_moves_accepted));
 		}//End if move accepted
 		counter_move_trials++;
 	}while(counter_moves_accepted < max_accepted_movements);
@@ -966,29 +1064,29 @@ void Tissue::performRearrangements(){
 		rearrangements_needed.pop();
 		switch (r.type){
 			case RearrangementType::t1:
-				cout << "Entering t1 \n";
+				//cout << "Entering t1 \n";
 				if(T1_ACTIVE) make_t1(r);
 				break;
 			case RearrangementType::t2:
-				cout << "Entering t2 \n";
+				//cout << "Entering t2 \n";
 				if(T2_ACTIVE) make_t2(r);
 				break;
 			case RearrangementType::divide_cell:
-				cout << "Entering division \n";
+				//cout << "Entering division \n";
 				if(DIVISION_ACTIVE) make_divide_cell(r);
 				break;
 			case RearrangementType::divide_edge:
 				break;
 			case RearrangementType::join_limit_edges:
-				cout << "Entering join edges\n";
+				//cout << "Entering join edges\n";
 				if(JOIN_EDGES_ACTIVE) make_join_limit_edges(r);
 				break;
 			case RearrangementType::t1_at_border_outwards:
-				cout << "Entering t1 outwards\n";
+				//cout << "Entering t1 outwards\n";
 				if(T1_BORDER_OUTWARDS_ACTIVE) make_t1_at_border_outwards(r);
 				break;
 			case RearrangementType::t1_at_border_inwards:
-				cout << "Entering t1 inwards " << counter_move_trials << "\n";
+				//cout << "Entering t1 inwards " << counter_move_trials << "\n";
 				if(T1_BORDER_INWARDS_ACTIVE) make_t1_at_border_inwards(r);
 				break;
 			default:
@@ -1071,7 +1169,6 @@ void Tissue::make_t1_at_border_inwards(Rearrangement& r){
 	//cout << "G\n";
 	//2)Remove edge from cell that was common to both vertices
 	for(int i = which(edge, cc1->edges, MAX_SIDES_PER_CELL); i < cc1->num_vertices; i++) cc1->edges[i] = i == MAX_SIDES_PER_CELL-1 ? EMPTY_CONNECTION : cc1->edges[i+1];
-        if(edge == 307) cout << "    D - Edge 307: " << v1->edges[0] << ", " <<  v1->edges[1]<< ", " << v1->edges[2] << "; " << v2->edges[0] << ", " <<   v2->edges[1] << ", " <<  v2->edges[2] << endl;
 	//3) Remove one of the vertices from each of the cells that were common to both vertices
 	for(int i = which(v2->ind, cc1->vertices, cc1->num_vertices); i < cc1->num_vertices; i++) cc1->vertices[i] = i == MAX_SIDES_PER_CELL-1 ? EMPTY_CONNECTION : cc1->vertices[i+1];
 	cc1->num_vertices--;
@@ -1079,7 +1176,6 @@ void Tissue::make_t1_at_border_inwards(Rearrangement& r){
 	//4) Add edge to cells that were touched only by one of the vertices
 	sp1->edges[sp1->num_vertices] = edge;
 	sp2->edges[sp2->num_vertices] = edge;
-        if(edge == 307) cout << "    E - Edge 307: " << v1->edges[0] << ", " <<  v1->edges[1]<< ", " << v1->edges[2] << "; " << v2->edges[0]<< ", " <<   v2->edges[1] << ", " <<  v2->edges[2] << endl;
 	//5) Update neighbours 
 	int remove_from_v1, remove_from_v2;
 	t1_inwards_update_neighbours(v1, v2, edge, common_cell1, only_v1, only_v2, remove_from_v1, remove_from_v2);
@@ -1091,10 +1187,8 @@ void Tissue::make_t1_at_border_inwards(Rearrangement& r){
 	//7) Add v1 to cell that was specific to v2, and v2 to cell that was specific to v1. 
 	t1_add_vertices_to_cells(v1, v2, sp2, remove_from_v2);
 	t1_add_vertices_to_cells(v2, v1, sp1, remove_from_v1);
-        if(edge == 307) cout << "    F - Edge 307: " << v1->edges[0] << ", " <<  v1->edges[1]<< ", " << v1->edges[2] << "; " << v2->edges[0]<< ", " <<   v2->edges[1] << ", " <<  v2->edges[2] << endl;
 	//8)Update edge lengths and areas.
 	t1_update_sizes(v1, v2, edge);
-        if(edge == 307) cout << "    G- Edge 307: " << v1->edges[0] << ", " <<  v1->edges[1]<< ", " << v1->edges[2] << "; " << v2->edges[0]<< ", " <<   v2->edges[1] << ", " <<  v2->edges[2] << endl;
 	//9) Update cells in edge
 	edges[edge].cells[0] = sp1->ind;
 	edges[edge].cells[1] = sp2->ind;
@@ -1129,7 +1223,7 @@ void Tissue::make_t1_at_border_inwards(Rearrangement& r){
 
 	this->counter_t1_inwards++;
 
-	cout << "T1 transition inwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 in: " << counter_t1_inwards << endl;
+	//cout << "T1 transition inwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 in: " << counter_t1_inwards << endl;
 
 	if(REPORT_T1){
 		ff << "\n\nAFTER\n\n";
@@ -1256,7 +1350,7 @@ void Tissue::make_t1_at_border_outwards(Rearrangement& r){
 	edges[edge].type = EdgeType::tissue_boundary;
 	this->counter_t1_outwards++;
 
-	cout << "T1 transition outwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 out: " << counter_t1_outwards <<endl;
+	//cout << "T1 transition outwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 out: " << counter_t1_outwards <<endl;
 
 	if(REPORT_T1){
 		ff << "\n\nAFTER\n\n";
@@ -1407,7 +1501,7 @@ void Tissue::make_divide_cell(Rearrangement& r){
 	if(REPORT_DIV) writeAllData(simname + "_div_2" + to_string(counter_divisions));
 
 	past_divisions.push(DivisionRecord{cell, newcind});
-	cout << "DIVISION: moves accepted: " << counter_moves_accepted << "; divi. accepted: " << counter_divisions << "; Cell: " << cell << "; New cell: " << newcind << "; cut in vertices: " << newvind1 << ", " << newvind2 << endl;
+	//cout << "DIVISION: moves accepted: " << counter_moves_accepted << "; divi. accepted: " << counter_divisions << "; Cell: " << cell << "; New cell: " << newcind << "; cut in vertices: " << newvind1 << ", " << newvind2 << endl;
 	
 	
 }// END make_divide_cell
@@ -1674,7 +1768,7 @@ void Tissue::make_t1(Rearrangement& r){
 	edges[edge].cells[1] = sp2->ind;
 	this->counter_t1++;
 
-	cout << "T1 transition: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions <<endl;
+	//cout << "T1 transition: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions <<endl;
 	if(REPORT_T1){
 		ff << "\n\nAFTER\n\n";
 		ff << VERTEX_HEADER << *v1 << "\n" << *v2 << "\n\n";
@@ -2109,7 +2203,7 @@ void Tissue::make_join_limit_edges(Rearrangement& r){
 	if(v2->spring != EMPTY_CONNECTION){
 
 		if(v1->spring != EMPTY_CONNECTION){
-                        cout << "Deleted vertex and substitute vertex have springs. v2(dead): " << v2->ind << ", v1 (substitute): " << v1->ind << ", v2 spring: " << v2->spring <<  ", v1 spring: " << v1->spring <<endl;
+                        //cout << "Deleted vertex and substitute vertex have springs. v2(dead): " << v2->ind << ", v1 (substitute): " << v1->ind << ", v2 spring: " << v2->spring <<  ", v1 spring: " << v1->spring <<endl;
 			springs[v2->spring].dead = true;
 			int dead_vert = springs[v2->spring].vertices[0] == v2->ind? springs[v2->spring].vertices[1] : springs[v2->spring].vertices[0];
 			int other_vert = springs[v1->spring].vertices[0] == v1->ind? springs[v1->spring].vertices[1] : springs[v1->spring].vertices[0];
@@ -2121,7 +2215,7 @@ void Tissue::make_join_limit_edges(Rearrangement& r){
 			this->num_vertices--;
 			this->num_springs--;
 		}else{
-                        cout << "Deleted vertex has springs, but substitute does not. v2(dead): " << v2->ind << ", v1 (substitute): " << v1->ind  << ", v2 spring: " << v2->spring <<  ", v1 spring: " << v1->spring << endl;
+                        //cout << "Deleted vertex has springs, but substitute does not. v2(dead): " << v2->ind << ", v1 (substitute): " << v1->ind  << ", v2 spring: " << v2->spring <<  ", v1 spring: " << v1->spring << endl;
 			v1->spring = v2->spring;
 			springs[v2->spring].vertices[which(v2->ind, springs[v2->spring].vertices, 2)] = v1->ind;
 			springs[v1->spring].length = distance(springs[v1->spring].vertices[0], springs[v1->spring].vertices[1]);
@@ -2138,7 +2232,7 @@ void Tissue::make_join_limit_edges(Rearrangement& r){
 	
 	//Energies will be updated when moving vertices, not now
 	counter_edges_removed++;
-	cout << "REMOVED: " << v2->ind << " and replaced by: " << v1->ind << "; accepted moves: " << counter_moves_accepted << "; edges removed: " << counter_edges_removed << endl;
+	//cout << "REMOVED: " << v2->ind << " and replaced by: " << v1->ind << "; accepted moves: " << counter_moves_accepted << "; edges removed: " << counter_edges_removed << endl;
 }
 
 void Tissue::make_t2(Rearrangement& r){
@@ -2352,7 +2446,7 @@ void Tissue::make_t2(Rearrangement& r){
 			}
 		}
 	}
-	cout << "T2 transition: cell=" << cell << ", survivor vertex =" << v1 << "; v2: " << v2 << "; v3: " << v3 << "; v2nei: " << v2nei << "; v3nei: " << v3nei << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << "; T2: " << counter_t2 << endl;
+	//cout << "T2 transition: cell=" << cell << ", survivor vertex =" << v1 << "; v2: " << v2 << "; v3: " << v3 << "; v2nei: " << v2nei << "; v3nei: " << v3nei << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << "; T2: " << counter_t2 << endl;
 	//cout << "K\n";
 }//End make transition T2
 
@@ -2360,7 +2454,7 @@ void Tissue::make_t2(Rearrangement& r){
 void Tissue::killCellWith2Vertices(int cell){
 
 	if(cells[cell].dead){
-		cout << "*<< 2 side cell already dead: " << cell << ">>*" << endl;
+		//cout << "*<< 2 side cell already dead: " << cell << ">>*" << endl;
 		return;
 	}
 	//Get neighbouring vertices
@@ -2399,24 +2493,24 @@ void Tissue::killCellWith2Vertices(int cell){
 		v2 = &vertices[cells[cell].vertices[0]];	
 		v1 = &vertices[cells[cell].vertices[1]];	
 	}
-	cout << "*<<\n\nE , enei1: " << enei1 << ", enei2: " << enei2 << endl;
-	cout << VERTEX_HEADER;
-	cout << "    v1: " << *v1 << endl;
-	cout << "    v2: " << *v2 << endl;
-	cout << EDGE_HEADER;
-	cout << "    e1: " << *e1 << endl;
-	cout << "    e2: " << *e2 << endl;
-	cout << CELL_HEADER;
-	cout << "    cell: " << *c << endl;
-	if(auxcell1 != EMPTY_CONNECTION){cout << "    auxc1: " << cells[auxcell1] << endl;}
-	if(auxcell2 != EMPTY_CONNECTION){cout << "    auxc2: " << cells[auxcell2] << endl;}
+	//cout << "*<<\n\nE , enei1: " << enei1 << ", enei2: " << enei2 << endl;
+	//cout << VERTEX_HEADER;
+	//cout << "    v1: " << *v1 << endl;
+	//cout << "    v2: " << *v2 << endl;
+	//cout << EDGE_HEADER;
+	//cout << "    e1: " << *e1 << endl;
+	//cout << "    e2: " << *e2 << endl;
+	//cout << CELL_HEADER;
+	//cout << "    cell: " << *c << endl;
+	//if(auxcell1 != EMPTY_CONNECTION){cout << "    auxc1: " << cells[auxcell1] << endl;}
+	//if(auxcell2 != EMPTY_CONNECTION){cout << "    auxc2: " << cells[auxcell2] << endl;}
 	if(enei1 == EMPTY_CONNECTION){
-		cout << "  Difficult situation: one of vertices in 2-sides cell has no neighbours. This will eventually crash. Vertices: "<< v1->ind << ", " << v2->ind << endl;
-		cout << "    v1: " << *v1 << endl;
-		cout << "    v2: " << *v2 << endl;
-		cout << "    e1: " << *e1 << endl;
-		cout << "    e2: " << *e2 << endl;
-		cout << "    cell: " << *c << endl;
+		//cout << "  Difficult situation: one of vertices in 2-sides cell has no neighbours. This will eventually crash. Vertices: "<< v1->ind << ", " << v2->ind << endl;
+		//cout << "    v1: " << *v1 << endl;
+		//cout << "    v2: " << *v2 << endl;
+		//cout << "    e1: " << *e1 << endl;
+		//cout << "    e2: " << *e2 << endl;
+		//cout << "    cell: " << *c << endl;
 		c->dead = true;
 		e1->dead = true;
 		e2->dead = true;
@@ -2439,10 +2533,10 @@ void Tissue::killCellWith2Vertices(int cell){
 	//Get other vertices
 	vnei1 = edges[enei1].vertices[0] == v1->ind ? edges[enei1].vertices[1] : edges[enei1].vertices[0];
 	vnei2 = edges[enei2].vertices[0] == v2->ind ? edges[enei2].vertices[1] : edges[enei2].vertices[0];
-	cout << "G, vnei1: " << vnei1 << ", vnei2: " << vnei2 << endl;
-	cout << VERTEX_HEADER;
-	cout << "    vNEI1: " << vertices[vnei1] << endl;
-	cout << "    vNEI2: " << vertices[vnei2] << endl;
+	//cout << "G, vnei1: " << vnei1 << ", vnei2: " << vnei2 << endl;
+	//cout << VERTEX_HEADER;
+	//cout << "    vNEI1: " << vertices[vnei1] << endl;
+	//cout << "    vNEI2: " << vertices[vnei2] << endl;
 	//Change neighbour vertices
 	vertices[vnei1].neighbour_vertices[which(v1->ind, vertices[vnei1].neighbour_vertices, CELLS_PER_VERTEX)] = vnei2;
 	vertices[vnei2].neighbour_vertices[which(v2->ind, vertices[vnei2].neighbour_vertices, CELLS_PER_VERTEX)] = vnei1;
@@ -2493,17 +2587,17 @@ void Tissue::killCellWith2Vertices(int cell){
 
 	if(auxcell1 != EMPTY_CONNECTION){
 		if(cells[auxcell1].num_vertices < 3){
-			cout << "    Killed cell of size 2 " << cell << " but now its neighbour 1, " << auxcell1 << " has " << cells[auxcell1].num_vertices << " vertices." << endl;
+			//cout << "    Killed cell of size 2 " << cell << " but now its neighbour 1, " << auxcell1 << " has " << cells[auxcell1].num_vertices << " vertices." << endl;
 			killCellWith2Vertices(auxcell1);
 		}
 	}
 	if(auxcell2 != EMPTY_CONNECTION){
 		if(cells[auxcell2].num_vertices < 3){
-			cout << "    Killed cell of size 2 " << cell << " but now its neighbour 2, " << auxcell2 << " has " << cells[auxcell2].num_vertices << " vertices." << endl;
+			//cout << "    Killed cell of size 2 " << cell << " but now its neighbour 2, " << auxcell2 << " has " << cells[auxcell2].num_vertices << " vertices." << endl;
 			killCellWith2Vertices(auxcell2);
 		}
 	}
-	cout << "    KILLED SIZE 2 CELL: " << cell << endl << "<<*" << endl;
+	//cout << "    KILLED SIZE 2 CELL: " << cell << endl << "<<*" << endl;
 	return;
 
 }//Kill cell with 2 edges
@@ -2802,6 +2896,16 @@ void Tissue::writeAllData(std::string fname){ //Writes tables with all data (inc
 	of.close();
 }//End  writeAll
 
+void Tissue::writeCellDataTable(std::string fname){
+	ofstream of;
+	of.open(fname + ".out");
+	of << CELL_HEADER;
+	for(Cell c : cells){
+		if(!c.dead) of << c << "\n";
+	}
+	of.close();
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 //What follows is only useful to print easily, not part of the model
@@ -2828,6 +2932,7 @@ std::ostream& operator<<(std::ostream& out, const Vertex& v){
 //Overloading of << operator for CELLS. Useful to print
 std::ostream& operator<<(std::ostream& out, const Cell& c){
 	out << c.ind << "\t" << int(c.type) << "\t" << c.area << "\t" << c.preferred_area << "\t" << c.perimeter << "\t" << c.perimeter_contractility << "\t";
+	out << c.centroid_x  << "\t" << c.centroid_y << "\t";
 	out << c.division_angle_longest << "\t"; 
 	out << c.division_angle_external << "\t";
        	out << c.division_angle_random_noise << "\t"; 

@@ -36,14 +36,18 @@ const float DIVISION_ANGLE_EXTERNAL = 0.0; //
 const float DIVISION_ANGLE_EXTERNAL_DEGREES = 0;
 const float CELL_CYCLE_LIMIT = 10;
 const float TIME_DECREASE_EXPONENT = 0.5; //Only active if TIME_CONTROLS_SIZE
+const float XCOORD_DECREASE_EXPONENT = 0.5; //Only active if XCOORD_CONTROLS_SIZE
 
+const float ENERGY_TERM1 = 1;
+const float ENERGY_TERM2 = 1;
+const float ENERGY_TERM3 = 1;
 
 const float LENGTH_ROTATED_EDGE = 0.5*T1_TRANSITION_CRITICAL_DISTANCE*1.2; //after a t1 transition, rotated edge length is multiplied by twice this constant
 
 
 // Implementation constants
 const unsigned short CELLS_PER_VERTEX = 3;
-const unsigned short MAX_SIDES_PER_CELL = 20; //Maybe pass as argument instead of constant?
+const unsigned short MAX_SIDES_PER_CELL = 30; //Maybe pass as argument instead of constant?
 const unsigned short VERTEX_PER_EDGE = 2;
 const int EMPTY_CONNECTION = -999;  //Value to initialize arrays (cells in vertex, etc)
 const int RANDOM_SEED = 1234;
@@ -61,10 +65,11 @@ const bool DIVISION_ACTIVE = true;
 const bool T2_ACTIVE = true;
 const bool JOIN_EDGES_ACTIVE = true;
 const bool CONTROL_CELLS_2SIDES = true; 
-const bool CHECK_EDGES_CROSS_AFTER_MOVE = false;
+const bool CHECK_EDGES_CROSS_AFTER_MOVE = true;
 const bool AUTONOMOUS_CELL_CYCLE = true;
 const bool CELL_CYCLE_CONTROLS_SIZE = true;
 const bool TIME_CONTROLS_SIZE = false;
+const bool XCOORD_CONTROLS_SIZE = false;
 const bool STATIC_PRESENT = true;
 const int MOVE_TRIALS = 100;  //Times it tries to move a vertex before it quits because always makes edges to cross
 
@@ -72,7 +77,7 @@ const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
 
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tcells\tedges\tneighbour_vertices\n";
-const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\tangle_longest\tangle_signal\tangle_random\tdegrees_signal\tmax_area\tcell_cycle_state\tcell_cycle_limit\tcan_divide\tnum_vertices\tvertices\tedges\n";
+const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\tcentroid_x\tcentroid_y\tangle_longest\tangle_signal\tangle_random\tdegrees_signal\tmax_area\tcell_cycle_state\tcell_cycle_limit\tcan_divide\tnum_vertices\tvertices\tedges\n";
 const std::string EDGE_HEADER = "ind\ttype\tlength\ttension\tvertices\tcells\n";
 
 //Enum class to define types of cells 
@@ -177,6 +182,7 @@ class Tissue{
 		cell_type_param read_celltype_par(std::vector<std::string>::iterator& it, std::string::size_type sz);
                 spring_type_param read_springtype_par(std::vector<std::string>::iterator& it, std::string::size_type sz);
 		void set_default_simulation_params();
+		void setHingeMinAndMaxPositions();
 
 		void simulate(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif);
 		double calculateCellArea(const Cell& c);
@@ -209,6 +215,7 @@ class Tissue{
 		void setStepMode(bool mode, int steps);
 
 		void writeCellsFile(std::string fname);
+		void writeCellDataTable(std::string fname);
 		void writePointsFile(std::string fname);
 		void writeSpringsFile(std::string fname);
 		void writeAllData(std::string fname);
@@ -227,6 +234,7 @@ class Tissue{
 	private:
 		std::string simname;
 		int num_cells, num_vertices, num_edges, num_springs;
+		double hinge_min_xpos, hinge_max_xpos;
 		bool step_mode; //If the simulation is controlled by an external source, set this to true in order to avoid excessive printing of outputs
 		//parameters
 		float min_range_vertex_movement; 
@@ -235,7 +243,7 @@ class Tissue{
 		float temperature_negative_energy; 
 		cell_type_param line_tension;
 		cell_type_param line_tension_tissue_boundary;
-
+		float energy_term1, energy_term2, energy_term3;
 		//float spring_constant;
                 spring_type_param spring_type_constants;
 		cell_type_param perimeter_contract;
@@ -248,9 +256,9 @@ class Tissue{
 
 		cell_type_param division_angle_longest_axis, division_angle_random_noise, division_angle_external, division_angle_external_degrees;
 
-		cell_type_param cell_cycle_limit;
-		bool autonomous_cell_cycle, cell_cycle_controls_size, time_controls_size;
-		float time_decrease_exponent;
+		cell_type_param cell_cycle_limit, xcoord_size_control_factor;
+		bool autonomous_cell_cycle, cell_cycle_controls_size, time_controls_size, xcoord_controls_size;
+		float time_decrease_exponent, xcoord_decrease_exponent;
 
 		float length_rotated_edge; 
 
@@ -316,6 +324,8 @@ class Tissue{
 		//Other
 		void advanceCellCycle(int vertex_moved);
 		void advanceSizeWithTime(int vertex_moved);
+		void advanceSizeWithXcoordAndTime(int vertex_moved);
+		void advanceSizeWithXcoord(int vertex_moved);
 };
 
 //functions of general use
