@@ -65,8 +65,9 @@ const bool DIVISION_ACTIVE = true;
 const bool T2_ACTIVE = true;
 const bool JOIN_EDGES_ACTIVE = true;
 const bool CONTROL_CELLS_2SIDES = true; 
-const bool CHECK_EDGES_CROSS_AFTER_MOVE = true;
+const bool CHECK_EDGES_CROSS_AFTER_MOVE = false;
 const bool AUTONOMOUS_CELL_CYCLE = true;
+const bool KEEP_BLADE_AREA_AFTER_DIVISION = false;
 const bool CELL_CYCLE_CONTROLS_SIZE = true;
 const bool TIME_CONTROLS_SIZE = false;
 const bool XCOORD_CONTROLS_SIZE = false;
@@ -77,7 +78,7 @@ const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
 
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tcells\tedges\tneighbour_vertices\n";
-const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\tcentroid_x\tcentroid_y\tangle_longest\tangle_signal\tangle_random\tdegrees_signal\tmax_area\tcell_cycle_state\tcell_cycle_limit\tcan_divide\tnum_vertices\tvertices\tedges\n";
+const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\tcentroid_x\tcentroid_y\tangle_longest\tangle_signal\tangle_random\tdegrees_signal\tmax_area\tcell_cycle_state\tcell_cycle_limit\tcan_divide\tnum_vertices\tvertices\tedges\tnum_divisions\n";
 const std::string EDGE_HEADER = "ind\ttype\tlength\ttension\tvertices\tcells\n";
 
 //Enum class to define types of cells 
@@ -125,6 +126,7 @@ struct Cell{
 	int vertices[MAX_SIDES_PER_CELL];
 	int num_vertices; 
 	bool dead;
+	int num_divisions;
 };
 // Structure for Edge
 struct Edge{
@@ -257,7 +259,7 @@ class Tissue{
 		cell_type_param division_angle_longest_axis, division_angle_random_noise, division_angle_external, division_angle_external_degrees;
 
 		cell_type_param cell_cycle_limit, xcoord_size_control_factor;
-		bool autonomous_cell_cycle, cell_cycle_controls_size, time_controls_size, xcoord_controls_size;
+		bool autonomous_cell_cycle, cell_cycle_controls_size, time_controls_size, xcoord_controls_size, keep_blade_area_after_division;
 		float time_decrease_exponent, xcoord_decrease_exponent;
 
 		float length_rotated_edge; 

@@ -137,6 +137,7 @@ void Tissue::set_default_simulation_params(){
 
 	autonomous_cell_cycle = AUTONOMOUS_CELL_CYCLE;
 	cell_cycle_controls_size = CELL_CYCLE_CONTROLS_SIZE;
+	keep_blade_area_after_division = KEEP_BLADE_AREA_AFTER_DIVISION;
 	time_controls_size = TIME_CONTROLS_SIZE;
 	time_decrease_exponent = TIME_DECREASE_EXPONENT;
 	xcoord_controls_size = XCOORD_CONTROLS_SIZE;
@@ -293,6 +294,7 @@ void Tissue::initialize_params(std::string params_file){
 	max_edge_length = read_real_par(it);
 	autonomous_cell_cycle = read_real_par(it) > 0;
 	cell_cycle_controls_size = read_real_par(it) > 0;
+	keep_blade_area_after_division = read_real_par(it) > 0;
 	time_controls_size = read_real_par(it) > 0;
 	time_controls_size = cell_cycle_controls_size ? false : time_controls_size;
 	time_decrease_exponent = read_real_par(it);
@@ -415,6 +417,7 @@ void Tissue::initialize_cells(std::ifstream& inp){
 	c.cell_cycle_state = 0;
 	c.centroid_x = 0;
 	c.centroid_y = 0;
+	c.num_divisions = 0;
 	int cell_count = 0;
 	while(getline(inp, s)){ //Each row in file represents a cell
 		vert_count = 0; //Store number of vertices read so far for this cell
@@ -676,6 +679,7 @@ int Tissue::newCell(){
 	cells[c].can_divide = !autonomous_cell_cycle;
 	cells[c].centroid_x = 0;
 	cells[c].centroid_y = 0;
+	cells[c].num_divisions = 0;
 	this->num_cells++;
 	//if (!dead_cells.empty()) dead_cells.pop();
 	return c;		
@@ -753,7 +757,7 @@ void Tissue::setHingeMinAndMaxPositions(){
 	}
 	hinge_min_xpos = min;
 	hinge_max_xpos = max;
-	cout << "Min hinge position: " << hinge_min_xpos << "; Max hinge position: " << hinge_max_xpos << endl;
+	//cout << "Min hinge position: " << hinge_min_xpos << "; Max hinge position: " << hinge_max_xpos << endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -886,8 +890,7 @@ bool Tissue::tryMoveVertex(std::default_random_engine& generator, std::uniform_r
 		detectChangesAfterMove(vertex_to_move);
 		if(autonomous_cell_cycle){ //NOTE: Maybe make this before detecting changes so the effect is immediate? Otherwise cells have to wait until next round
 			advanceCellCycle(vertex_to_move);
-		}
-		if(time_controls_size && !xcoord_controls_size){
+		}else if(time_controls_size && !xcoord_controls_size){
 			advanceSizeWithTime(vertex_to_move);			
 		}else if(time_controls_size && xcoord_controls_size){
 			advanceSizeWithXcoordAndTime(vertex_to_move);
@@ -911,7 +914,7 @@ void Tissue::advanceSizeWithXcoordAndTime(int vertex_moved){
 
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
 		caux = vertices[vertex_moved].cells[i];
-		if(caux == EMPTY_CONNECTION) continue;
+		if(caux == EMPTY_CONNECTION || (keep_blade_area_after_division && (cells[caux].type == CellType::blade || cells[caux].type == CellType::vein_blade))) continue;
 		cells[caux].preferred_area = preferred_area_initial[cells[caux].type] + (preferred_area_final[cells[caux].type] - preferred_area_initial[cells[caux].type]) * time_factor; //Caution: problems if step_mode is on
 		if(cells[caux].type == CellType::vein_hinge){
 			calculateCellCentroid(cells[caux]);
@@ -961,7 +964,7 @@ void Tissue::advanceCellCycle(int vertex_moved){
 		if(cells[caux].cell_cycle_state >= cells[caux].cell_cycle_limit){
 			cells[caux].can_divide = true;
 		}
-		if(cell_cycle_controls_size){
+		if(cell_cycle_controls_size && !(keep_blade_area_after_division && (cells[caux].type == CellType::blade || cells[caux].type == CellType::vein_blade))){
 			cells[caux].preferred_area = preferred_area_initial[cells[caux].type] + (preferred_area_final[cells[caux].type] - preferred_area_initial[cells[caux].type])*cells[caux].cell_cycle_state/cells[caux].cell_cycle_limit;
 		}
 	}
@@ -973,7 +976,7 @@ void Tissue::advanceSizeWithTime(int vertex_moved){
 	time_factor = 1 - exp(-pow(time_factor, time_decrease_exponent));
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
 		caux = vertices[vertex_moved].cells[i];
-		if(caux == EMPTY_CONNECTION) continue;
+		if(caux == EMPTY_CONNECTION || (keep_blade_area_after_division && (cells[caux].type == CellType::blade || cells[caux].type == CellType::vein_blade))) continue;
 		cells[caux].preferred_area = preferred_area_initial[cells[caux].type] + (preferred_area_final[cells[caux].type] - preferred_area_initial[cells[caux].type]) * time_factor; //Caution: problems if step_mode is on
 	}
 }//advanceSizeWithTime
@@ -1464,12 +1467,6 @@ void Tissue::make_divide_cell(Rearrangement& r){
 		//cells[newcind].can_divide = 0; //Already done in newCell()
 		cells[cell].can_divide = false;
 	}
-	if(this->cell_cycle_controls_size){
-		cells[newcind].preferred_area = this->preferred_area_initial[cells[cell].type];
-		cells[cell].preferred_area = this->preferred_area_initial[cells[cell].type];		
-	}else{
-		cells[newcind].preferred_area = cells[cell].preferred_area;
-	}
 
 	cells[newcind].division_angle_random_noise = cells[cell].division_angle_random_noise;
 	cells[newcind].division_angle_longest = cells[cell].division_angle_longest;
@@ -1480,6 +1477,20 @@ void Tissue::make_divide_cell(Rearrangement& r){
 	cells[newcind].perimeter = calculateCellPerimeter(cells[newcind]);
 	cells[cell].area = calculateCellArea(cells[cell]);
 	cells[cell].perimeter = calculateCellPerimeter(cells[cell]);
+
+	if(keep_blade_area_after_division && (cells[cell].type == CellType::blade || cells[cell].type == CellType::vein_blade)){
+		//cells[newcind].preferred_area = cells[newcind].area;
+		//cells[cell].preferred_area = cells[cell].area;
+		cells[cell].preferred_area /= 2;
+		cells[newcind].preferred_area = cells[cell].preferred_area;
+		
+	}else if(this->cell_cycle_controls_size){
+		cells[newcind].preferred_area = this->preferred_area_initial[cells[cell].type];
+		cells[cell].preferred_area = this->preferred_area_initial[cells[cell].type];		
+	}else{
+		cells[newcind].preferred_area = cells[cell].preferred_area;
+	}
+
 
 	//Finally, check whether new vertices should be static
 	/*int num_static_neighbours = 0;
@@ -1497,6 +1508,9 @@ void Tissue::make_divide_cell(Rearrangement& r){
 	if(num_static_neighbours >= 2) vertices[newvind2].movable = false;
 	*/
 	counter_divisions++;
+	cells[cell].num_divisions++;
+	cells[newcind].num_divisions = cells[cell].num_divisions;
+	
 
 	if(REPORT_DIV) writeAllData(simname + "_div_2" + to_string(counter_divisions));
 
@@ -2949,6 +2963,7 @@ std::ostream& operator<<(std::ostream& out, const Cell& c){
 	for(int i = 0; i < c.num_vertices; i++){ // print edges of cell separated by ','
 		out << c.edges[i] << ",";
 	} 
+	out << "\t" << c.num_divisions;
 	return out;
 }
 

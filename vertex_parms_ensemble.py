@@ -3,6 +3,7 @@ import os
 import argparse
 
 import numpy as np
+import pandas as pd
 
 
 CELLTYPE_PAR_BEGIN = '>>'
@@ -15,7 +16,7 @@ DISJOINT_SEP = ','
 SEQ_SEP = ';'
 RANDOM_VALUE = '?'
 
-OUTPUT_CELLTYPE_BEGIN = '>'
+OUTPUT_CELLTYPE_BEGIN = '>>'
 OUTPUT_CELLTYPE_END = '<'
 OUTPUT_PAR_BEGIN = '>'
 OUTPUT_EXTENSION = '.vp'
@@ -72,9 +73,18 @@ class paramContainer:
         extended = [[val for val in p] for p in self.params]
         combos = [c for c in product(*extended)]
         num = len(combos)
+        fnames = []
         for i in range(num):
             parset = dict(zip(allnames, combos[i]))
             self.writeFile(parset, self.outname + '_' + str(i))
+            fnames.append(self.outname + '_' + str(i))
+        self.produceDataFrame(allnames, combos, fnames)
+
+    def produceDataFrame(self, allnames, combos, fnames):
+        df = pd.DataFrame(data = dict(zip([s[0:s.find('#')].rstrip() for s in allnames], zip(*combos) )))
+        df['name'] = fnames
+        df.set_index('name')
+        df.to_csv(self.outname + '/' + self.outname + '_allConds.csv', sep = '\t')
 
     def writeFile(self, parset, fname):
         s = '# ' + fname + '\n'
@@ -125,6 +135,8 @@ class paramRandomContainer(paramContainer):
     def produceOutputs(self):
         from itertools import product
         allnames = [p.name for p in self.params]
+        allparsets = []
+        fnames = []
         for i in range(self.ran):
             vals = []
             for p in self.params:
@@ -148,6 +160,9 @@ class paramRandomContainer(paramContainer):
             parset = dict(zip(allnames, vals))
             print("\n\n")
             self.writeFile(parset, self.outname + '_' + str(i))
+            allparsets.append(vals)
+            fnames.append(self.outname + '_' + str(i))
+        self.produceDataFrame(allnames, allparsets, fnames)
 
 class randomPar:
     def __init__(self, parlist, ran):
