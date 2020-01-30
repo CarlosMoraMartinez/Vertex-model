@@ -14,7 +14,7 @@
 using namespace std;
 
 //Default constructor
-Tissue::Tissue() : num_cells(0), num_vertices(0), num_edges(0),  counter_move_trials(0), counter_moves_accepted(0), counter_t1(0), counter_t1_abortions(0), counter_edges_removed(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0){
+Tissue::Tissue() : num_cells(0), num_vertices(0), num_edges(0),  counter_move_trials(0), counter_moves_accepted(0), counter_favorable_accepted(0), counter_favorable_rejected(0), counter_unfav_accepted(0), counter_unfav_rejected(0), counter_t1(0), counter_t1_abortions(0), counter_edges_removed(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0){
 
 	simname = "";
 	max_accepted_movements = 0;
@@ -77,7 +77,7 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  in
 	setHingeMinAndMaxPositions();
 }
 
-Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements,  int write_every_N_moves) : num_cells(0), num_vertices(0), num_edges(0),  counter_move_trials(0), counter_moves_accepted(0), counter_t1(0), counter_t1_abortions(0), counter_edges_removed(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0){
+Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements,  int write_every_N_moves) : num_cells(0), num_vertices(0), num_edges(0),  counter_move_trials(0), counter_moves_accepted(0), counter_favorable_accepted(0), counter_favorable_rejected(0), counter_unfav_accepted(0), counter_unfav_rejected(0),  counter_t1(0), counter_t1_abortions(0), counter_edges_removed(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0){
 
 	this->simname = starting_tissue_file;
 	this->max_accepted_movements = max_accepted_movements;
@@ -137,7 +137,7 @@ void Tissue::set_default_simulation_params(){
 
 	autonomous_cell_cycle = AUTONOMOUS_CELL_CYCLE;
 	cell_cycle_controls_size = CELL_CYCLE_CONTROLS_SIZE;
-	keep_blade_area_after_division = KEEP_BLADE_AREA_AFTER_DIVISION;
+	keep_area_after_division = KEEP_AREA_AFTER_DIVISION;
 	time_controls_size = TIME_CONTROLS_SIZE;
 	time_decrease_exponent = TIME_DECREASE_EXPONENT;
 	xcoord_controls_size = XCOORD_CONTROLS_SIZE;
@@ -294,7 +294,7 @@ void Tissue::initialize_params(std::string params_file){
 	max_edge_length = read_real_par(it);
 	autonomous_cell_cycle = read_real_par(it) > 0;
 	cell_cycle_controls_size = read_real_par(it) > 0;
-	keep_blade_area_after_division = read_real_par(it) > 0;
+	keep_area_after_division = read_real_par(it) > 0;
 	time_controls_size = read_real_par(it) > 0;
 	time_controls_size = cell_cycle_controls_size ? false : time_controls_size;
 	time_decrease_exponent = read_real_par(it);
@@ -414,7 +414,7 @@ void Tissue::initialize_cells(std::ifstream& inp){
 	Cell c;
 	c.dead=false;
 	c.can_divide = !this->autonomous_cell_cycle;
-	c.cell_cycle_state = 0;
+	//c.cell_cycle_state = 0;
 	c.centroid_x = 0;
 	c.centroid_y = 0;
 	c.num_divisions = 0;
@@ -446,6 +446,7 @@ void Tissue::initialize_cells(std::ifstream& inp){
 			}	
 		}
 		c.type = vertex == EMPTY_CONNECTION ? CellType::blade : static_cast<CellType>(vertex);
+		c.cell_cycle_state = std::rand() % static_cast<int>(cell_cycle_limit[c.type]);
 		this->cells.push_back(c);
 		cell_count++;
 	}//while rows in file
@@ -852,8 +853,9 @@ void Tissue::moveVertex(Vertex& v, float x, float y){
 			this->cells[v.cells[i]].perimeter = calculateCellPerimeter(this->cells[v.cells[i]]);
 		}
 	}
-	v.energy = calculateEnergy(v);
+	//v.energy = calculateEnergy(v);
 }
+//counter_favorable_accepted, counter_favorable_rejected, counter_unfav_accepted, counter_unfav_rejected 
 bool Tissue::tryMoveVertex(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif){
 
 	int vertex_to_move;
@@ -874,12 +876,17 @@ bool Tissue::tryMoveVertex(std::default_random_engine& generator, std::uniform_r
 		new_x = old_x + cos(angle)*radius;
 		new_y = old_y + sin(angle)*radius;
 		moveVertex(vertices[vertex_to_move], new_x, new_y);
+		vertices[vertex_to_move].energy = calculateEnergy(vertices[vertex_to_move]);
 		move_prob = vertices[vertex_to_move].energy <= old_energy? 
 							exp((vertices[vertex_to_move].energy - old_energy)/temperature_negative_energy) : 
 							exp(-(vertices[vertex_to_move].energy - old_energy)/temperature_positive_energy) ;
 		if(CHECK_EDGES_CROSS_AFTER_MOVE){
 			cell_borders_cross = check_if_edges_cross(vertex_to_move);
-			if(cell_borders_cross) moveVertex(vertices[vertex_to_move], old_x, old_y);
+			if(cell_borders_cross){
+				moveVertex(vertices[vertex_to_move], old_x, old_y);
+				vertices[vertex_to_move].energy = old_energy;
+
+			}
 			cross_trials++;
 			if(cross_trials > MOVE_TRIALS) return false;
 		}
@@ -890,15 +897,28 @@ bool Tissue::tryMoveVertex(std::default_random_engine& generator, std::uniform_r
 		detectChangesAfterMove(vertex_to_move);
 		if(autonomous_cell_cycle){ //NOTE: Maybe make this before detecting changes so the effect is immediate? Otherwise cells have to wait until next round
 			advanceCellCycle(vertex_to_move);
-		}else if(time_controls_size && !xcoord_controls_size){
+		}
+		if(time_controls_size && !xcoord_controls_size){
 			advanceSizeWithTime(vertex_to_move);			
 		}else if(time_controls_size && xcoord_controls_size){
 			advanceSizeWithXcoordAndTime(vertex_to_move);
 		}else if(xcoord_controls_size){
 			advanceSizeWithXcoord(vertex_to_move);
 		}
+		//Counters
+		if(vertices[vertex_to_move].energy <= old_energy){
+			counter_favorable_accepted++;
+		}else{
+			counter_unfav_accepted++;
+		}//Counters
 		return true;
 	}else{
+		//Counters
+		if(vertices[vertex_to_move].energy <= old_energy){
+			counter_favorable_rejected++;
+		}else{
+			counter_unfav_rejected++;
+		}//Counters
 		moveVertex(vertices[vertex_to_move], old_x, old_y);
 		return false;
 	}
@@ -908,27 +928,38 @@ bool Tissue::tryMoveVertex(std::default_random_engine& generator, std::uniform_r
 
 void Tissue::advanceSizeWithXcoordAndTime(int vertex_moved){
 	int caux;
+	double auxprint;
 	double time_factor = static_cast<double>(counter_moves_accepted)/max_accepted_movements;
-	time_factor = 1 - exp(-pow(time_factor, time_decrease_exponent));
+	time_factor = (1 - exp(-pow(time_factor, time_decrease_exponent)))/EXP_FACTOR;
 	float pos_factor = 0, aux_area;
 
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
 		caux = vertices[vertex_moved].cells[i];
-		if(caux == EMPTY_CONNECTION || (keep_blade_area_after_division && (cells[caux].type == CellType::blade || cells[caux].type == CellType::vein_blade))) continue;
+		if(caux == EMPTY_CONNECTION) continue;
 		cells[caux].preferred_area = preferred_area_initial[cells[caux].type] + (preferred_area_final[cells[caux].type] - preferred_area_initial[cells[caux].type]) * time_factor; //Caution: problems if step_mode is on
+		auxprint = cells[caux].preferred_area;
 		if(cells[caux].type == CellType::vein_hinge){
 			calculateCellCentroid(cells[caux]);
 			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
 			pos_factor = pos_factor < 0 ? 0 : pos_factor/(hinge_max_xpos - hinge_min_xpos);
 			aux_area = preferred_area_initial[CellType::vein_blade] + (preferred_area_final[CellType::vein_blade] - preferred_area_initial[CellType::vein_blade]) * time_factor;
-			cells[caux].preferred_area += (aux_area - cells[caux].preferred_area)*(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)));
+			cells[caux].preferred_area += (aux_area - cells[caux].preferred_area)*(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
+			//cout << "HingeVein-Cell="<< caux << "; time= "<<counter_moves_accepted<<"; Type=" << static_cast<int>(cells[caux].type) << "; pos factor=" << pos_factor << "; time factor=" << time_factor << "; Init_area=" << preferred_area_initial[cells[caux].type]<< "; Final_area=" << preferred_area_final[cells[caux].type] << "; Init area in blade vein= " << preferred_area_initial[CellType::vein_blade] << "; Final area in blade vein= " << preferred_area_final[CellType::vein_blade] << "; aux_area(for vein_blade)=" << aux_area << "; pref_area (only time)" << auxprint << "; pref_area=" << cells[caux].preferred_area << endl;
 		}else if(cells[caux].type == CellType::hinge){
 			calculateCellCentroid(cells[caux]);
 			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
 			pos_factor = pos_factor < 0 ? 0 : pos_factor/(hinge_max_xpos - hinge_min_xpos);
 			aux_area = preferred_area_initial[CellType::blade] + (preferred_area_final[CellType::blade] - preferred_area_initial[CellType::blade]) * time_factor;
-			cells[caux].preferred_area += (aux_area - cells[caux].preferred_area)*(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)));
+			cells[caux].preferred_area += (aux_area - cells[caux].preferred_area)*(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
+			//cout << "Hinge-Cell="<<caux << "; time= "<<counter_moves_accepted<<"; Type=" << static_cast<int>(cells[caux].type) << "; pos factor=" << pos_factor << "; time factor=" << time_factor << "; Init_area=" << preferred_area_initial[cells[caux].type]<< "; Final_area=" << preferred_area_final[cells[caux].type] << "; Init area in blade = " << preferred_area_initial[CellType::blade] << "; Final area in blade vein= " << preferred_area_final[CellType::blade] << "; aux_area(for blade)=" << aux_area << "; pref_area (only time)" << auxprint << "; pref_area=" << cells[caux].preferred_area << endl;
+		}else{
+			//cout << "BladeOrBladeVein-Cell="<<caux << "; time= "<<counter_moves_accepted<<"; Type=" << static_cast<int>(cells[caux].type) << "; pos factor=" << pos_factor << "; time factor=" << time_factor << "; Init_area=" << preferred_area_initial[cells[caux].type]<< "; Final_area=" << preferred_area_final[cells[caux].type] << "; pref_area=" << cells[caux].preferred_area;
 		}
+		if(keep_area_after_division){
+			cells[caux].preferred_area /= pow(2, cells[caux].num_divisions);
+			//cout << "; Num divisions=" << cells[caux].num_divisions << "; pref. area After=" << cells[caux].preferred_area;
+		}
+		//cout << endl;
 	}
 }//advanceSizeWithTimeAndXcoord
 
@@ -943,14 +974,20 @@ void Tissue::advanceSizeWithXcoord(int vertex_moved){
 			calculateCellCentroid(cells[caux]);
 			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
 			pos_factor = pos_factor < 0 ? 0 : pos_factor/(hinge_max_xpos - hinge_min_xpos);
-			cells[caux].preferred_area = preferred_area_initial[CellType::vein_hinge] + (preferred_area_initial[CellType::vein_blade] - preferred_area_initial[CellType::vein_hinge])*(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)));
+			cells[caux].preferred_area = preferred_area_initial[CellType::vein_hinge] + (preferred_area_initial[CellType::vein_blade] - preferred_area_initial[CellType::vein_hinge])*(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
+			if(keep_area_after_division){
+				cells[caux].preferred_area /= pow(2, cells[caux].num_divisions);
+			}
 			//cout << "HingeVein cell: " << " x abs = " << cells[caux].centroid_x << ", x rel = " << pos_factor << ", pref area = " << cells[caux].preferred_area << endl;
 		}else if(cells[caux].type == CellType::hinge){
 			calculateCellCentroid(cells[caux]);
 			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
 			pos_factor = pos_factor < 0 ? 0 : pos_factor/(hinge_max_xpos - hinge_min_xpos);
-			cells[caux].preferred_area = preferred_area_initial[CellType::hinge] + (preferred_area_initial[CellType::blade] - preferred_area_initial[CellType::hinge])*(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)));
+			cells[caux].preferred_area = preferred_area_initial[CellType::hinge] + (preferred_area_initial[CellType::blade] - preferred_area_initial[CellType::hinge])*(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
 			//cout << "Hinge cell: " << " x abs = " << cells[caux].centroid_x << ", x rel = " << pos_factor << ", pref area = " << cells[caux].preferred_area << endl;
+			if(keep_area_after_division){
+				cells[caux].preferred_area /= pow(2, cells[caux].num_divisions);
+			}
 		}
 	}
 }//advanceSizeWithXcoord
@@ -964,7 +1001,7 @@ void Tissue::advanceCellCycle(int vertex_moved){
 		if(cells[caux].cell_cycle_state >= cells[caux].cell_cycle_limit){
 			cells[caux].can_divide = true;
 		}
-		if(cell_cycle_controls_size && !(keep_blade_area_after_division && (cells[caux].type == CellType::blade || cells[caux].type == CellType::vein_blade))){
+		if(cell_cycle_controls_size && !(keep_area_after_division && (cells[caux].type == CellType::blade || cells[caux].type == CellType::vein_blade))){
 			cells[caux].preferred_area = preferred_area_initial[cells[caux].type] + (preferred_area_final[cells[caux].type] - preferred_area_initial[cells[caux].type])*cells[caux].cell_cycle_state/cells[caux].cell_cycle_limit;
 		}
 	}
@@ -973,11 +1010,15 @@ void Tissue::advanceCellCycle(int vertex_moved){
 void Tissue::advanceSizeWithTime(int vertex_moved){
 	int caux;
 	double time_factor = static_cast<double>(counter_moves_accepted)/max_accepted_movements;
-	time_factor = 1 - exp(-pow(time_factor, time_decrease_exponent));
+	time_factor = (1 - exp(-pow(time_factor, time_decrease_exponent)))/EXP_FACTOR;
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
 		caux = vertices[vertex_moved].cells[i];
-		if(caux == EMPTY_CONNECTION || (keep_blade_area_after_division && (cells[caux].type == CellType::blade || cells[caux].type == CellType::vein_blade))) continue;
+		if(caux == EMPTY_CONNECTION) continue;
 		cells[caux].preferred_area = preferred_area_initial[cells[caux].type] + (preferred_area_final[cells[caux].type] - preferred_area_initial[cells[caux].type]) * time_factor; //Caution: problems if step_mode is on
+		cout << "cell="<<caux <<"; type="<<static_cast<int>(cells[caux].type) << "; time factor= " << time_factor << ", init=" << preferred_area_initial[cells[caux].type] << "; final=" << preferred_area_final[cells[caux].type] << "; area=" << cells[caux].preferred_area << endl;
+		if(keep_area_after_division){
+			cells[caux].preferred_area /= pow(2, cells[caux].num_divisions);
+		}
 	}
 }//advanceSizeWithTime
 
@@ -990,6 +1031,7 @@ void Tissue::produceOutputs(std::string add_to_name){
 	if(num_springs > 0) writeSpringsFile(fname);
 	//writeAllData(fname); //THIS IS USEFUL TO DEBUG, BUT THE FORMAT IS NOT READ BY PLOTTING PROGRAM
 	writeCellDataTable(fname);
+	std::cout << getStats() << endl;
 }
 
 void Tissue::simulate(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif){
@@ -1478,12 +1520,14 @@ void Tissue::make_divide_cell(Rearrangement& r){
 	cells[cell].area = calculateCellArea(cells[cell]);
 	cells[cell].perimeter = calculateCellPerimeter(cells[cell]);
 
-	if(keep_blade_area_after_division && (cells[cell].type == CellType::blade || cells[cell].type == CellType::vein_blade)){
+	cells[cell].num_divisions++;
+	cells[newcind].num_divisions = cells[cell].num_divisions;
+
+	if(keep_area_after_division){
 		//cells[newcind].preferred_area = cells[newcind].area;
 		//cells[cell].preferred_area = cells[cell].area;
-		cells[cell].preferred_area /= 2;
-		cells[newcind].preferred_area = cells[cell].preferred_area;
-		
+		cells[cell].preferred_area /= pow(2, cells[cell].num_divisions);
+		cells[newcind].preferred_area = cells[cell].preferred_area;		
 	}else if(this->cell_cycle_controls_size){
 		cells[newcind].preferred_area = this->preferred_area_initial[cells[cell].type];
 		cells[cell].preferred_area = this->preferred_area_initial[cells[cell].type];		
@@ -1507,15 +1551,12 @@ void Tissue::make_divide_cell(Rearrangement& r){
 	}
 	if(num_static_neighbours >= 2) vertices[newvind2].movable = false;
 	*/
-	counter_divisions++;
-	cells[cell].num_divisions++;
-	cells[newcind].num_divisions = cells[cell].num_divisions;
-	
+	counter_divisions++;	
 
 	if(REPORT_DIV) writeAllData(simname + "_div_2" + to_string(counter_divisions));
 
 	past_divisions.push(DivisionRecord{cell, newcind});
-	//cout << "DIVISION: moves accepted: " << counter_moves_accepted << "; divi. accepted: " << counter_divisions << "; Cell: " << cell << "; New cell: " << newcind << "; cut in vertices: " << newvind1 << ", " << newvind2 << endl;
+	cout << ">DIVISION: moves accepted= " << counter_moves_accepted << "; divi. accepted= " << counter_divisions << "; Cell= " << cell << "; New cell=" << newcind << "; new vertex 1= " << newvind1 << "; new vertex 2=" << newvind2 << "; centroid_x= " << 0.5*(vertices[newvind1].x + vertices[newvind2].x) << "; centroid_y= " << 0.5*(vertices[newvind1].y + vertices[newvind2].y) << "; cell_type= " << static_cast<int>(cells[cell].type) << endl;
 	
 	
 }// END make_divide_cell
@@ -1782,7 +1823,7 @@ void Tissue::make_t1(Rearrangement& r){
 	edges[edge].cells[1] = sp2->ind;
 	this->counter_t1++;
 
-	//cout << "T1 transition: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions <<endl;
+	cout << ">T1 transition: v1=" << v1->ind << "; v2=" << v2->ind << "; mov. accepted=" << this->counter_moves_accepted << "; T1=" << counter_t1 << "; T1 abortions=" << counter_t1_abortions << "; centroid_x=" << 0.5*(v1->x + v2->x)  << "; centroid_y=" << 0.5*(v1->y + v2->y)<< "; edge type=" << static_cast<int>(edges[edge].type) << endl;
 	if(REPORT_T1){
 		ff << "\n\nAFTER\n\n";
 		ff << VERTEX_HEADER << *v1 << "\n" << *v2 << "\n\n";
@@ -2460,7 +2501,7 @@ void Tissue::make_t2(Rearrangement& r){
 			}
 		}
 	}
-	//cout << "T2 transition: cell=" << cell << ", survivor vertex =" << v1 << "; v2: " << v2 << "; v3: " << v3 << "; v2nei: " << v2nei << "; v3nei: " << v3nei << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << "; T2: " << counter_t2 << endl;
+	cout << ">T2 transition: cell=" << cell << "; survivor vertex =" << v1 << "; v2= " << v2 << "; v3= " << v3 << "; v2nei= " << v2nei << "; v3nei= " << v3nei << "; mov. accepted= " << this->counter_moves_accepted << "; T1= " << counter_t1 << "; T1 abortions=" << counter_t1_abortions << "; T2= " << counter_t2 << "; centroid_x= " << vertices[v1].x << "; centroid_y= " << vertices[v1].y << "; cell_type= " << static_cast<int>(cells[cell].type) << endl;
 	//cout << "K\n";
 }//End make transition T2
 
@@ -2832,16 +2873,18 @@ void Tissue::emptyDivisions(){
 
 std::string Tissue::getStats(){
 	std::string s = "";
-	s += "Move trials: " + std::to_string(counter_move_trials);
-	s += ", Moves accepted: " + std::to_string(counter_moves_accepted);
-	s += ", prop. accepted: " + std::to_string(counter_moves_accepted/float(counter_move_trials));
-	s += ", T1 accepted: " + std::to_string(counter_t1);
-	s += ", T1 rejected: "  + std::to_string(counter_t1_abortions);
-	s += ", T1 margin outwards: "  + std::to_string(counter_t1_outwards);
-	s += ", T1 margin inwards: "  + std::to_string(counter_t1_inwards);
-	s += ", T2: "  + std::to_string(counter_t2);
-	s += ", Edges removed: " + std::to_string(counter_edges_removed);
-	s += ", Divisions: "  + std::to_string(counter_divisions);
+	s += "Move trials: " + std::to_string(counter_move_trials) + "\n";
+	s += ", Moves accepted: " + std::to_string(counter_moves_accepted) + "\n";
+	s += ", prop. accepted: " + std::to_string(counter_moves_accepted/float(counter_move_trials)) + "\n";
+	s += "Prop. Positive E accepted: " + std::to_string(counter_unfav_accepted/float(counter_unfav_accepted + counter_unfav_rejected)) + "\n";	
+	s += "Prop. Negative E accepted: " + std::to_string(counter_favorable_accepted/float(counter_favorable_accepted + counter_favorable_rejected)) + "\n";	
+	s += ", T1 accepted: " + std::to_string(counter_t1) + "\n";
+	s += ", T1 rejected: "  + std::to_string(counter_t1_abortions) + "\n";
+	s += ", T1 margin outwards: "  + std::to_string(counter_t1_outwards) + "\n";
+	s += ", T1 margin inwards: "  + std::to_string(counter_t1_inwards) + "\n";
+	s += ", T2: "  + std::to_string(counter_t2) + "\n";
+	s += ", Edges removed: " + std::to_string(counter_edges_removed) + "\n";
+	s += ", Divisions: "  + std::to_string(counter_divisions) + "\n";
 	return s;
 }
 

@@ -52,6 +52,7 @@ const unsigned short VERTEX_PER_EDGE = 2;
 const int EMPTY_CONNECTION = -999;  //Value to initialize arrays (cells in vertex, etc)
 const int RANDOM_SEED = 1234;
 const double NUMERIC_THRESHOLD = 1e-16;
+const double EXP_FACTOR = 1 - exp(-1); //Used when time or x position changes eq. size, to normalize the function 1 - exp(-(x**exp)) so its max value is 1
 
 const std::string VERTEX_FILE_EXTENSION = ".points";
 const std::string CELLS_FILE_EXTENSION = ".cells";
@@ -59,15 +60,15 @@ const std::string SPRING_FILE_EXTENSION = ".spr";
 const std::string PARAMS_FILE_EXTENSION = ".vp";
 
 const bool T1_ACTIVE = true;
-const bool T1_BORDER_INWARDS_ACTIVE = true;
-const bool T1_BORDER_OUTWARDS_ACTIVE = true;
+const bool T1_BORDER_INWARDS_ACTIVE = false;
+const bool T1_BORDER_OUTWARDS_ACTIVE = false;
 const bool DIVISION_ACTIVE = true;
 const bool T2_ACTIVE = true;
 const bool JOIN_EDGES_ACTIVE = true;
 const bool CONTROL_CELLS_2SIDES = true; 
 const bool CHECK_EDGES_CROSS_AFTER_MOVE = false;
 const bool AUTONOMOUS_CELL_CYCLE = true;
-const bool KEEP_BLADE_AREA_AFTER_DIVISION = false;
+const bool KEEP_AREA_AFTER_DIVISION = false;
 const bool CELL_CYCLE_CONTROLS_SIZE = true;
 const bool TIME_CONTROLS_SIZE = false;
 const bool XCOORD_CONTROLS_SIZE = false;
@@ -259,7 +260,7 @@ class Tissue{
 		cell_type_param division_angle_longest_axis, division_angle_random_noise, division_angle_external, division_angle_external_degrees;
 
 		cell_type_param cell_cycle_limit, xcoord_size_control_factor;
-		bool autonomous_cell_cycle, cell_cycle_controls_size, time_controls_size, xcoord_controls_size, keep_blade_area_after_division;
+		bool autonomous_cell_cycle, cell_cycle_controls_size, time_controls_size, xcoord_controls_size, keep_area_after_division;
 		float time_decrease_exponent, xcoord_decrease_exponent;
 
 		float length_rotated_edge; 
@@ -275,7 +276,7 @@ class Tissue{
 		rearrangement_q rearrangements_needed;
 		divisionrecord_q past_divisions;
 		//counters
-		int counter_move_trials, counter_moves_accepted, counter_edges_removed, counter_t1, counter_t1_abortions, counter_divisions, counter_t2, counter_t1_outwards, counter_t1_inwards;
+		int counter_move_trials, counter_moves_accepted, counter_favorable_accepted, counter_favorable_rejected, counter_unfav_accepted, counter_unfav_rejected, counter_edges_removed, counter_t1, counter_t1_abortions, counter_divisions, counter_t2, counter_t1_outwards, counter_t1_inwards;
 		int max_accepted_movements, write_every_N_moves;
 
 		//Methods used by constructors
