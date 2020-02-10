@@ -1,0 +1,1076 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 24.61      0.16     0.16  6000000     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_lower_bound(std::_Rb_tree_node<std::pair<int const, double> >*, std::_Rb_tree_node_base*, int const&)
+  7.94      0.21     0.05 17000022     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_key(std::_Rb_tree_node<std::pair<int const, double> > const*)
+  4.76      0.24     0.03 23000021     0.00     0.00  std::less<int>::operator()(int const&, int const&) const
+  4.76      0.27     0.03 17000032     0.00     0.00  __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_addr() const
+  4.76      0.30     0.03  6000000     0.00     0.00  std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::key_comp() const
+  4.76      0.33     0.03  6000000     0.00     0.00  std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::lower_bound(int const&)
+  4.76      0.36     0.03  6000000     0.00     0.00  std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::operator[](int const&)
+  3.97      0.38     0.03  1000000     0.00     0.00  double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&)
+  3.18      0.40     0.02 17000032     0.00     0.00  std::_Select1st<std::pair<int const, double> >::operator()(std::pair<int const, double> const&) const
+  3.18      0.42     0.02 17000022     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_value(std::_Rb_tree_node<std::pair<int const, double> > const*)
+  3.18      0.44     0.02 12000006     0.00     0.00  std::_Rb_tree_node<std::pair<int const, double> >::_M_valptr()
+  3.18      0.46     0.02  1000000     0.00     0.00  sumArrayInline(double*, int)
+  3.18      0.48     0.02  1000000     0.00     0.00  void __gnu_cxx::new_allocator<double>::construct<double, double>(double*, double&&)
+  3.18      0.50     0.02                             main
+  1.59      0.51     0.01 17000032     0.00     0.00  __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_ptr() const
+  1.59      0.52     0.01 17000032     0.00     0.00  std::_Rb_tree_node<std::pair<int const, double> >::_M_valptr() const
+  1.59      0.53     0.01 12000013     0.00     0.00  std::_Rb_tree_iterator<std::pair<int const, double> >::_Rb_tree_iterator(std::_Rb_tree_node_base*)
+  1.59      0.54     0.01 12000000     0.00     0.00  std::_Rb_tree_iterator<std::pair<int const, double> >::operator*() const
+  1.59      0.55     0.01  9000011     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_right(std::_Rb_tree_node_base*)
+  1.59      0.56     0.01  6000006     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_begin()
+  1.59      0.57     0.01  6000000     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::lower_bound(int const&)
+  1.59      0.58     0.01  3000186     0.00     0.00  double&& std::forward<double>(std::remove_reference<double>::type&)
+  1.59      0.59     0.01  2000000     0.00     0.00  std::uniform_real_distribution<double>::param_type::a() const
+  1.59      0.60     0.01  1000180     0.00     0.00  unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&)
+  1.59      0.61     0.01  1000000     0.00     0.00  sumArray(double*, int)
+  1.59      0.62     0.01  1000000     0.00     0.00  void std::allocator_traits<std::allocator<double> >::construct<double, double>(std::allocator<double>&, double*, double&&)
+  1.59      0.63     0.01  1000000     0.00     0.00  std::__detail::_Adaptor<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>, double>::operator()()
+  0.00      0.63     0.00 12000006     0.00     0.00  __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_ptr()
+  0.00      0.63     0.00 12000006     0.00     0.00  __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_addr()
+  0.00      0.63     0.00  8000000     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_left(std::_Rb_tree_node_base*)
+  0.00      0.63     0.00  6000012     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_end()
+  0.00      0.63     0.00  6000010     0.00     0.00  std::vector<double, std::allocator<double> >::operator[](unsigned long)
+  0.00      0.63     0.00  6000001     0.00     0.00  std::_Rb_tree_iterator<std::pair<int const, double> >::operator==(std::_Rb_tree_iterator<std::pair<int const, double> > const&) const
+  0.00      0.63     0.00  6000000     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::key_comp() const
+  0.00      0.63     0.00  6000000     0.00     0.00  std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::end()
+  0.00      0.63     0.00  6000000     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::end()
+  0.00      0.63     0.00  2000000     0.00     0.00  std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::min()
+  0.00      0.63     0.00  2000000     0.00     0.00  std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::operator()()
+  0.00      0.63     0.00  2000000     0.00     0.00  std::__detail::_Mod<unsigned long, 2147483647ul, 16807ul, 0ul, true, true>::__calc(unsigned long)
+  0.00      0.63     0.00  2000000     0.00     0.00  unsigned long std::__detail::__mod<unsigned long, 2147483647ul, 16807ul, 0ul>(unsigned long)
+  0.00      0.63     0.00  1000012     0.00     0.00  operator new(unsigned long, void*)
+  0.00      0.63     0.00  1000000     0.00     0.00  std::uniform_real_distribution<double>::param_type::b() const
+  0.00      0.63     0.00  1000000     0.00     0.00  double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&)
+  0.00      0.63     0.00  1000000     0.00     0.00  double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&, std::uniform_real_distribution<double>::param_type const&)
+  0.00      0.63     0.00  1000000     0.00     0.00  void std::vector<double, std::allocator<double> >::emplace_back<double>(double&&)
+  0.00      0.63     0.00  1000000     0.00     0.00  std::vector<double, std::allocator<double> >::push_back(double&&)
+  0.00      0.63     0.00  1000000     0.00     0.00  std::__detail::_Adaptor<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>, double>::_Adaptor(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&)
+  0.00      0.63     0.00  1000000     0.00     0.00  unsigned long const& std::min<unsigned long>(unsigned long const&, unsigned long const&)
+  0.00      0.63     0.00  1000000     0.00     0.00  std::remove_reference<double&>::type&& std::move<double&>(double&)
+  0.00      0.63     0.00     1081     0.00     0.00  double* std::__niter_base<double*>(double*)
+  0.00      0.63     0.00      720     0.00     0.00  __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >::base() const
+  0.00      0.63     0.00      720     0.00     0.00  std::move_iterator<double*>::base() const
+  0.00      0.63     0.00      720     0.00     0.00  std::vector<double, std::allocator<double> >::size() const
+  0.00      0.63     0.00      720     0.00     0.00  std::move_iterator<double*>::move_iterator(double*)
+  0.00      0.63     0.00      720     0.00     0.00  decltype (__miter_base(({parm#1}.base)())) std::__miter_base<double*>(std::move_iterator<double*>)
+  0.00      0.63     0.00      720     0.00     0.00  double* std::__miter_base<double*>(double*)
+  0.00      0.63     0.00      720     0.00     0.00  std::move_iterator<double*> std::__make_move_if_noexcept_iterator<double, std::move_iterator<double*> >(double*)
+  0.00      0.63     0.00      551     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator()
+  0.00      0.63     0.00      541     0.00     0.00  __gnu_cxx::new_allocator<double>::max_size() const
+  0.00      0.63     0.00      360     0.00     0.00  __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >::__normal_iterator(double* const&)
+  0.00      0.63     0.00      360     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() const
+  0.00      0.63     0.00      360     0.00     0.00  std::vector<double, std::allocator<double> >::max_size() const
+  0.00      0.63     0.00      360     0.00     0.00  double* std::__copy_move<true, true, std::random_access_iterator_tag>::__copy_m<double>(double const*, double const*, double*)
+  0.00      0.63     0.00      360     0.00     0.00  std::allocator_traits<std::allocator<double> >::max_size(std::allocator<double> const&)
+  0.00      0.63     0.00      360     0.00     0.00  double* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*)
+  0.00      0.63     0.00      360     0.00     0.00  double* std::__copy_move_a<true, double*, double*>(double*, double*, double*)
+  0.00      0.63     0.00      360     0.00     0.00  double* std::__copy_move_a2<true, double*, double*>(double*, double*, double*)
+  0.00      0.63     0.00      360     0.00     0.00  double* std::uninitialized_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*)
+  0.00      0.63     0.00      360     0.00     0.00  double* std::__uninitialized_copy_a<std::move_iterator<double*>, double*, double>(std::move_iterator<double*>, std::move_iterator<double*>, double*, std::allocator<double>&)
+  0.00      0.63     0.00      360     0.00     0.00  double* std::__uninitialized_move_if_noexcept_a<double*, double*, std::allocator<double> >(double*, double*, double*, std::allocator<double>&)
+  0.00      0.63     0.00      360     0.00     0.00  double* std::copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*)
+  0.00      0.63     0.00      190     0.00     0.00  void std::_Destroy_aux<true>::__destroy<double*>(double*, double*)
+  0.00      0.63     0.00      190     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_M_deallocate(double*, unsigned long)
+  0.00      0.63     0.00      190     0.00     0.00  void std::_Destroy<double*>(double*, double*)
+  0.00      0.63     0.00      190     0.00     0.00  void std::_Destroy<double*, double>(double*, double*, std::allocator<double>&)
+  0.00      0.63     0.00      181     0.00     0.00  __gnu_cxx::new_allocator<double>::allocate(unsigned long, void const*)
+  0.00      0.63     0.00      181     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long)
+  0.00      0.63     0.00      181     0.00     0.00  std::allocator_traits<std::allocator<double> >::allocate(std::allocator<double>&, unsigned long)
+  0.00      0.63     0.00      180     0.00     0.00  __gnu_cxx::new_allocator<double>::deallocate(double*, unsigned long)
+  0.00      0.63     0.00      180     0.00     0.00  __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >::difference_type __gnu_cxx::operator-<double*, std::vector<double, std::allocator<double> > >(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > > const&, __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > > const&)
+  0.00      0.63     0.00      180     0.00     0.00  std::vector<double, std::allocator<double> >::_M_check_len(unsigned long, char const*) const
+  0.00      0.63     0.00      180     0.00     0.00  std::allocator_traits<std::allocator<double> >::deallocate(std::allocator<double>&, double*, unsigned long)
+  0.00      0.63     0.00      180     0.00     0.00  void std::vector<double, std::allocator<double> >::_M_realloc_insert<double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double&&)
+  0.00      0.63     0.00      180     0.00     0.00  std::vector<double, std::allocator<double> >::end()
+  0.00      0.63     0.00      180     0.00     0.00  std::vector<double, std::allocator<double> >::begin()
+  0.00      0.63     0.00       36     0.00     0.00  std::pair<int, double>&& std::forward<std::pair<int, double> >(std::remove_reference<std::pair<int, double> >::type&)
+  0.00      0.63     0.00       18     0.00     0.00  int&& std::forward<int>(std::remove_reference<int>::type&)
+  0.00      0.63     0.00       12     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_Node_allocator()
+  0.00      0.63     0.00       11     0.00     0.00  __gnu_cxx::new_allocator<double>::new_allocator()
+  0.00      0.63     0.00       11     0.00     0.00  __gnu_cxx::new_allocator<double>::~new_allocator()
+  0.00      0.63     0.00       11     0.00     0.00  std::allocator<double>::allocator()
+  0.00      0.63     0.00       11     0.00     0.00  std::allocator<double>::~allocator()
+  0.00      0.63     0.00       10     0.00     4.00  testVectorInit()
+  0.00      0.63     0.00       10     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl()
+  0.00      0.63     0.00       10     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_Vector_impl::~_Vector_impl()
+  0.00      0.63     0.00       10     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_Vector_base()
+  0.00      0.63     0.00       10     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::~_Vector_base()
+  0.00      0.63     0.00       10     0.00     0.00  std::vector<double, std::allocator<double> >::vector()
+  0.00      0.63     0.00       10     0.00     0.00  std::vector<double, std::allocator<double> >::~vector()
+  0.00      0.63     0.00       10     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_key(std::_Rb_tree_node_base const*)
+  0.00      0.63     0.00       10     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_value(std::_Rb_tree_node_base const*)
+  0.00      0.63     0.00        6     0.00     0.00  __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::allocate(unsigned long, void const*)
+  0.00      0.63     0.00        6     0.00     0.00  void __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::construct<std::pair<int const, double>, std::pair<int, double> >(std::pair<int const, double>*, std::pair<int, double>&&)
+  0.00      0.63     0.00        6     0.00     0.00  __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::max_size() const
+  0.00      0.63     0.00        6     0.00     0.00  std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<int const, double> > > >::allocate(std::allocator<std::_Rb_tree_node<std::pair<int const, double> > >&, unsigned long)
+  0.00      0.63     0.00        6     0.00     0.00  void std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<int const, double> > > >::construct<std::pair<int const, double>, std::pair<int, double> >(std::allocator<std::_Rb_tree_node<std::pair<int const, double> > >&, std::pair<int const, double>*, std::pair<int, double>&&)
+  0.00      0.63     0.00        6     0.00     0.00  std::enable_if<std::is_constructible<std::pair<int const, double>, std::pair<int, double> >::value, std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool> >::type std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::insert<std::pair<int, double> >(std::pair<int, double>&&)
+  0.00      0.63     0.00        6     0.00     0.00  std::pair<int const, double>::pair<int, double, true>(std::pair<int, double>&&)
+  0.00      0.63     0.00        6     0.00     0.00  std::pair<std::_Rb_tree_node_base*, std::_Rb_tree_node_base*>::pair<std::_Rb_tree_node<std::pair<int const, double> >*&, std::_Rb_tree_node_base*&, true>(std::_Rb_tree_node<std::pair<int const, double> >*&, std::_Rb_tree_node_base*&)
+  0.00      0.63     0.00        6     0.00     0.00  std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool>::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool, true>(std::_Rb_tree_iterator<std::pair<int const, double> >&&, bool&&)
+  0.00      0.63     0.00        6     0.00     0.00  std::pair<int, double>::pair<int, int, true>(int&&, int&&)
+  0.00      0.63     0.00        6     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_node()
+  0.00      0.63     0.00        6     0.00     0.00  std::_Rb_tree_node<std::pair<int const, double> >* std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_create_node<std::pair<int, double> >(std::pair<int, double>&&)
+  0.00      0.63     0.00        6     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_insert_node(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::_Rb_tree_node<std::pair<int const, double> >*)
+  0.00      0.63     0.00        6     0.00     0.00  void std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_construct_node<std::pair<int, double> >(std::_Rb_tree_node<std::pair<int const, double> >*, std::pair<int, double>&&)
+  0.00      0.63     0.00        6     0.00     0.00  std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool> std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_emplace_unique<std::pair<int, double> >(std::pair<int, double>&&)
+  0.00      0.63     0.00        6     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_insert_unique_pos(int const&)
+  0.00      0.63     0.00        6     0.00     0.00  std::_Rb_tree_node<std::pair<int const, double> >*& std::forward<std::_Rb_tree_node<std::pair<int const, double> >*&>(std::remove_reference<std::_Rb_tree_node<std::pair<int const, double> >*&>::type&)
+  0.00      0.63     0.00        6     0.00     0.00  std::_Rb_tree_node_base*& std::forward<std::_Rb_tree_node_base*&>(std::remove_reference<std::_Rb_tree_node_base*&>::type&)
+  0.00      0.63     0.00        6     0.00     0.00  std::_Rb_tree_iterator<std::pair<int const, double> >&& std::forward<std::_Rb_tree_iterator<std::pair<int const, double> > >(std::remove_reference<std::_Rb_tree_iterator<std::pair<int const, double> > >::type&)
+  0.00      0.63     0.00        6     0.00     0.00  bool&& std::forward<bool>(std::remove_reference<bool>::type&)
+  0.00      0.63     0.00        3     0.00     0.00  std::__detail::_Mod<unsigned long, 2147483647ul, 1ul, 0ul, true, true>::__calc(unsigned long)
+  0.00      0.63     0.00        3     0.00     0.00  unsigned long std::__detail::__mod<unsigned long, 2147483647ul, 1ul, 0ul>(unsigned long)
+  0.00      0.63     0.00        2     0.00     0.00  std::initializer_list<double>::begin() const
+  0.00      0.63     0.00        2     0.00     0.00  double const* std::__miter_base<double const*>(double const*)
+  0.00      0.63     0.00        2     0.00     0.00  double const* std::__niter_base<double const*>(double const*)
+  0.00      0.63     0.00        1     0.00     0.00  _GLOBAL__sub_I__Z8sumArrayPdi
+  0.00      0.63     0.00        1     0.00     0.00  __static_initialization_and_destruction_0(int, int)
+  0.00      0.63     0.00        1     0.00     0.00  __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::new_allocator()
+  0.00      0.63     0.00        1     0.00     0.00  __gnu_cxx::new_allocator<double>::new_allocator(__gnu_cxx::new_allocator<double> const&)
+  0.00      0.63     0.00        1     0.00     0.00  std::initializer_list<double>::end() const
+  0.00      0.63     0.00        1     0.00     0.00  std::initializer_list<double>::size() const
+  0.00      0.63     0.00        1     0.00     0.00  std::allocator<std::_Rb_tree_node<std::pair<int const, double> > >::allocator()
+  0.00      0.63     0.00        1     0.00     0.00  std::allocator<double>::allocator(std::allocator<double> const&)
+  0.00      0.63     0.00        1     0.00     0.00  double* std::__copy_move<false, true, std::random_access_iterator_tag>::__copy_m<double>(double const*, double const*, double*)
+  0.00      0.63     0.00        1     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl(std::allocator<double> const&)
+  0.00      0.63     0.00        1     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_Vector_base(std::allocator<double> const&)
+  0.00      0.63     0.00        1     0.00     0.00  std::_Rb_tree_header::_M_reset()
+  0.00      0.63     0.00        1     0.00     0.00  std::_Rb_tree_header::_Rb_tree_header()
+  0.00      0.63     0.00        1     0.00     0.00  std::_Rb_tree_key_compare<std::less<int> >::_Rb_tree_key_compare()
+  0.00      0.63     0.00        1     0.00     0.00  double* std::__uninitialized_copy<true>::__uninit_copy<double const*, double*>(double const*, double const*, double*)
+  0.00      0.63     0.00        1     0.00     0.00  std::uniform_real_distribution<double>::param_type::param_type(double, double)
+  0.00      0.63     0.00        1     0.00     0.00  std::uniform_real_distribution<double>::uniform_real_distribution(double, double)
+  0.00      0.63     0.00        1     0.00     0.00  std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::seed(unsigned long)
+  0.00      0.63     0.00        1     0.00     0.00  std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::linear_congruential_engine(unsigned long)
+  0.00      0.63     0.00        1     0.00     0.00  std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::map()
+  0.00      0.63     0.00        1     0.00     0.00  void std::vector<double, std::allocator<double> >::_M_range_initialize<double const*>(double const*, double const*, std::forward_iterator_tag)
+  0.00      0.63     0.00        1     0.00     0.00  std::vector<double, std::allocator<double> >::vector(std::initializer_list<double>, std::allocator<double> const&)
+  0.00      0.63     0.00        1     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_Rb_tree_impl<std::less<int>, true>::_Rb_tree_impl()
+  0.00      0.63     0.00        1     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::begin()
+  0.00      0.63     0.00        1     0.00     0.00  std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_Rb_tree()
+  0.00      0.63     0.00        1     0.00     0.00  std::iterator_traits<double const*>::difference_type std::__distance<double const*>(double const*, double const*, std::random_access_iterator_tag)
+  0.00      0.63     0.00        1     0.00     0.00  double* std::__copy_move_a<false, double const*, double*>(double const*, double const*, double*)
+  0.00      0.63     0.00        1     0.00     0.00  double* std::__copy_move_a2<false, double const*, double*>(double const*, double const*, double*)
+  0.00      0.63     0.00        1     0.00     0.00  double* std::uninitialized_copy<double const*, double*>(double const*, double const*, double*)
+  0.00      0.63     0.00        1     0.00     0.00  std::iterator_traits<double const*>::iterator_category std::__iterator_category<double const*>(double const* const&)
+  0.00      0.63     0.00        1     0.00     0.00  double* std::__uninitialized_copy_a<double const*, double*, double>(double const*, double const*, double*, std::allocator<double>&)
+  0.00      0.63     0.00        1     0.00     0.00  double* std::copy<double const*, double*>(double const*, double const*, double*)
+  0.00      0.63     0.00        1     0.00     0.00  std::iterator_traits<double const*>::difference_type std::distance<double const*>(double const*, double const*)
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 2 byte(s) for 1.59% of 0.63 seconds
+
+index % time    self  children    called     name
+                                                 <spontaneous>
+[1]    100.0    0.02    0.61                 main [1]
+                0.03    0.46 6000000/6000000     std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::operator[](int const&) [2]
+                0.00    0.06 1000000/1000000     double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&) [8]
+                0.00    0.04      10/10          testVectorInit() [14]
+                0.02    0.00 1000000/1000000     sumArrayInline(double*, int) [25]
+                0.01    0.00 1000000/1000000     sumArray(double*, int) [31]
+                0.00    0.00       6/6           std::enable_if<std::is_constructible<std::pair<int const, double>, std::pair<int, double> >::value, std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool> >::type std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::insert<std::pair<int, double> >(std::pair<int, double>&&) [37]
+                0.00    0.00 6000000/6000010     std::vector<double, std::allocator<double> >::operator[](unsigned long) [59]
+                0.00    0.00       6/6           std::pair<int, double>::pair<int, int, true>(int&&, int&&) [123]
+                0.00    0.00       1/1           std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::linear_congruential_engine(unsigned long) [152]
+                0.00    0.00       1/1           std::uniform_real_distribution<double>::uniform_real_distribution(double, double) [150]
+                0.00    0.00       1/11          std::allocator<double>::allocator() [110]
+                0.00    0.00       1/1           std::vector<double, std::allocator<double> >::vector(std::initializer_list<double>, std::allocator<double> const&) [155]
+                0.00    0.00       1/11          std::allocator<double>::~allocator() [111]
+                0.00    0.00       1/1           std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::map() [153]
+-----------------------------------------------
+                0.03    0.46 6000000/6000000     main [1]
+[2]     77.0    0.03    0.46 6000000         std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::operator[](int const&) [2]
+                0.03    0.35 6000000/6000000     std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::lower_bound(int const&) [3]
+                0.03    0.00 6000000/6000000     std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::key_comp() const [20]
+                0.01    0.02 12000000/12000000     std::_Rb_tree_iterator<std::pair<int const, double> >::operator*() const [21]
+                0.01    0.00 6000000/23000021     std::less<int>::operator()(int const&, int const&) const [18]
+                0.00    0.01 6000000/6000000     std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::end() [33]
+                0.00    0.00 6000000/6000001     std::_Rb_tree_iterator<std::pair<int const, double> >::operator==(std::_Rb_tree_iterator<std::pair<int const, double> > const&) const [60]
+-----------------------------------------------
+                0.03    0.35 6000000/6000000     std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::operator[](int const&) [2]
+[3]     60.7    0.03    0.35 6000000         std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::lower_bound(int const&) [3]
+                0.01    0.34 6000000/6000000     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::lower_bound(int const&) [4]
+-----------------------------------------------
+                0.01    0.34 6000000/6000000     std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::lower_bound(int const&) [3]
+[4]     55.9    0.01    0.34 6000000         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::lower_bound(int const&) [4]
+                0.16    0.18 6000000/6000000     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_lower_bound(std::_Rb_tree_node<std::pair<int const, double> >*, std::_Rb_tree_node_base*, int const&) [5]
+                0.01    0.00 6000000/6000006     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_begin() [27]
+                0.00    0.00 6000000/6000012     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_end() [58]
+-----------------------------------------------
+                0.16    0.18 6000000/6000000     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::lower_bound(int const&) [4]
+[5]     52.7    0.16    0.18 6000000         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_lower_bound(std::_Rb_tree_node<std::pair<int const, double> >*, std::_Rb_tree_node_base*, int const&) [5]
+                0.05    0.09 17000000/17000022     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_key(std::_Rb_tree_node<std::pair<int const, double> > const*) [6]
+                0.02    0.00 17000000/23000021     std::less<int>::operator()(int const&, int const&) const [18]
+                0.01    0.00 9000000/9000011     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_right(std::_Rb_tree_node_base*) [26]
+                0.01    0.00 6000000/12000013     std::_Rb_tree_iterator<std::pair<int const, double> >::_Rb_tree_iterator(std::_Rb_tree_node_base*) [32]
+                0.00    0.00 8000000/8000000     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_left(std::_Rb_tree_node_base*) [57]
+-----------------------------------------------
+                0.00    0.00       5/17000022     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_insert_node(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::_Rb_tree_node<std::pair<int const, double> >*) [40]
+                0.00    0.00       6/17000022     std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool> std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_emplace_unique<std::pair<int, double> >(std::pair<int, double>&&) [38]
+                0.00    0.00      11/17000022     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_insert_unique_pos(int const&) [39]
+                0.05    0.09 17000000/17000022     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_lower_bound(std::_Rb_tree_node<std::pair<int const, double> >*, std::_Rb_tree_node_base*, int const&) [5]
+[6]     22.2    0.05    0.09 17000022         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_key(std::_Rb_tree_node<std::pair<int const, double> > const*) [6]
+                0.02    0.05 17000022/17000022     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_value(std::_Rb_tree_node<std::pair<int const, double> > const*) [7]
+                0.02    0.00 17000022/17000032     std::_Select1st<std::pair<int const, double> >::operator()(std::pair<int const, double> const&) const [23]
+-----------------------------------------------
+                0.02    0.05 17000022/17000022     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_key(std::_Rb_tree_node<std::pair<int const, double> > const*) [6]
+[7]     11.1    0.02    0.05 17000022         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_value(std::_Rb_tree_node<std::pair<int const, double> > const*) [7]
+                0.01    0.04 17000022/17000032     std::_Rb_tree_node<std::pair<int const, double> >::_M_valptr() const [10]
+-----------------------------------------------
+                0.00    0.06 1000000/1000000     main [1]
+[8]      8.7    0.00    0.06 1000000         double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&) [8]
+                0.00    0.06 1000000/1000000     double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&, std::uniform_real_distribution<double>::param_type const&) [9]
+-----------------------------------------------
+                0.00    0.06 1000000/1000000     double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&) [8]
+[9]      8.7    0.00    0.06 1000000         double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&, std::uniform_real_distribution<double>::param_type const&) [9]
+                0.01    0.04 1000000/1000000     std::__detail::_Adaptor<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>, double>::operator()() [11]
+                0.01    0.00 2000000/2000000     std::uniform_real_distribution<double>::param_type::a() const [29]
+                0.00    0.00 1000000/1000000     std::__detail::_Adaptor<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>, double>::_Adaptor(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&) [68]
+                0.00    0.00 1000000/1000000     std::uniform_real_distribution<double>::param_type::b() const [67]
+-----------------------------------------------
+                0.00    0.00      10/17000032     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_value(std::_Rb_tree_node_base const*) [44]
+                0.01    0.04 17000022/17000032     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_value(std::_Rb_tree_node<std::pair<int const, double> > const*) [7]
+[10]     7.9    0.01    0.04 17000032         std::_Rb_tree_node<std::pair<int const, double> >::_M_valptr() const [10]
+                0.01    0.03 17000032/17000032     __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_ptr() const [15]
+-----------------------------------------------
+                0.01    0.04 1000000/1000000     double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&, std::uniform_real_distribution<double>::param_type const&) [9]
+[11]     7.1    0.01    0.04 1000000         std::__detail::_Adaptor<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>, double>::operator()() [11]
+                0.03    0.01 1000000/1000000     double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&) [17]
+-----------------------------------------------
+                0.00    0.04 1000000/1000000     std::vector<double, std::allocator<double> >::push_back(double&&) [13]
+[12]     6.3    0.00    0.04 1000000         void std::vector<double, std::allocator<double> >::emplace_back<double>(double&&) [12]
+                0.01    0.03  999820/1000000     void std::allocator_traits<std::allocator<double> >::construct<double, double>(std::allocator<double>&, double*, double&&) [16]
+                0.00    0.00 1000000/3000186     double&& std::forward<double>(std::remove_reference<double>::type&) [28]
+                0.00    0.00     180/180         void std::vector<double, std::allocator<double> >::_M_realloc_insert<double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double&&) [35]
+                0.00    0.00     180/180         std::vector<double, std::allocator<double> >::end() [103]
+-----------------------------------------------
+                0.00    0.04 1000000/1000000     testVectorInit() [14]
+[13]     6.3    0.00    0.04 1000000         std::vector<double, std::allocator<double> >::push_back(double&&) [13]
+                0.00    0.04 1000000/1000000     void std::vector<double, std::allocator<double> >::emplace_back<double>(double&&) [12]
+                0.00    0.00 1000000/1000000     std::remove_reference<double&>::type&& std::move<double&>(double&) [70]
+-----------------------------------------------
+                0.00    0.04      10/10          main [1]
+[14]     6.3    0.00    0.04      10         testVectorInit() [14]
+                0.00    0.04 1000000/1000000     std::vector<double, std::allocator<double> >::push_back(double&&) [13]
+                0.00    0.00      10/10          std::vector<double, std::allocator<double> >::vector() [116]
+                0.00    0.00      10/6000010     std::vector<double, std::allocator<double> >::operator[](unsigned long) [59]
+                0.00    0.00      10/10          std::vector<double, std::allocator<double> >::~vector() [117]
+-----------------------------------------------
+                0.01    0.03 17000032/17000032     std::_Rb_tree_node<std::pair<int const, double> >::_M_valptr() const [10]
+[15]     6.3    0.01    0.03 17000032         __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_ptr() const [15]
+                0.03    0.00 17000032/17000032     __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_addr() const [19]
+-----------------------------------------------
+                0.00    0.00     180/1000000     void std::vector<double, std::allocator<double> >::_M_realloc_insert<double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double&&) [35]
+                0.01    0.03  999820/1000000     void std::vector<double, std::allocator<double> >::emplace_back<double>(double&&) [12]
+[16]     5.8    0.01    0.03 1000000         void std::allocator_traits<std::allocator<double> >::construct<double, double>(std::allocator<double>&, double*, double&&) [16]
+                0.02    0.00 1000000/1000000     void __gnu_cxx::new_allocator<double>::construct<double, double>(double*, double&&) [22]
+                0.00    0.00 1000000/3000186     double&& std::forward<double>(std::remove_reference<double>::type&) [28]
+-----------------------------------------------
+                0.03    0.01 1000000/1000000     std::__detail::_Adaptor<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>, double>::operator()() [11]
+[17]     5.6    0.03    0.01 1000000         double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&) [17]
+                0.01    0.00 1000000/1000180     unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&) [30]
+                0.00    0.00 2000000/2000000     std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::operator()() [63]
+                0.00    0.00 2000000/2000000     std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::min() [62]
+                0.00    0.00 1000000/1000000     unsigned long const& std::min<unsigned long>(unsigned long const&, unsigned long const&) [69]
+-----------------------------------------------
+                0.00    0.00       5/23000021     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_insert_node(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::_Rb_tree_node<std::pair<int const, double> >*) [40]
+                0.00    0.00      16/23000021     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_insert_unique_pos(int const&) [39]
+                0.01    0.00 6000000/23000021     std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::operator[](int const&) [2]
+                0.02    0.00 17000000/23000021     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_lower_bound(std::_Rb_tree_node<std::pair<int const, double> >*, std::_Rb_tree_node_base*, int const&) [5]
+[18]     4.8    0.03    0.00 23000021         std::less<int>::operator()(int const&, int const&) const [18]
+-----------------------------------------------
+                0.03    0.00 17000032/17000032     __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_ptr() const [15]
+[19]     4.8    0.03    0.00 17000032         __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_addr() const [19]
+-----------------------------------------------
+                0.03    0.00 6000000/6000000     std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::operator[](int const&) [2]
+[20]     4.8    0.03    0.00 6000000         std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::key_comp() const [20]
+                0.00    0.00 6000000/6000000     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::key_comp() const [61]
+-----------------------------------------------
+                0.01    0.02 12000000/12000000     std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::operator[](int const&) [2]
+[21]     4.8    0.01    0.02 12000000         std::_Rb_tree_iterator<std::pair<int const, double> >::operator*() const [21]
+                0.02    0.00 12000000/12000006     std::_Rb_tree_node<std::pair<int const, double> >::_M_valptr() [24]
+-----------------------------------------------
+                0.02    0.00 1000000/1000000     void std::allocator_traits<std::allocator<double> >::construct<double, double>(std::allocator<double>&, double*, double&&) [16]
+[22]     3.7    0.02    0.00 1000000         void __gnu_cxx::new_allocator<double>::construct<double, double>(double*, double&&) [22]
+                0.00    0.00 1000000/3000186     double&& std::forward<double>(std::remove_reference<double>::type&) [28]
+                0.00    0.00 1000000/1000012     operator new(unsigned long, void*) [66]
+-----------------------------------------------
+                0.00    0.00      10/17000032     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_key(std::_Rb_tree_node_base const*) [41]
+                0.02    0.00 17000022/17000032     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_key(std::_Rb_tree_node<std::pair<int const, double> > const*) [6]
+[23]     3.2    0.02    0.00 17000032         std::_Select1st<std::pair<int const, double> >::operator()(std::pair<int const, double> const&) const [23]
+-----------------------------------------------
+                0.00    0.00       6/12000006     void std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_construct_node<std::pair<int, double> >(std::_Rb_tree_node<std::pair<int const, double> >*, std::pair<int, double>&&) [43]
+                0.02    0.00 12000000/12000006     std::_Rb_tree_iterator<std::pair<int const, double> >::operator*() const [21]
+[24]     3.2    0.02    0.00 12000006         std::_Rb_tree_node<std::pair<int const, double> >::_M_valptr() [24]
+                0.00    0.00 12000006/12000006     __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_ptr() [55]
+-----------------------------------------------
+                0.02    0.00 1000000/1000000     main [1]
+[25]     3.2    0.02    0.00 1000000         sumArrayInline(double*, int) [25]
+-----------------------------------------------
+                0.00    0.00      11/9000011     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_insert_unique_pos(int const&) [39]
+                0.01    0.00 9000000/9000011     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_lower_bound(std::_Rb_tree_node<std::pair<int const, double> >*, std::_Rb_tree_node_base*, int const&) [5]
+[26]     1.6    0.01    0.00 9000011         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_right(std::_Rb_tree_node_base*) [26]
+-----------------------------------------------
+                0.00    0.00       6/6000006     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_insert_unique_pos(int const&) [39]
+                0.01    0.00 6000000/6000006     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::lower_bound(int const&) [4]
+[27]     1.6    0.01    0.00 6000006         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_begin() [27]
+-----------------------------------------------
+                0.00    0.00       6/3000186     std::pair<int const, double>::pair<int, double, true>(std::pair<int, double>&&) [47]
+                0.00    0.00     180/3000186     void std::vector<double, std::allocator<double> >::_M_realloc_insert<double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double&&) [35]
+                0.00    0.00 1000000/3000186     void std::vector<double, std::allocator<double> >::emplace_back<double>(double&&) [12]
+                0.00    0.00 1000000/3000186     void std::allocator_traits<std::allocator<double> >::construct<double, double>(std::allocator<double>&, double*, double&&) [16]
+                0.00    0.00 1000000/3000186     void __gnu_cxx::new_allocator<double>::construct<double, double>(double*, double&&) [22]
+[28]     1.6    0.01    0.00 3000186         double&& std::forward<double>(std::remove_reference<double>::type&) [28]
+-----------------------------------------------
+                0.01    0.00 2000000/2000000     double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&, std::uniform_real_distribution<double>::param_type const&) [9]
+[29]     1.6    0.01    0.00 2000000         std::uniform_real_distribution<double>::param_type::a() const [29]
+-----------------------------------------------
+                0.00    0.00     180/1000180     std::vector<double, std::allocator<double> >::_M_check_len(unsigned long, char const*) const [36]
+                0.01    0.00 1000000/1000180     double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&) [17]
+[30]     1.6    0.01    0.00 1000180         unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&) [30]
+-----------------------------------------------
+                0.01    0.00 1000000/1000000     main [1]
+[31]     1.6    0.01    0.00 1000000         sumArray(double*, int) [31]
+-----------------------------------------------
+                0.00    0.00       1/12000013     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::begin() [48]
+                0.00    0.00       6/12000013     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_insert_unique_pos(int const&) [39]
+                0.00    0.00       6/12000013     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_insert_node(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::_Rb_tree_node<std::pair<int const, double> >*) [40]
+                0.01    0.00 6000000/12000013     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::end() [34]
+                0.01    0.00 6000000/12000013     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_lower_bound(std::_Rb_tree_node<std::pair<int const, double> >*, std::_Rb_tree_node_base*, int const&) [5]
+[32]     1.6    0.01    0.00 12000013         std::_Rb_tree_iterator<std::pair<int const, double> >::_Rb_tree_iterator(std::_Rb_tree_node_base*) [32]
+-----------------------------------------------
+                0.00    0.01 6000000/6000000     std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::operator[](int const&) [2]
+[33]     0.8    0.00    0.01 6000000         std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::end() [33]
+                0.00    0.01 6000000/6000000     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::end() [34]
+-----------------------------------------------
+                0.00    0.01 6000000/6000000     std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::end() [33]
+[34]     0.8    0.00    0.01 6000000         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::end() [34]
+                0.01    0.00 6000000/12000013     std::_Rb_tree_iterator<std::pair<int const, double> >::_Rb_tree_iterator(std::_Rb_tree_node_base*) [32]
+-----------------------------------------------
+                0.00    0.00     180/180         void std::vector<double, std::allocator<double> >::emplace_back<double>(double&&) [12]
+[35]     0.0    0.00    0.00     180         void std::vector<double, std::allocator<double> >::_M_realloc_insert<double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double&&) [35]
+                0.00    0.00     180/1000000     void std::allocator_traits<std::allocator<double> >::construct<double, double>(std::allocator<double>&, double*, double&&) [16]
+                0.00    0.00     180/180         std::vector<double, std::allocator<double> >::_M_check_len(unsigned long, char const*) const [36]
+                0.00    0.00     180/3000186     double&& std::forward<double>(std::remove_reference<double>::type&) [28]
+                0.00    0.00     540/551         std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() [79]
+                0.00    0.00     360/720         __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >::base() const [72]
+                0.00    0.00     360/360         double* std::__uninitialized_move_if_noexcept_a<double*, double*, std::allocator<double> >(double*, double*, double*, std::allocator<double>&) [91]
+                0.00    0.00     180/180         std::vector<double, std::allocator<double> >::begin() [104]
+                0.00    0.00     180/180         __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >::difference_type __gnu_cxx::operator-<double*, std::vector<double, std::allocator<double> > >(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > > const&, __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > > const&) [101]
+                0.00    0.00     180/181         std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long) [98]
+                0.00    0.00     180/190         void std::_Destroy<double*, double>(double*, double*, std::allocator<double>&) [96]
+                0.00    0.00     180/190         std::_Vector_base<double, std::allocator<double> >::_M_deallocate(double*, unsigned long) [94]
+-----------------------------------------------
+                0.00    0.00     180/180         void std::vector<double, std::allocator<double> >::_M_realloc_insert<double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double&&) [35]
+[36]     0.0    0.00    0.00     180         std::vector<double, std::allocator<double> >::_M_check_len(unsigned long, char const*) const [36]
+                0.00    0.00     180/1000180     unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&) [30]
+                0.00    0.00     720/720         std::vector<double, std::allocator<double> >::size() const [74]
+                0.00    0.00     360/360         std::vector<double, std::allocator<double> >::max_size() const [83]
+-----------------------------------------------
+                0.00    0.00       6/6           main [1]
+[37]     0.0    0.00    0.00       6         std::enable_if<std::is_constructible<std::pair<int const, double>, std::pair<int, double> >::value, std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool> >::type std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::insert<std::pair<int, double> >(std::pair<int, double>&&) [37]
+                0.00    0.00       6/6           std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool> std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_emplace_unique<std::pair<int, double> >(std::pair<int, double>&&) [38]
+                0.00    0.00       6/36          std::pair<int, double>&& std::forward<std::pair<int, double> >(std::remove_reference<std::pair<int, double> >::type&) [105]
+-----------------------------------------------
+                0.00    0.00       6/6           std::enable_if<std::is_constructible<std::pair<int const, double>, std::pair<int, double> >::value, std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool> >::type std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::insert<std::pair<int, double> >(std::pair<int, double>&&) [37]
+[38]     0.0    0.00    0.00       6         std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool> std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_emplace_unique<std::pair<int, double> >(std::pair<int, double>&&) [38]
+                0.00    0.00       6/6           std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_insert_unique_pos(int const&) [39]
+                0.00    0.00       6/6           std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_insert_node(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::_Rb_tree_node<std::pair<int const, double> >*) [40]
+                0.00    0.00       6/17000022     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_key(std::_Rb_tree_node<std::pair<int const, double> > const*) [6]
+                0.00    0.00       6/6           std::_Rb_tree_node<std::pair<int const, double> >* std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_create_node<std::pair<int, double> >(std::pair<int, double>&&) [42]
+                0.00    0.00       6/36          std::pair<int, double>&& std::forward<std::pair<int, double> >(std::remove_reference<std::pair<int, double> >::type&) [105]
+                0.00    0.00       6/6           std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool>::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool, true>(std::_Rb_tree_iterator<std::pair<int const, double> >&&, bool&&) [122]
+-----------------------------------------------
+                0.00    0.00       6/6           std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool> std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_emplace_unique<std::pair<int, double> >(std::pair<int, double>&&) [38]
+[39]     0.0    0.00    0.00       6         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_insert_unique_pos(int const&) [39]
+                0.00    0.00      11/17000022     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_key(std::_Rb_tree_node<std::pair<int const, double> > const*) [6]
+                0.00    0.00      16/23000021     std::less<int>::operator()(int const&, int const&) const [18]
+                0.00    0.00       5/10          std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_key(std::_Rb_tree_node_base const*) [41]
+                0.00    0.00      11/9000011     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_right(std::_Rb_tree_node_base*) [26]
+                0.00    0.00       6/6000006     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_begin() [27]
+                0.00    0.00       6/12000013     std::_Rb_tree_iterator<std::pair<int const, double> >::_Rb_tree_iterator(std::_Rb_tree_node_base*) [32]
+                0.00    0.00       1/1           std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::begin() [48]
+                0.00    0.00       6/6000012     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_end() [58]
+                0.00    0.00       6/6           std::pair<std::_Rb_tree_node_base*, std::_Rb_tree_node_base*>::pair<std::_Rb_tree_node<std::pair<int const, double> >*&, std::_Rb_tree_node_base*&, true>(std::_Rb_tree_node<std::pair<int const, double> >*&, std::_Rb_tree_node_base*&) [121]
+                0.00    0.00       1/6000001     std::_Rb_tree_iterator<std::pair<int const, double> >::operator==(std::_Rb_tree_iterator<std::pair<int const, double> > const&) const [60]
+-----------------------------------------------
+                0.00    0.00       6/6           std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool> std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_emplace_unique<std::pair<int, double> >(std::pair<int, double>&&) [38]
+[40]     0.0    0.00    0.00       6         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_insert_node(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::_Rb_tree_node<std::pair<int const, double> >*) [40]
+                0.00    0.00       5/17000022     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_key(std::_Rb_tree_node<std::pair<int const, double> > const*) [6]
+                0.00    0.00       5/10          std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_key(std::_Rb_tree_node_base const*) [41]
+                0.00    0.00       5/23000021     std::less<int>::operator()(int const&, int const&) const [18]
+                0.00    0.00       6/12000013     std::_Rb_tree_iterator<std::pair<int const, double> >::_Rb_tree_iterator(std::_Rb_tree_node_base*) [32]
+                0.00    0.00       6/6000012     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_end() [58]
+-----------------------------------------------
+                0.00    0.00       5/10          std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_insert_unique_pos(int const&) [39]
+                0.00    0.00       5/10          std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_insert_node(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::_Rb_tree_node<std::pair<int const, double> >*) [40]
+[41]     0.0    0.00    0.00      10         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_key(std::_Rb_tree_node_base const*) [41]
+                0.00    0.00      10/10          std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_value(std::_Rb_tree_node_base const*) [44]
+                0.00    0.00      10/17000032     std::_Select1st<std::pair<int const, double> >::operator()(std::pair<int const, double> const&) const [23]
+-----------------------------------------------
+                0.00    0.00       6/6           std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool> std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_emplace_unique<std::pair<int, double> >(std::pair<int, double>&&) [38]
+[42]     0.0    0.00    0.00       6         std::_Rb_tree_node<std::pair<int const, double> >* std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_create_node<std::pair<int, double> >(std::pair<int, double>&&) [42]
+                0.00    0.00       6/6           void std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_construct_node<std::pair<int, double> >(std::_Rb_tree_node<std::pair<int const, double> >*, std::pair<int, double>&&) [43]
+                0.00    0.00       6/6           std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_node() [124]
+                0.00    0.00       6/36          std::pair<int, double>&& std::forward<std::pair<int, double> >(std::remove_reference<std::pair<int, double> >::type&) [105]
+-----------------------------------------------
+                0.00    0.00       6/6           std::_Rb_tree_node<std::pair<int const, double> >* std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_create_node<std::pair<int, double> >(std::pair<int, double>&&) [42]
+[43]     0.0    0.00    0.00       6         void std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_construct_node<std::pair<int, double> >(std::_Rb_tree_node<std::pair<int const, double> >*, std::pair<int, double>&&) [43]
+                0.00    0.00       6/6           void std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<int const, double> > > >::construct<std::pair<int const, double>, std::pair<int, double> >(std::allocator<std::_Rb_tree_node<std::pair<int const, double> > >&, std::pair<int const, double>*, std::pair<int, double>&&) [46]
+                0.00    0.00       6/12000006     std::_Rb_tree_node<std::pair<int const, double> >::_M_valptr() [24]
+                0.00    0.00       6/1000012     operator new(unsigned long, void*) [66]
+                0.00    0.00       6/36          std::pair<int, double>&& std::forward<std::pair<int, double> >(std::remove_reference<std::pair<int, double> >::type&) [105]
+                0.00    0.00       6/12          std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_Node_allocator() [107]
+-----------------------------------------------
+                0.00    0.00      10/10          std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_key(std::_Rb_tree_node_base const*) [41]
+[44]     0.0    0.00    0.00      10         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_value(std::_Rb_tree_node_base const*) [44]
+                0.00    0.00      10/17000032     std::_Rb_tree_node<std::pair<int const, double> >::_M_valptr() const [10]
+-----------------------------------------------
+                0.00    0.00       6/6           void std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<int const, double> > > >::construct<std::pair<int const, double>, std::pair<int, double> >(std::allocator<std::_Rb_tree_node<std::pair<int const, double> > >&, std::pair<int const, double>*, std::pair<int, double>&&) [46]
+[45]     0.0    0.00    0.00       6         void __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::construct<std::pair<int const, double>, std::pair<int, double> >(std::pair<int const, double>*, std::pair<int, double>&&) [45]
+                0.00    0.00       6/6           std::pair<int const, double>::pair<int, double, true>(std::pair<int, double>&&) [47]
+                0.00    0.00       6/36          std::pair<int, double>&& std::forward<std::pair<int, double> >(std::remove_reference<std::pair<int, double> >::type&) [105]
+                0.00    0.00       6/1000012     operator new(unsigned long, void*) [66]
+-----------------------------------------------
+                0.00    0.00       6/6           void std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_construct_node<std::pair<int, double> >(std::_Rb_tree_node<std::pair<int const, double> >*, std::pair<int, double>&&) [43]
+[46]     0.0    0.00    0.00       6         void std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<int const, double> > > >::construct<std::pair<int const, double>, std::pair<int, double> >(std::allocator<std::_Rb_tree_node<std::pair<int const, double> > >&, std::pair<int const, double>*, std::pair<int, double>&&) [46]
+                0.00    0.00       6/6           void __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::construct<std::pair<int const, double>, std::pair<int, double> >(std::pair<int const, double>*, std::pair<int, double>&&) [45]
+                0.00    0.00       6/36          std::pair<int, double>&& std::forward<std::pair<int, double> >(std::remove_reference<std::pair<int, double> >::type&) [105]
+-----------------------------------------------
+                0.00    0.00       6/6           void __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::construct<std::pair<int const, double>, std::pair<int, double> >(std::pair<int const, double>*, std::pair<int, double>&&) [45]
+[47]     0.0    0.00    0.00       6         std::pair<int const, double>::pair<int, double, true>(std::pair<int, double>&&) [47]
+                0.00    0.00       6/3000186     double&& std::forward<double>(std::remove_reference<double>::type&) [28]
+                0.00    0.00       6/18          int&& std::forward<int>(std::remove_reference<int>::type&) [106]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_insert_unique_pos(int const&) [39]
+[48]     0.0    0.00    0.00       1         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::begin() [48]
+                0.00    0.00       1/12000013     std::_Rb_tree_iterator<std::pair<int const, double> >::_Rb_tree_iterator(std::_Rb_tree_node_base*) [32]
+-----------------------------------------------
+                0.00    0.00 12000006/12000006     std::_Rb_tree_node<std::pair<int const, double> >::_M_valptr() [24]
+[55]     0.0    0.00    0.00 12000006         __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_ptr() [55]
+                0.00    0.00 12000006/12000006     __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_addr() [56]
+-----------------------------------------------
+                0.00    0.00 12000006/12000006     __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_ptr() [55]
+[56]     0.0    0.00    0.00 12000006         __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_addr() [56]
+-----------------------------------------------
+                0.00    0.00 8000000/8000000     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_lower_bound(std::_Rb_tree_node<std::pair<int const, double> >*, std::_Rb_tree_node_base*, int const&) [5]
+[57]     0.0    0.00    0.00 8000000         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_left(std::_Rb_tree_node_base*) [57]
+-----------------------------------------------
+                0.00    0.00       6/6000012     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_insert_unique_pos(int const&) [39]
+                0.00    0.00       6/6000012     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_insert_node(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::_Rb_tree_node<std::pair<int const, double> >*) [40]
+                0.00    0.00 6000000/6000012     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::lower_bound(int const&) [4]
+[58]     0.0    0.00    0.00 6000012         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_end() [58]
+-----------------------------------------------
+                0.00    0.00      10/6000010     testVectorInit() [14]
+                0.00    0.00 6000000/6000010     main [1]
+[59]     0.0    0.00    0.00 6000010         std::vector<double, std::allocator<double> >::operator[](unsigned long) [59]
+-----------------------------------------------
+                0.00    0.00       1/6000001     std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_insert_unique_pos(int const&) [39]
+                0.00    0.00 6000000/6000001     std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::operator[](int const&) [2]
+[60]     0.0    0.00    0.00 6000001         std::_Rb_tree_iterator<std::pair<int const, double> >::operator==(std::_Rb_tree_iterator<std::pair<int const, double> > const&) const [60]
+-----------------------------------------------
+                0.00    0.00 6000000/6000000     std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::key_comp() const [20]
+[61]     0.0    0.00    0.00 6000000         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::key_comp() const [61]
+-----------------------------------------------
+                0.00    0.00 2000000/2000000     double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&) [17]
+[62]     0.0    0.00    0.00 2000000         std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::min() [62]
+-----------------------------------------------
+                0.00    0.00 2000000/2000000     double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&) [17]
+[63]     0.0    0.00    0.00 2000000         std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::operator()() [63]
+                0.00    0.00 2000000/2000000     unsigned long std::__detail::__mod<unsigned long, 2147483647ul, 16807ul, 0ul>(unsigned long) [65]
+-----------------------------------------------
+                0.00    0.00 2000000/2000000     unsigned long std::__detail::__mod<unsigned long, 2147483647ul, 16807ul, 0ul>(unsigned long) [65]
+[64]     0.0    0.00    0.00 2000000         std::__detail::_Mod<unsigned long, 2147483647ul, 16807ul, 0ul, true, true>::__calc(unsigned long) [64]
+-----------------------------------------------
+                0.00    0.00 2000000/2000000     std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::operator()() [63]
+[65]     0.0    0.00    0.00 2000000         unsigned long std::__detail::__mod<unsigned long, 2147483647ul, 16807ul, 0ul>(unsigned long) [65]
+                0.00    0.00 2000000/2000000     std::__detail::_Mod<unsigned long, 2147483647ul, 16807ul, 0ul, true, true>::__calc(unsigned long) [64]
+-----------------------------------------------
+                0.00    0.00       6/1000012     void std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_construct_node<std::pair<int, double> >(std::_Rb_tree_node<std::pair<int const, double> >*, std::pair<int, double>&&) [43]
+                0.00    0.00       6/1000012     void __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::construct<std::pair<int const, double>, std::pair<int, double> >(std::pair<int const, double>*, std::pair<int, double>&&) [45]
+                0.00    0.00 1000000/1000012     void __gnu_cxx::new_allocator<double>::construct<double, double>(double*, double&&) [22]
+[66]     0.0    0.00    0.00 1000012         operator new(unsigned long, void*) [66]
+-----------------------------------------------
+                0.00    0.00 1000000/1000000     double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&, std::uniform_real_distribution<double>::param_type const&) [9]
+[67]     0.0    0.00    0.00 1000000         std::uniform_real_distribution<double>::param_type::b() const [67]
+-----------------------------------------------
+                0.00    0.00 1000000/1000000     double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&, std::uniform_real_distribution<double>::param_type const&) [9]
+[68]     0.0    0.00    0.00 1000000         std::__detail::_Adaptor<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>, double>::_Adaptor(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&) [68]
+-----------------------------------------------
+                0.00    0.00 1000000/1000000     double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&) [17]
+[69]     0.0    0.00    0.00 1000000         unsigned long const& std::min<unsigned long>(unsigned long const&, unsigned long const&) [69]
+-----------------------------------------------
+                0.00    0.00 1000000/1000000     std::vector<double, std::allocator<double> >::push_back(double&&) [13]
+[70]     0.0    0.00    0.00 1000000         std::remove_reference<double&>::type&& std::move<double&>(double&) [70]
+-----------------------------------------------
+                0.00    0.00       1/1081        double* std::__copy_move_a2<false, double const*, double*>(double const*, double const*, double*) [160]
+                0.00    0.00    1080/1081        double* std::__copy_move_a2<true, double*, double*>(double*, double*, double*) [88]
+[71]     0.0    0.00    0.00    1081         double* std::__niter_base<double*>(double*) [71]
+-----------------------------------------------
+                0.00    0.00     360/720         void std::vector<double, std::allocator<double> >::_M_realloc_insert<double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double&&) [35]
+                0.00    0.00     360/720         __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >::difference_type __gnu_cxx::operator-<double*, std::vector<double, std::allocator<double> > >(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > > const&, __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > > const&) [101]
+[72]     0.0    0.00    0.00     720         __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >::base() const [72]
+-----------------------------------------------
+                0.00    0.00     720/720         decltype (__miter_base(({parm#1}.base)())) std::__miter_base<double*>(std::move_iterator<double*>) [76]
+[73]     0.0    0.00    0.00     720         std::move_iterator<double*>::base() const [73]
+-----------------------------------------------
+                0.00    0.00     720/720         std::vector<double, std::allocator<double> >::_M_check_len(unsigned long, char const*) const [36]
+[74]     0.0    0.00    0.00     720         std::vector<double, std::allocator<double> >::size() const [74]
+-----------------------------------------------
+                0.00    0.00     720/720         std::move_iterator<double*> std::__make_move_if_noexcept_iterator<double, std::move_iterator<double*> >(double*) [78]
+[75]     0.0    0.00    0.00     720         std::move_iterator<double*>::move_iterator(double*) [75]
+-----------------------------------------------
+                0.00    0.00     720/720         double* std::copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [92]
+[76]     0.0    0.00    0.00     720         decltype (__miter_base(({parm#1}.base)())) std::__miter_base<double*>(std::move_iterator<double*>) [76]
+                0.00    0.00     720/720         double* std::__miter_base<double*>(double*) [77]
+                0.00    0.00     720/720         std::move_iterator<double*>::base() const [73]
+-----------------------------------------------
+                0.00    0.00     720/720         decltype (__miter_base(({parm#1}.base)())) std::__miter_base<double*>(std::move_iterator<double*>) [76]
+[77]     0.0    0.00    0.00     720         double* std::__miter_base<double*>(double*) [77]
+-----------------------------------------------
+                0.00    0.00     720/720         double* std::__uninitialized_move_if_noexcept_a<double*, double*, std::allocator<double> >(double*, double*, double*, std::allocator<double>&) [91]
+[78]     0.0    0.00    0.00     720         std::move_iterator<double*> std::__make_move_if_noexcept_iterator<double, std::move_iterator<double*> >(double*) [78]
+                0.00    0.00     720/720         std::move_iterator<double*>::move_iterator(double*) [75]
+-----------------------------------------------
+                0.00    0.00       1/551         void std::vector<double, std::allocator<double> >::_M_range_initialize<double const*>(double const*, double const*, std::forward_iterator_tag) [154]
+                0.00    0.00      10/551         std::vector<double, std::allocator<double> >::~vector() [117]
+                0.00    0.00     540/551         void std::vector<double, std::allocator<double> >::_M_realloc_insert<double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double&&) [35]
+[79]     0.0    0.00    0.00     551         std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() [79]
+-----------------------------------------------
+                0.00    0.00     181/541         __gnu_cxx::new_allocator<double>::allocate(unsigned long, void const*) [97]
+                0.00    0.00     360/541         std::allocator_traits<std::allocator<double> >::max_size(std::allocator<double> const&) [85]
+[80]     0.0    0.00    0.00     541         __gnu_cxx::new_allocator<double>::max_size() const [80]
+-----------------------------------------------
+                0.00    0.00     180/360         std::vector<double, std::allocator<double> >::end() [103]
+                0.00    0.00     180/360         std::vector<double, std::allocator<double> >::begin() [104]
+[81]     0.0    0.00    0.00     360         __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >::__normal_iterator(double* const&) [81]
+-----------------------------------------------
+                0.00    0.00     360/360         std::vector<double, std::allocator<double> >::max_size() const [83]
+[82]     0.0    0.00    0.00     360         std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() const [82]
+-----------------------------------------------
+                0.00    0.00     360/360         std::vector<double, std::allocator<double> >::_M_check_len(unsigned long, char const*) const [36]
+[83]     0.0    0.00    0.00     360         std::vector<double, std::allocator<double> >::max_size() const [83]
+                0.00    0.00     360/360         std::allocator_traits<std::allocator<double> >::max_size(std::allocator<double> const&) [85]
+                0.00    0.00     360/360         std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() const [82]
+-----------------------------------------------
+                0.00    0.00     360/360         double* std::__copy_move_a<true, double*, double*>(double*, double*, double*) [87]
+[84]     0.0    0.00    0.00     360         double* std::__copy_move<true, true, std::random_access_iterator_tag>::__copy_m<double>(double const*, double const*, double*) [84]
+-----------------------------------------------
+                0.00    0.00     360/360         std::vector<double, std::allocator<double> >::max_size() const [83]
+[85]     0.0    0.00    0.00     360         std::allocator_traits<std::allocator<double> >::max_size(std::allocator<double> const&) [85]
+                0.00    0.00     360/541         __gnu_cxx::new_allocator<double>::max_size() const [80]
+-----------------------------------------------
+                0.00    0.00     360/360         double* std::uninitialized_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [89]
+[86]     0.0    0.00    0.00     360         double* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [86]
+                0.00    0.00     360/360         double* std::copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [92]
+-----------------------------------------------
+                0.00    0.00     360/360         double* std::__copy_move_a2<true, double*, double*>(double*, double*, double*) [88]
+[87]     0.0    0.00    0.00     360         double* std::__copy_move_a<true, double*, double*>(double*, double*, double*) [87]
+                0.00    0.00     360/360         double* std::__copy_move<true, true, std::random_access_iterator_tag>::__copy_m<double>(double const*, double const*, double*) [84]
+-----------------------------------------------
+                0.00    0.00     360/360         double* std::copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [92]
+[88]     0.0    0.00    0.00     360         double* std::__copy_move_a2<true, double*, double*>(double*, double*, double*) [88]
+                0.00    0.00    1080/1081        double* std::__niter_base<double*>(double*) [71]
+                0.00    0.00     360/360         double* std::__copy_move_a<true, double*, double*>(double*, double*, double*) [87]
+-----------------------------------------------
+                0.00    0.00     360/360         double* std::__uninitialized_copy_a<std::move_iterator<double*>, double*, double>(std::move_iterator<double*>, std::move_iterator<double*>, double*, std::allocator<double>&) [90]
+[89]     0.0    0.00    0.00     360         double* std::uninitialized_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [89]
+                0.00    0.00     360/360         double* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [86]
+-----------------------------------------------
+                0.00    0.00     360/360         double* std::__uninitialized_move_if_noexcept_a<double*, double*, std::allocator<double> >(double*, double*, double*, std::allocator<double>&) [91]
+[90]     0.0    0.00    0.00     360         double* std::__uninitialized_copy_a<std::move_iterator<double*>, double*, double>(std::move_iterator<double*>, std::move_iterator<double*>, double*, std::allocator<double>&) [90]
+                0.00    0.00     360/360         double* std::uninitialized_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [89]
+-----------------------------------------------
+                0.00    0.00     360/360         void std::vector<double, std::allocator<double> >::_M_realloc_insert<double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double&&) [35]
+[91]     0.0    0.00    0.00     360         double* std::__uninitialized_move_if_noexcept_a<double*, double*, std::allocator<double> >(double*, double*, double*, std::allocator<double>&) [91]
+                0.00    0.00     720/720         std::move_iterator<double*> std::__make_move_if_noexcept_iterator<double, std::move_iterator<double*> >(double*) [78]
+                0.00    0.00     360/360         double* std::__uninitialized_copy_a<std::move_iterator<double*>, double*, double>(std::move_iterator<double*>, std::move_iterator<double*>, double*, std::allocator<double>&) [90]
+-----------------------------------------------
+                0.00    0.00     360/360         double* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [86]
+[92]     0.0    0.00    0.00     360         double* std::copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [92]
+                0.00    0.00     720/720         decltype (__miter_base(({parm#1}.base)())) std::__miter_base<double*>(std::move_iterator<double*>) [76]
+                0.00    0.00     360/360         double* std::__copy_move_a2<true, double*, double*>(double*, double*, double*) [88]
+-----------------------------------------------
+                0.00    0.00     190/190         void std::_Destroy<double*>(double*, double*) [95]
+[93]     0.0    0.00    0.00     190         void std::_Destroy_aux<true>::__destroy<double*>(double*, double*) [93]
+-----------------------------------------------
+                0.00    0.00      10/190         std::_Vector_base<double, std::allocator<double> >::~_Vector_base() [115]
+                0.00    0.00     180/190         void std::vector<double, std::allocator<double> >::_M_realloc_insert<double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double&&) [35]
+[94]     0.0    0.00    0.00     190         std::_Vector_base<double, std::allocator<double> >::_M_deallocate(double*, unsigned long) [94]
+                0.00    0.00     180/180         std::allocator_traits<std::allocator<double> >::deallocate(std::allocator<double>&, double*, unsigned long) [102]
+-----------------------------------------------
+                0.00    0.00     190/190         void std::_Destroy<double*, double>(double*, double*, std::allocator<double>&) [96]
+[95]     0.0    0.00    0.00     190         void std::_Destroy<double*>(double*, double*) [95]
+                0.00    0.00     190/190         void std::_Destroy_aux<true>::__destroy<double*>(double*, double*) [93]
+-----------------------------------------------
+                0.00    0.00      10/190         std::vector<double, std::allocator<double> >::~vector() [117]
+                0.00    0.00     180/190         void std::vector<double, std::allocator<double> >::_M_realloc_insert<double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double&&) [35]
+[96]     0.0    0.00    0.00     190         void std::_Destroy<double*, double>(double*, double*, std::allocator<double>&) [96]
+                0.00    0.00     190/190         void std::_Destroy<double*>(double*, double*) [95]
+-----------------------------------------------
+                0.00    0.00     181/181         std::allocator_traits<std::allocator<double> >::allocate(std::allocator<double>&, unsigned long) [99]
+[97]     0.0    0.00    0.00     181         __gnu_cxx::new_allocator<double>::allocate(unsigned long, void const*) [97]
+                0.00    0.00     181/541         __gnu_cxx::new_allocator<double>::max_size() const [80]
+-----------------------------------------------
+                0.00    0.00       1/181         void std::vector<double, std::allocator<double> >::_M_range_initialize<double const*>(double const*, double const*, std::forward_iterator_tag) [154]
+                0.00    0.00     180/181         void std::vector<double, std::allocator<double> >::_M_realloc_insert<double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double&&) [35]
+[98]     0.0    0.00    0.00     181         std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long) [98]
+                0.00    0.00     181/181         std::allocator_traits<std::allocator<double> >::allocate(std::allocator<double>&, unsigned long) [99]
+-----------------------------------------------
+                0.00    0.00     181/181         std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long) [98]
+[99]     0.0    0.00    0.00     181         std::allocator_traits<std::allocator<double> >::allocate(std::allocator<double>&, unsigned long) [99]
+                0.00    0.00     181/181         __gnu_cxx::new_allocator<double>::allocate(unsigned long, void const*) [97]
+-----------------------------------------------
+                0.00    0.00     180/180         std::allocator_traits<std::allocator<double> >::deallocate(std::allocator<double>&, double*, unsigned long) [102]
+[100]    0.0    0.00    0.00     180         __gnu_cxx::new_allocator<double>::deallocate(double*, unsigned long) [100]
+-----------------------------------------------
+                0.00    0.00     180/180         void std::vector<double, std::allocator<double> >::_M_realloc_insert<double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double&&) [35]
+[101]    0.0    0.00    0.00     180         __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >::difference_type __gnu_cxx::operator-<double*, std::vector<double, std::allocator<double> > >(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > > const&, __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > > const&) [101]
+                0.00    0.00     360/720         __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >::base() const [72]
+-----------------------------------------------
+                0.00    0.00     180/180         std::_Vector_base<double, std::allocator<double> >::_M_deallocate(double*, unsigned long) [94]
+[102]    0.0    0.00    0.00     180         std::allocator_traits<std::allocator<double> >::deallocate(std::allocator<double>&, double*, unsigned long) [102]
+                0.00    0.00     180/180         __gnu_cxx::new_allocator<double>::deallocate(double*, unsigned long) [100]
+-----------------------------------------------
+                0.00    0.00     180/180         void std::vector<double, std::allocator<double> >::emplace_back<double>(double&&) [12]
+[103]    0.0    0.00    0.00     180         std::vector<double, std::allocator<double> >::end() [103]
+                0.00    0.00     180/360         __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >::__normal_iterator(double* const&) [81]
+-----------------------------------------------
+                0.00    0.00     180/180         void std::vector<double, std::allocator<double> >::_M_realloc_insert<double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double&&) [35]
+[104]    0.0    0.00    0.00     180         std::vector<double, std::allocator<double> >::begin() [104]
+                0.00    0.00     180/360         __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >::__normal_iterator(double* const&) [81]
+-----------------------------------------------
+                0.00    0.00       6/36          std::enable_if<std::is_constructible<std::pair<int const, double>, std::pair<int, double> >::value, std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool> >::type std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::insert<std::pair<int, double> >(std::pair<int, double>&&) [37]
+                0.00    0.00       6/36          std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool> std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_emplace_unique<std::pair<int, double> >(std::pair<int, double>&&) [38]
+                0.00    0.00       6/36          std::_Rb_tree_node<std::pair<int const, double> >* std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_create_node<std::pair<int, double> >(std::pair<int, double>&&) [42]
+                0.00    0.00       6/36          void std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_construct_node<std::pair<int, double> >(std::_Rb_tree_node<std::pair<int const, double> >*, std::pair<int, double>&&) [43]
+                0.00    0.00       6/36          void std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<int const, double> > > >::construct<std::pair<int const, double>, std::pair<int, double> >(std::allocator<std::_Rb_tree_node<std::pair<int const, double> > >&, std::pair<int const, double>*, std::pair<int, double>&&) [46]
+                0.00    0.00       6/36          void __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::construct<std::pair<int const, double>, std::pair<int, double> >(std::pair<int const, double>*, std::pair<int, double>&&) [45]
+[105]    0.0    0.00    0.00      36         std::pair<int, double>&& std::forward<std::pair<int, double> >(std::remove_reference<std::pair<int, double> >::type&) [105]
+-----------------------------------------------
+                0.00    0.00       6/18          std::pair<int const, double>::pair<int, double, true>(std::pair<int, double>&&) [47]
+                0.00    0.00      12/18          std::pair<int, double>::pair<int, int, true>(int&&, int&&) [123]
+[106]    0.0    0.00    0.00      18         int&& std::forward<int>(std::remove_reference<int>::type&) [106]
+-----------------------------------------------
+                0.00    0.00       6/12          std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_node() [124]
+                0.00    0.00       6/12          void std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_construct_node<std::pair<int, double> >(std::_Rb_tree_node<std::pair<int const, double> >*, std::pair<int, double>&&) [43]
+[107]    0.0    0.00    0.00      12         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_Node_allocator() [107]
+-----------------------------------------------
+                0.00    0.00      11/11          std::allocator<double>::allocator() [110]
+[108]    0.0    0.00    0.00      11         __gnu_cxx::new_allocator<double>::new_allocator() [108]
+-----------------------------------------------
+                0.00    0.00      11/11          std::allocator<double>::~allocator() [111]
+[109]    0.0    0.00    0.00      11         __gnu_cxx::new_allocator<double>::~new_allocator() [109]
+-----------------------------------------------
+                0.00    0.00       1/11          main [1]
+                0.00    0.00      10/11          std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl() [112]
+[110]    0.0    0.00    0.00      11         std::allocator<double>::allocator() [110]
+                0.00    0.00      11/11          __gnu_cxx::new_allocator<double>::new_allocator() [108]
+-----------------------------------------------
+                0.00    0.00       1/11          main [1]
+                0.00    0.00      10/11          std::_Vector_base<double, std::allocator<double> >::_Vector_impl::~_Vector_impl() [113]
+[111]    0.0    0.00    0.00      11         std::allocator<double>::~allocator() [111]
+                0.00    0.00      11/11          __gnu_cxx::new_allocator<double>::~new_allocator() [109]
+-----------------------------------------------
+                0.00    0.00      10/10          std::_Vector_base<double, std::allocator<double> >::_Vector_base() [114]
+[112]    0.0    0.00    0.00      10         std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl() [112]
+                0.00    0.00      10/11          std::allocator<double>::allocator() [110]
+-----------------------------------------------
+                0.00    0.00      10/10          std::_Vector_base<double, std::allocator<double> >::~_Vector_base() [115]
+[113]    0.0    0.00    0.00      10         std::_Vector_base<double, std::allocator<double> >::_Vector_impl::~_Vector_impl() [113]
+                0.00    0.00      10/11          std::allocator<double>::~allocator() [111]
+-----------------------------------------------
+                0.00    0.00      10/10          std::vector<double, std::allocator<double> >::vector() [116]
+[114]    0.0    0.00    0.00      10         std::_Vector_base<double, std::allocator<double> >::_Vector_base() [114]
+                0.00    0.00      10/10          std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl() [112]
+-----------------------------------------------
+                0.00    0.00      10/10          std::vector<double, std::allocator<double> >::~vector() [117]
+[115]    0.0    0.00    0.00      10         std::_Vector_base<double, std::allocator<double> >::~_Vector_base() [115]
+                0.00    0.00      10/10          std::_Vector_base<double, std::allocator<double> >::_Vector_impl::~_Vector_impl() [113]
+                0.00    0.00      10/190         std::_Vector_base<double, std::allocator<double> >::_M_deallocate(double*, unsigned long) [94]
+-----------------------------------------------
+                0.00    0.00      10/10          testVectorInit() [14]
+[116]    0.0    0.00    0.00      10         std::vector<double, std::allocator<double> >::vector() [116]
+                0.00    0.00      10/10          std::_Vector_base<double, std::allocator<double> >::_Vector_base() [114]
+-----------------------------------------------
+                0.00    0.00      10/10          testVectorInit() [14]
+[117]    0.0    0.00    0.00      10         std::vector<double, std::allocator<double> >::~vector() [117]
+                0.00    0.00      10/551         std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() [79]
+                0.00    0.00      10/190         void std::_Destroy<double*, double>(double*, double*, std::allocator<double>&) [96]
+                0.00    0.00      10/10          std::_Vector_base<double, std::allocator<double> >::~_Vector_base() [115]
+-----------------------------------------------
+                0.00    0.00       6/6           std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<int const, double> > > >::allocate(std::allocator<std::_Rb_tree_node<std::pair<int const, double> > >&, unsigned long) [120]
+[118]    0.0    0.00    0.00       6         __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::allocate(unsigned long, void const*) [118]
+                0.00    0.00       6/6           __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::max_size() const [119]
+-----------------------------------------------
+                0.00    0.00       6/6           __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::allocate(unsigned long, void const*) [118]
+[119]    0.0    0.00    0.00       6         __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::max_size() const [119]
+-----------------------------------------------
+                0.00    0.00       6/6           std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_node() [124]
+[120]    0.0    0.00    0.00       6         std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<int const, double> > > >::allocate(std::allocator<std::_Rb_tree_node<std::pair<int const, double> > >&, unsigned long) [120]
+                0.00    0.00       6/6           __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::allocate(unsigned long, void const*) [118]
+-----------------------------------------------
+                0.00    0.00       6/6           std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_insert_unique_pos(int const&) [39]
+[121]    0.0    0.00    0.00       6         std::pair<std::_Rb_tree_node_base*, std::_Rb_tree_node_base*>::pair<std::_Rb_tree_node<std::pair<int const, double> >*&, std::_Rb_tree_node_base*&, true>(std::_Rb_tree_node<std::pair<int const, double> >*&, std::_Rb_tree_node_base*&) [121]
+                0.00    0.00       6/6           std::_Rb_tree_node<std::pair<int const, double> >*& std::forward<std::_Rb_tree_node<std::pair<int const, double> >*&>(std::remove_reference<std::_Rb_tree_node<std::pair<int const, double> >*&>::type&) [125]
+                0.00    0.00       6/6           std::_Rb_tree_node_base*& std::forward<std::_Rb_tree_node_base*&>(std::remove_reference<std::_Rb_tree_node_base*&>::type&) [126]
+-----------------------------------------------
+                0.00    0.00       6/6           std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool> std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_emplace_unique<std::pair<int, double> >(std::pair<int, double>&&) [38]
+[122]    0.0    0.00    0.00       6         std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool>::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool, true>(std::_Rb_tree_iterator<std::pair<int const, double> >&&, bool&&) [122]
+                0.00    0.00       6/6           std::_Rb_tree_iterator<std::pair<int const, double> >&& std::forward<std::_Rb_tree_iterator<std::pair<int const, double> > >(std::remove_reference<std::_Rb_tree_iterator<std::pair<int const, double> > >::type&) [127]
+                0.00    0.00       6/6           bool&& std::forward<bool>(std::remove_reference<bool>::type&) [128]
+-----------------------------------------------
+                0.00    0.00       6/6           main [1]
+[123]    0.0    0.00    0.00       6         std::pair<int, double>::pair<int, int, true>(int&&, int&&) [123]
+                0.00    0.00      12/18          int&& std::forward<int>(std::remove_reference<int>::type&) [106]
+-----------------------------------------------
+                0.00    0.00       6/6           std::_Rb_tree_node<std::pair<int const, double> >* std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_create_node<std::pair<int, double> >(std::pair<int, double>&&) [42]
+[124]    0.0    0.00    0.00       6         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_node() [124]
+                0.00    0.00       6/12          std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_Node_allocator() [107]
+                0.00    0.00       6/6           std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<int const, double> > > >::allocate(std::allocator<std::_Rb_tree_node<std::pair<int const, double> > >&, unsigned long) [120]
+-----------------------------------------------
+                0.00    0.00       6/6           std::pair<std::_Rb_tree_node_base*, std::_Rb_tree_node_base*>::pair<std::_Rb_tree_node<std::pair<int const, double> >*&, std::_Rb_tree_node_base*&, true>(std::_Rb_tree_node<std::pair<int const, double> >*&, std::_Rb_tree_node_base*&) [121]
+[125]    0.0    0.00    0.00       6         std::_Rb_tree_node<std::pair<int const, double> >*& std::forward<std::_Rb_tree_node<std::pair<int const, double> >*&>(std::remove_reference<std::_Rb_tree_node<std::pair<int const, double> >*&>::type&) [125]
+-----------------------------------------------
+                0.00    0.00       6/6           std::pair<std::_Rb_tree_node_base*, std::_Rb_tree_node_base*>::pair<std::_Rb_tree_node<std::pair<int const, double> >*&, std::_Rb_tree_node_base*&, true>(std::_Rb_tree_node<std::pair<int const, double> >*&, std::_Rb_tree_node_base*&) [121]
+[126]    0.0    0.00    0.00       6         std::_Rb_tree_node_base*& std::forward<std::_Rb_tree_node_base*&>(std::remove_reference<std::_Rb_tree_node_base*&>::type&) [126]
+-----------------------------------------------
+                0.00    0.00       6/6           std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool>::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool, true>(std::_Rb_tree_iterator<std::pair<int const, double> >&&, bool&&) [122]
+[127]    0.0    0.00    0.00       6         std::_Rb_tree_iterator<std::pair<int const, double> >&& std::forward<std::_Rb_tree_iterator<std::pair<int const, double> > >(std::remove_reference<std::_Rb_tree_iterator<std::pair<int const, double> > >::type&) [127]
+-----------------------------------------------
+                0.00    0.00       6/6           std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool>::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool, true>(std::_Rb_tree_iterator<std::pair<int const, double> >&&, bool&&) [122]
+[128]    0.0    0.00    0.00       6         bool&& std::forward<bool>(std::remove_reference<bool>::type&) [128]
+-----------------------------------------------
+                0.00    0.00       3/3           unsigned long std::__detail::__mod<unsigned long, 2147483647ul, 1ul, 0ul>(unsigned long) [130]
+[129]    0.0    0.00    0.00       3         std::__detail::_Mod<unsigned long, 2147483647ul, 1ul, 0ul, true, true>::__calc(unsigned long) [129]
+-----------------------------------------------
+                0.00    0.00       3/3           std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::seed(unsigned long) [151]
+[130]    0.0    0.00    0.00       3         unsigned long std::__detail::__mod<unsigned long, 2147483647ul, 1ul, 0ul>(unsigned long) [130]
+                0.00    0.00       3/3           std::__detail::_Mod<unsigned long, 2147483647ul, 1ul, 0ul, true, true>::__calc(unsigned long) [129]
+-----------------------------------------------
+                0.00    0.00       1/2           std::initializer_list<double>::end() const [138]
+                0.00    0.00       1/2           std::vector<double, std::allocator<double> >::vector(std::initializer_list<double>, std::allocator<double> const&) [155]
+[131]    0.0    0.00    0.00       2         std::initializer_list<double>::begin() const [131]
+-----------------------------------------------
+                0.00    0.00       2/2           double* std::copy<double const*, double*>(double const*, double const*, double*) [164]
+[132]    0.0    0.00    0.00       2         double const* std::__miter_base<double const*>(double const*) [132]
+-----------------------------------------------
+                0.00    0.00       2/2           double* std::__copy_move_a2<false, double const*, double*>(double const*, double const*, double*) [160]
+[133]    0.0    0.00    0.00       2         double const* std::__niter_base<double const*>(double const*) [133]
+-----------------------------------------------
+                0.00    0.00       1/1           __libc_csu_init [219]
+[134]    0.0    0.00    0.00       1         _GLOBAL__sub_I__Z8sumArrayPdi [134]
+                0.00    0.00       1/1           __static_initialization_and_destruction_0(int, int) [135]
+-----------------------------------------------
+                0.00    0.00       1/1           _GLOBAL__sub_I__Z8sumArrayPdi [134]
+[135]    0.0    0.00    0.00       1         __static_initialization_and_destruction_0(int, int) [135]
+-----------------------------------------------
+                0.00    0.00       1/1           std::allocator<std::_Rb_tree_node<std::pair<int const, double> > >::allocator() [140]
+[136]    0.0    0.00    0.00       1         __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::new_allocator() [136]
+-----------------------------------------------
+                0.00    0.00       1/1           std::allocator<double>::allocator(std::allocator<double> const&) [141]
+[137]    0.0    0.00    0.00       1         __gnu_cxx::new_allocator<double>::new_allocator(__gnu_cxx::new_allocator<double> const&) [137]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<double, std::allocator<double> >::vector(std::initializer_list<double>, std::allocator<double> const&) [155]
+[138]    0.0    0.00    0.00       1         std::initializer_list<double>::end() const [138]
+                0.00    0.00       1/2           std::initializer_list<double>::begin() const [131]
+                0.00    0.00       1/1           std::initializer_list<double>::size() const [139]
+-----------------------------------------------
+                0.00    0.00       1/1           std::initializer_list<double>::end() const [138]
+[139]    0.0    0.00    0.00       1         std::initializer_list<double>::size() const [139]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_Rb_tree_impl<std::less<int>, true>::_Rb_tree_impl() [156]
+[140]    0.0    0.00    0.00       1         std::allocator<std::_Rb_tree_node<std::pair<int const, double> > >::allocator() [140]
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::new_allocator() [136]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl(std::allocator<double> const&) [143]
+[141]    0.0    0.00    0.00       1         std::allocator<double>::allocator(std::allocator<double> const&) [141]
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<double>::new_allocator(__gnu_cxx::new_allocator<double> const&) [137]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::__copy_move_a<false, double const*, double*>(double const*, double const*, double*) [159]
+[142]    0.0    0.00    0.00       1         double* std::__copy_move<false, true, std::random_access_iterator_tag>::__copy_m<double>(double const*, double const*, double*) [142]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Vector_base<double, std::allocator<double> >::_Vector_base(std::allocator<double> const&) [144]
+[143]    0.0    0.00    0.00       1         std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl(std::allocator<double> const&) [143]
+                0.00    0.00       1/1           std::allocator<double>::allocator(std::allocator<double> const&) [141]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<double, std::allocator<double> >::vector(std::initializer_list<double>, std::allocator<double> const&) [155]
+[144]    0.0    0.00    0.00       1         std::_Vector_base<double, std::allocator<double> >::_Vector_base(std::allocator<double> const&) [144]
+                0.00    0.00       1/1           std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl(std::allocator<double> const&) [143]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Rb_tree_header::_Rb_tree_header() [146]
+[145]    0.0    0.00    0.00       1         std::_Rb_tree_header::_M_reset() [145]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_Rb_tree_impl<std::less<int>, true>::_Rb_tree_impl() [156]
+[146]    0.0    0.00    0.00       1         std::_Rb_tree_header::_Rb_tree_header() [146]
+                0.00    0.00       1/1           std::_Rb_tree_header::_M_reset() [145]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_Rb_tree_impl<std::less<int>, true>::_Rb_tree_impl() [156]
+[147]    0.0    0.00    0.00       1         std::_Rb_tree_key_compare<std::less<int> >::_Rb_tree_key_compare() [147]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::uninitialized_copy<double const*, double*>(double const*, double const*, double*) [161]
+[148]    0.0    0.00    0.00       1         double* std::__uninitialized_copy<true>::__uninit_copy<double const*, double*>(double const*, double const*, double*) [148]
+                0.00    0.00       1/1           double* std::copy<double const*, double*>(double const*, double const*, double*) [164]
+-----------------------------------------------
+                0.00    0.00       1/1           std::uniform_real_distribution<double>::uniform_real_distribution(double, double) [150]
+[149]    0.0    0.00    0.00       1         std::uniform_real_distribution<double>::param_type::param_type(double, double) [149]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[150]    0.0    0.00    0.00       1         std::uniform_real_distribution<double>::uniform_real_distribution(double, double) [150]
+                0.00    0.00       1/1           std::uniform_real_distribution<double>::param_type::param_type(double, double) [149]
+-----------------------------------------------
+                0.00    0.00       1/1           std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::linear_congruential_engine(unsigned long) [152]
+[151]    0.0    0.00    0.00       1         std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::seed(unsigned long) [151]
+                0.00    0.00       3/3           unsigned long std::__detail::__mod<unsigned long, 2147483647ul, 1ul, 0ul>(unsigned long) [130]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[152]    0.0    0.00    0.00       1         std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::linear_congruential_engine(unsigned long) [152]
+                0.00    0.00       1/1           std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::seed(unsigned long) [151]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[153]    0.0    0.00    0.00       1         std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::map() [153]
+                0.00    0.00       1/1           std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_Rb_tree() [157]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<double, std::allocator<double> >::vector(std::initializer_list<double>, std::allocator<double> const&) [155]
+[154]    0.0    0.00    0.00       1         void std::vector<double, std::allocator<double> >::_M_range_initialize<double const*>(double const*, double const*, std::forward_iterator_tag) [154]
+                0.00    0.00       1/1           std::iterator_traits<double const*>::difference_type std::distance<double const*>(double const*, double const*) [165]
+                0.00    0.00       1/181         std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long) [98]
+                0.00    0.00       1/551         std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() [79]
+                0.00    0.00       1/1           double* std::__uninitialized_copy_a<double const*, double*, double>(double const*, double const*, double*, std::allocator<double>&) [163]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[155]    0.0    0.00    0.00       1         std::vector<double, std::allocator<double> >::vector(std::initializer_list<double>, std::allocator<double> const&) [155]
+                0.00    0.00       1/1           std::_Vector_base<double, std::allocator<double> >::_Vector_base(std::allocator<double> const&) [144]
+                0.00    0.00       1/1           std::initializer_list<double>::end() const [138]
+                0.00    0.00       1/2           std::initializer_list<double>::begin() const [131]
+                0.00    0.00       1/1           void std::vector<double, std::allocator<double> >::_M_range_initialize<double const*>(double const*, double const*, std::forward_iterator_tag) [154]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_Rb_tree() [157]
+[156]    0.0    0.00    0.00       1         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_Rb_tree_impl<std::less<int>, true>::_Rb_tree_impl() [156]
+                0.00    0.00       1/1           std::_Rb_tree_key_compare<std::less<int> >::_Rb_tree_key_compare() [147]
+                0.00    0.00       1/1           std::allocator<std::_Rb_tree_node<std::pair<int const, double> > >::allocator() [140]
+                0.00    0.00       1/1           std::_Rb_tree_header::_Rb_tree_header() [146]
+-----------------------------------------------
+                0.00    0.00       1/1           std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::map() [153]
+[157]    0.0    0.00    0.00       1         std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_Rb_tree() [157]
+                0.00    0.00       1/1           std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_Rb_tree_impl<std::less<int>, true>::_Rb_tree_impl() [156]
+-----------------------------------------------
+                0.00    0.00       1/1           std::iterator_traits<double const*>::difference_type std::distance<double const*>(double const*, double const*) [165]
+[158]    0.0    0.00    0.00       1         std::iterator_traits<double const*>::difference_type std::__distance<double const*>(double const*, double const*, std::random_access_iterator_tag) [158]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::__copy_move_a2<false, double const*, double*>(double const*, double const*, double*) [160]
+[159]    0.0    0.00    0.00       1         double* std::__copy_move_a<false, double const*, double*>(double const*, double const*, double*) [159]
+                0.00    0.00       1/1           double* std::__copy_move<false, true, std::random_access_iterator_tag>::__copy_m<double>(double const*, double const*, double*) [142]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::copy<double const*, double*>(double const*, double const*, double*) [164]
+[160]    0.0    0.00    0.00       1         double* std::__copy_move_a2<false, double const*, double*>(double const*, double const*, double*) [160]
+                0.00    0.00       2/2           double const* std::__niter_base<double const*>(double const*) [133]
+                0.00    0.00       1/1081        double* std::__niter_base<double*>(double*) [71]
+                0.00    0.00       1/1           double* std::__copy_move_a<false, double const*, double*>(double const*, double const*, double*) [159]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::__uninitialized_copy_a<double const*, double*, double>(double const*, double const*, double*, std::allocator<double>&) [163]
+[161]    0.0    0.00    0.00       1         double* std::uninitialized_copy<double const*, double*>(double const*, double const*, double*) [161]
+                0.00    0.00       1/1           double* std::__uninitialized_copy<true>::__uninit_copy<double const*, double*>(double const*, double const*, double*) [148]
+-----------------------------------------------
+                0.00    0.00       1/1           std::iterator_traits<double const*>::difference_type std::distance<double const*>(double const*, double const*) [165]
+[162]    0.0    0.00    0.00       1         std::iterator_traits<double const*>::iterator_category std::__iterator_category<double const*>(double const* const&) [162]
+-----------------------------------------------
+                0.00    0.00       1/1           void std::vector<double, std::allocator<double> >::_M_range_initialize<double const*>(double const*, double const*, std::forward_iterator_tag) [154]
+[163]    0.0    0.00    0.00       1         double* std::__uninitialized_copy_a<double const*, double*, double>(double const*, double const*, double*, std::allocator<double>&) [163]
+                0.00    0.00       1/1           double* std::uninitialized_copy<double const*, double*>(double const*, double const*, double*) [161]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::__uninitialized_copy<true>::__uninit_copy<double const*, double*>(double const*, double const*, double*) [148]
+[164]    0.0    0.00    0.00       1         double* std::copy<double const*, double*>(double const*, double const*, double*) [164]
+                0.00    0.00       2/2           double const* std::__miter_base<double const*>(double const*) [132]
+                0.00    0.00       1/1           double* std::__copy_move_a2<false, double const*, double*>(double const*, double const*, double*) [160]
+-----------------------------------------------
+                0.00    0.00       1/1           void std::vector<double, std::allocator<double> >::_M_range_initialize<double const*>(double const*, double const*, std::forward_iterator_tag) [154]
+[165]    0.0    0.00    0.00       1         std::iterator_traits<double const*>::difference_type std::distance<double const*>(double const*, double const*) [165]
+                0.00    0.00       1/1           std::iterator_traits<double const*>::iterator_category std::__iterator_category<double const*>(double const* const&) [162]
+                0.00    0.00       1/1           std::iterator_traits<double const*>::difference_type std::__distance<double const*>(double const*, double const*, std::random_access_iterator_tag) [158]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Index by function name
+
+ [134] _GLOBAL__sub_I__Z8sumArrayPdi [114] std::_Vector_base<double, std::allocator<double> >::_Vector_base() [39] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_insert_unique_pos(int const&)
+  [25] sumArrayInline(double*, int) [144] std::_Vector_base<double, std::allocator<double> >::_Vector_base(std::allocator<double> const&) [34] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::end()
+  [14] testVectorInit()      [115] std::_Vector_base<double, std::allocator<double> >::~_Vector_base() [48] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::begin()
+ [135] __static_initialization_and_destruction_0(int, int) [24] std::_Rb_tree_node<std::pair<int const, double> >::_M_valptr() [58] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_end()
+  [31] sumArray(double*, int) [75] std::move_iterator<double*>::move_iterator(double*) [6] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_key(std::_Rb_tree_node<std::pair<int const, double> > const*)
+ [118] __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::allocate(unsigned long, void const*) [145] std::_Rb_tree_header::_M_reset() [41] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_key(std::_Rb_tree_node_base const*)
+  [45] void __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::construct<std::pair<int const, double>, std::pair<int, double> >(std::pair<int const, double>*, std::pair<int, double>&&) [146] std::_Rb_tree_header::_Rb_tree_header() [57] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_left(std::_Rb_tree_node_base*)
+ [136] __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::new_allocator() [120] std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<int const, double> > > >::allocate(std::allocator<std::_Rb_tree_node<std::pair<int const, double> > >&, unsigned long) [27] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_begin()
+ [100] __gnu_cxx::new_allocator<double>::deallocate(double*, unsigned long) [46] void std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<int const, double> > > >::construct<std::pair<int const, double>, std::pair<int, double> >(std::allocator<std::_Rb_tree_node<std::pair<int const, double> > >&, std::pair<int const, double>*, std::pair<int, double>&&) [26] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_right(std::_Rb_tree_node_base*)
+  [97] __gnu_cxx::new_allocator<double>::allocate(unsigned long, void const*) [102] std::allocator_traits<std::allocator<double> >::deallocate(std::allocator<double>&, double*, unsigned long) [7] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_value(std::_Rb_tree_node<std::pair<int const, double> > const*)
+  [22] void __gnu_cxx::new_allocator<double>::construct<double, double>(double*, double&&) [99] std::allocator_traits<std::allocator<double> >::allocate(std::allocator<double>&, unsigned long) [44] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_S_value(std::_Rb_tree_node_base const*)
+ [137] __gnu_cxx::new_allocator<double>::new_allocator(__gnu_cxx::new_allocator<double> const&) [85] std::allocator_traits<std::allocator<double> >::max_size(std::allocator<double> const&) [157] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_Rb_tree()
+ [108] __gnu_cxx::new_allocator<double>::new_allocator() [16] void std::allocator_traits<std::allocator<double> >::construct<double, double>(std::allocator<double>&, double*, double&&) [64] std::__detail::_Mod<unsigned long, 2147483647ul, 16807ul, 0ul, true, true>::__calc(unsigned long)
+ [109] __gnu_cxx::new_allocator<double>::~new_allocator() [32] std::_Rb_tree_iterator<std::pair<int const, double> >::_Rb_tree_iterator(std::_Rb_tree_node_base*) [129] std::__detail::_Mod<unsigned long, 2147483647ul, 1ul, 0ul, true, true>::__calc(unsigned long)
+  [55] __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_ptr() [147] std::_Rb_tree_key_compare<std::less<int> >::_Rb_tree_key_compare() [65] unsigned long std::__detail::__mod<unsigned long, 2147483647ul, 16807ul, 0ul>(unsigned long)
+  [56] __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_addr() [148] double* std::__uninitialized_copy<true>::__uninit_copy<double const*, double*>(double const*, double const*, double*) [130] unsigned long std::__detail::__mod<unsigned long, 2147483647ul, 1ul, 0ul>(unsigned long)
+  [81] __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >::__normal_iterator(double* const&) [86] double* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [68] std::__detail::_Adaptor<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>, double>::_Adaptor(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&)
+ [101] __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >::difference_type __gnu_cxx::operator-<double*, std::vector<double, std::allocator<double> > >(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > > const&, __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > > const&) [149] std::uniform_real_distribution<double>::param_type::param_type(double, double) [11] std::__detail::_Adaptor<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>, double>::operator()()
+ [119] __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<int const, double> > >::max_size() const [150] std::uniform_real_distribution<double>::uniform_real_distribution(double, double) [158] std::iterator_traits<double const*>::difference_type std::__distance<double const*>(double const*, double const*, std::random_access_iterator_tag)
+  [80] __gnu_cxx::new_allocator<double>::max_size() const [8] double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&) [132] double const* std::__miter_base<double const*>(double const*)
+  [15] __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_ptr() const [9] double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&, std::uniform_real_distribution<double>::param_type const&) [76] decltype (__miter_base(({parm#1}.base)())) std::__miter_base<double*>(std::move_iterator<double*>)
+  [19] __gnu_cxx::__aligned_membuf<std::pair<int const, double> >::_M_addr() const [62] std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::min() [77] double* std::__miter_base<double*>(double*)
+  [72] __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >::base() const [151] std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::seed(unsigned long) [133] double const* std::__niter_base<double const*>(double const*)
+  [23] std::_Select1st<std::pair<int const, double> >::operator()(std::pair<int const, double> const&) const [152] std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::linear_congruential_engine(unsigned long) [71] double* std::__niter_base<double*>(double*)
+  [82] std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() const [63] std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::operator()() [159] double* std::__copy_move_a<false, double const*, double*>(double const*, double const*, double*)
+  [10] std::_Rb_tree_node<std::pair<int const, double> >::_M_valptr() const [3] std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::lower_bound(int const&) [87] double* std::__copy_move_a<true, double*, double*>(double*, double*, double*)
+  [73] std::move_iterator<double*>::base() const [33] std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::end() [160] double* std::__copy_move_a2<false, double const*, double*>(double const*, double const*, double*)
+ [138] std::initializer_list<double>::end() const [37] std::enable_if<std::is_constructible<std::pair<int const, double>, std::pair<int, double> >::value, std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool> >::type std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::insert<std::pair<int, double> >(std::pair<int, double>&&) [88] double* std::__copy_move_a2<true, double*, double*>(double*, double*, double*)
+ [139] std::initializer_list<double>::size() const [153] std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::map() [17] double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&)
+ [131] std::initializer_list<double>::begin() const [2] std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::operator[](int const&) [161] double* std::uninitialized_copy<double const*, double*>(double const*, double const*, double*)
+  [21] std::_Rb_tree_iterator<std::pair<int const, double> >::operator*() const [47] std::pair<int const, double>::pair<int, double, true>(std::pair<int, double>&&) [89] double* std::uninitialized_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*)
+  [60] std::_Rb_tree_iterator<std::pair<int const, double> >::operator==(std::_Rb_tree_iterator<std::pair<int const, double> > const&) const [121] std::pair<std::_Rb_tree_node_base*, std::_Rb_tree_node_base*>::pair<std::_Rb_tree_node<std::pair<int const, double> >*&, std::_Rb_tree_node_base*&, true>(std::_Rb_tree_node<std::pair<int const, double> >*&, std::_Rb_tree_node_base*&) [162] std::iterator_traits<double const*>::iterator_category std::__iterator_category<double const*>(double const* const&)
+  [29] std::uniform_real_distribution<double>::param_type::a() const [122] std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool>::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool, true>(std::_Rb_tree_iterator<std::pair<int const, double> >&&, bool&&) [163] double* std::__uninitialized_copy_a<double const*, double*, double>(double const*, double const*, double*, std::allocator<double>&)
+  [67] std::uniform_real_distribution<double>::param_type::b() const [123] std::pair<int, double>::pair<int, int, true>(int&&, int&&) [90] double* std::__uninitialized_copy_a<std::move_iterator<double*>, double*, double>(std::move_iterator<double*>, std::move_iterator<double*>, double*, std::allocator<double>&)
+  [20] std::map<int, double, std::less<int>, std::allocator<std::pair<int const, double> > >::key_comp() const [12] void std::vector<double, std::allocator<double> >::emplace_back<double>(double&&) [78] std::move_iterator<double*> std::__make_move_if_noexcept_iterator<double, std::move_iterator<double*> >(double*)
+  [18] std::less<int>::operator()(int const&, int const&) const [35] void std::vector<double, std::allocator<double> >::_M_realloc_insert<double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double&&) [91] double* std::__uninitialized_move_if_noexcept_a<double*, double*, std::allocator<double> >(double*, double*, double*, std::allocator<double>&)
+  [36] std::vector<double, std::allocator<double> >::_M_check_len(unsigned long, char const*) const [154] void std::vector<double, std::allocator<double> >::_M_range_initialize<double const*>(double const*, double const*, std::forward_iterator_tag) [30] unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&)
+  [74] std::vector<double, std::allocator<double> >::size() const [103] std::vector<double, std::allocator<double> >::end() [69] unsigned long const& std::min<unsigned long>(unsigned long const&, unsigned long const&)
+  [83] std::vector<double, std::allocator<double> >::max_size() const [104] std::vector<double, std::allocator<double> >::begin() [164] double* std::copy<double const*, double*>(double const*, double const*, double*)
+  [61] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::key_comp() const [13] std::vector<double, std::allocator<double> >::push_back(double&&) [92] double* std::copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*)
+ [140] std::allocator<std::_Rb_tree_node<std::pair<int const, double> > >::allocator() [116] std::vector<double, std::allocator<double> >::vector() [70] std::remove_reference<double&>::type&& std::move<double&>(double&)
+ [141] std::allocator<double>::allocator(std::allocator<double> const&) [155] std::vector<double, std::allocator<double> >::vector(std::initializer_list<double>, std::allocator<double> const&) [125] std::_Rb_tree_node<std::pair<int const, double> >*& std::forward<std::_Rb_tree_node<std::pair<int const, double> >*&>(std::remove_reference<std::_Rb_tree_node<std::pair<int const, double> >*&>::type&)
+ [110] std::allocator<double>::allocator() [117] std::vector<double, std::allocator<double> >::~vector() [126] std::_Rb_tree_node_base*& std::forward<std::_Rb_tree_node_base*&>(std::remove_reference<std::_Rb_tree_node_base*&>::type&)
+ [111] std::allocator<double>::~allocator() [59] std::vector<double, std::allocator<double> >::operator[](unsigned long) [127] std::_Rb_tree_iterator<std::pair<int const, double> >&& std::forward<std::_Rb_tree_iterator<std::pair<int const, double> > >(std::remove_reference<std::_Rb_tree_iterator<std::pair<int const, double> > >::type&)
+ [142] double* std::__copy_move<false, true, std::random_access_iterator_tag>::__copy_m<double>(double const*, double const*, double*) [124] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_node() [105] std::pair<int, double>&& std::forward<std::pair<int, double> >(std::remove_reference<std::pair<int, double> >::type&)
+  [84] double* std::__copy_move<true, true, std::random_access_iterator_tag>::__copy_m<double>(double const*, double const*, double*) [4] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::lower_bound(int const&) [128] bool&& std::forward<bool>(std::remove_reference<bool>::type&)
+  [93] void std::_Destroy_aux<true>::__destroy<double*>(double*, double*) [156] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_Rb_tree_impl<std::less<int>, true>::_Rb_tree_impl() [28] double&& std::forward<double>(std::remove_reference<double>::type&)
+  [98] std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long) [42] std::_Rb_tree_node<std::pair<int const, double> >* std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_create_node<std::pair<int, double> >(std::pair<int, double>&&) [106] int&& std::forward<int>(std::remove_reference<int>::type&)
+ [143] std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl(std::allocator<double> const&) [40] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_insert_node(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::_Rb_tree_node<std::pair<int const, double> >*) [95] void std::_Destroy<double*>(double*, double*)
+ [112] std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl() [5] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_lower_bound(std::_Rb_tree_node<std::pair<int const, double> >*, std::_Rb_tree_node_base*, int const&) [96] void std::_Destroy<double*, double>(double*, double*, std::allocator<double>&)
+ [113] std::_Vector_base<double, std::allocator<double> >::_Vector_impl::~_Vector_impl() [43] void std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_construct_node<std::pair<int, double> >(std::_Rb_tree_node<std::pair<int const, double> >*, std::pair<int, double>&&) [165] std::iterator_traits<double const*>::difference_type std::distance<double const*>(double const*, double const*)
+  [94] std::_Vector_base<double, std::allocator<double> >::_M_deallocate(double*, unsigned long) [38] std::pair<std::_Rb_tree_iterator<std::pair<int const, double> >, bool> std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_emplace_unique<std::pair<int, double> >(std::pair<int, double>&&) [66] operator new(unsigned long, void*)
+  [79] std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() [107] std::_Rb_tree<int, std::pair<int const, double>, std::_Select1st<std::pair<int const, double> >, std::less<int>, std::allocator<std::pair<int const, double> > >::_M_get_Node_allocator() [1] main

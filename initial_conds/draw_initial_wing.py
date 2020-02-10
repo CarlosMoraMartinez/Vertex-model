@@ -185,6 +185,11 @@ class getBorders:
         self.cid1 = self.canvas.mpl_connect('key_press_event', self.on_key)
         self.cid2 = self.canvas.mpl_connect('button_press_event', self.onpress)
 
+        self.updateInnerLists()
+        for sp in self.staticPoints:
+            ref = self.ax.scatter(self.hx.vertices[sp][0], self.hx.vertices[sp][1], c="red")
+            self.pointPlotRefs.setdefault(sp, ref)
+
         plt.subplots_adjust(bottom=0.2)
         self.axbox = plt.axes([0.1, 0.05, 0.8, 0.075])
 
@@ -307,7 +312,6 @@ class getBorders:
         springs_to_remove = []
         verts_to_remove = []
         verts_to_movable = []
-
         #Look for springs to remove and vertices to set as movable
         for v in verts:
             vstat = self.getClosestVert(v, 0)#get the non-movable colsest vertex
@@ -321,22 +325,21 @@ class getBorders:
             elif(vstat not in verts_to_remove):
                 springs_to_remove.append(spr)
                 verts_to_remove.append(vstat)
-
         verts_to_remove.sort(reverse=True)
-        springs_to_remove.sort(reverse=True)
-        
+        springs_to_remove.sort(reverse=True)        
         #Set vertices to movable
         for v in verts_to_movable:
             self.hx.vertices[v][3] = 1 
-
         #Remove springs and vertices that are only in springs
         self.hx.removeSpringVertices(springs_to_remove, verts_to_remove)
-
         ##Now update lists
+        self.updateInnerLists()
+        self.updatePlot()
+
+    def updateInnerLists(self):
         self.newSpringPoints.clear()
         self.springPoints.clear() 
         self.staticPoints.clear()
-
         for s in self.hx.springs:
             for v in s:
                 if(self.hx.vertices[v][3] == 1):
@@ -347,7 +350,6 @@ class getBorders:
             if(v[3] == 0):
                 if(v[2] not in self.newSpringPoints):
                     self.staticPoints.append(v[2])
-        self.updatePlot()
 
     def getClosestVert(self,v, movable=1, onlyBorder=True):
         if(onlyBorder):

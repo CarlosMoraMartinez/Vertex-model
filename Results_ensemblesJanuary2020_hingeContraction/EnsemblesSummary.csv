@@ -1,0 +1,13 @@
+Ensemble	From	Code changed	Params changed	Results	Good simulations
+ensemble27				Best so far	18, 36
+ensemble28	ensemble27_18		Blade preferred area initial and final 	No better than 27_18 or 36	
+ensemble29	ensemble27_18		Blade preferred area initial and final (smaller than 28); spring tension	No better than 27_18 or 36	
+ensemble30	ensemble27_36		Spring tension (lower than 29)		
+ensemble31	ensemble27_36		Like 30, but division angle is 20% random		
+ensemble32	ensemble27_36		Spring tension (like 20) and lower values of border tension; division longest axis	Not much change	
+ensemble33	ensemble27_36		Like 32; division 20% random	slightly more disorganized, more T1s	
+ensemble34	ensemble27_36		Like 32; division 90% random	Not much change	
+ensemble35	ensemble27_36		Like 32; division 90% random only in blade and hinge; 100% longest axis in veins	Not much change	
+ensemble36	ensemble27_36		Negative tension in veins	Crazy, not useful	
+ensemble37	ensemble36	No transitions in veins and between veins and intervein tissue	Negative tension in veins	Not much change, but take into accound: some look good although less stable	
+ensemble38	ensemble27_36		Veins decreased cell size in blade		
