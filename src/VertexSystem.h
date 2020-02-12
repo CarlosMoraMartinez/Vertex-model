@@ -14,6 +14,7 @@ const float MIN_RANGE_VERTEX_MOVEMENT = 0; //not used so far
 const float MAX_RANGE_VERTEX_MOVEMENT = 0.02;
 const float TEMPERATURE_POSITIVE_ENERGY = 0.005;
 const float TEMPERATURE_NEGATIVE_ENERGY = 0.1; //Acceptance probability is basically 1
+const bool TEMPERATURE_MEANS_PROPORTION_OF_ACCEPTANCE = true;
 //const float PROB_ACCEPT_NON_FAVORABLE = 0.05;
 const float LINE_TENSION_BLADE = -0.02;
 const float LINE_TENSION_HINGE = -0.01;
@@ -77,6 +78,7 @@ const int MOVE_TRIALS = 100;  //Times it tries to move a vertex before it quits 
 
 const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
+const bool REPORT_OUT = false;
 
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tcells\tedges\tneighbour_vertices\n";
 const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\tcentroid_x\tcentroid_y\tangle_longest\tangle_signal\tangle_random\tdegrees_signal\tmax_area\tcell_cycle_state\tcell_cycle_limit\tcan_divide\tnum_vertices\tvertices\tedges\tnum_divisions\n";
@@ -252,6 +254,7 @@ class Tissue{
 		float max_range_vertex_movement;
 		float temperature_positive_energy;
 		float temperature_negative_energy; 
+		bool temperature_means_proportion_of_acceptance;
 		cell_type_param line_tension;
 		cell_type_param line_tension_tissue_boundary;
 		float energy_term1, energy_term2, energy_term3;
@@ -273,7 +276,7 @@ class Tissue{
 
 		//Parameters related to edge tension modification
 		cell_type_param vary_line_tension;
-		int vary_edge_tension_with_time;
+		bool vary_edge_tension_with_time;
 		float vary_edge_tension_time_exponent;
 		cell_type_param edge_angle_prop_external;
 		cell_type_param edge_angle_prop_uniform;
@@ -282,6 +285,8 @@ class Tissue{
 		cell_type_param edge_maxangle;
 		cell_type_param edge_spatialmax_tension;
 		cell_type_param edge_spatialmin_tension;
+		cell_type_param edge_temporal_angle_efect_max;
+		cell_type_param edge_temporal_angle_efect_min;
 
 		float length_rotated_edge; 
 

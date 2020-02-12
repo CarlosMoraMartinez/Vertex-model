@@ -1,18 +1,18 @@
 
 library(magrittr)
 
-
+FORMAT=".celltab"
 plotAll <- function(folder){
 	current <- getwd()
 	setwd(folder)
 	files <- list.files() 
-	files <- files[grep(pattern = ".out", files)]
+	files <- files[grep(pattern = FORMAT, files)]
 
 	res <- data.frame()
 	for(f in files){
    	 d <- read.table(f, stringsAsFactors=F, header=T)
   	  name <- strsplit(f, "_")[[1]] 
-   	 name <- name[length(name)] %>% gsub(".out", "", .) %>% as.numeric
+   	 name <- name[length(name)] %>% gsub(FORMAT, "", .) %>% as.numeric
  	   d$time <- name
  	   res <- rbind(res, d)
 	    cat(nrow(res), " ",nrow(d), "\n")
@@ -20,7 +20,7 @@ plotAll <- function(folder){
 
 	res2 <- res[res$type == 1, ]
 
-	pdf("timeExp_2.5_coordExp_0.5_1-exp.pdf")
+	pdf("timeExp.pdf")
 	plot(res2$centroid_x, res2$preferred_area, col = res2$time, pch = 19, cex = 0.2, xlab="Cell centroid horizontal position", ylab = "Equilibrium area", main = "Exp. time = 2.5, exp. coord = 0.5")
 
 	for(t in unique(res2$time)){

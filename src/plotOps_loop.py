@@ -98,7 +98,7 @@ def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, n
     if(add_vnums):
         for i in pointsList.keys():
             ax.annotate(i, pointsList[i][0:2], fontsize = 'xx-small')
-    plt.savefig(name + '.svg', format='svg', dpi=1200)
+    #plt.savefig(name + '.svg', format='svg', dpi=1200)
     plt.savefig(name + '.png', format='png')
     plt.clf()
 
@@ -131,7 +131,7 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
             ax.annotate(i, pointsList[i][0:2])
 
     plt.savefig(name + '.png')
-    plt.savefig(name + '.svg', format='svg', dpi=1200)
+    #plt.savefig(name + '.svg', format='svg', dpi=1200)
     return (fig, ax)
     
 

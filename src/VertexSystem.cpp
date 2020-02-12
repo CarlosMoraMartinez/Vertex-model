@@ -134,6 +134,7 @@ void Tissue::set_default_simulation_params(){
 	max_range_vertex_movement = MAX_RANGE_VERTEX_MOVEMENT;
 	temperature_positive_energy = TEMPERATURE_POSITIVE_ENERGY;
 	temperature_negative_energy =  TEMPERATURE_NEGATIVE_ENERGY;
+	temperature_means_proportion_of_acceptance = TEMPERATURE_MEANS_PROPORTION_OF_ACCEPTANCE;
 
 	autonomous_cell_cycle = AUTONOMOUS_CELL_CYCLE;
 	cell_cycle_controls_size = CELL_CYCLE_CONTROLS_SIZE;
@@ -218,7 +219,7 @@ void Tissue::set_default_simulation_params(){
 	vary_line_tension.insert(pair<CellType, double>(CellType::vein_blade, -1.0));
 	vary_line_tension.insert(pair<CellType, double>(CellType::vein_hinge, -1.0));
 
-	vary_edge_tension_with_time = -1;
+	vary_edge_tension_with_time = false;
 	vary_edge_tension_time_exponent = 0;
 	edge_angle_prop_external = vary_line_tension;
 	edge_angle_prop_uniform = vary_line_tension;
@@ -227,6 +228,8 @@ void Tissue::set_default_simulation_params(){
 	edge_maxangle = vary_line_tension;
 	edge_spatialmax_tension = vary_line_tension;
 	edge_spatialmin_tension = vary_line_tension;
+	edge_temporal_angle_efect_max = vary_line_tension;
+	edge_temporal_angle_efect_min = vary_line_tension;
 }
 
 double Tissue::read_real_par(std::vector<std::string>::iterator& it){
@@ -295,6 +298,7 @@ void Tissue::initialize_params(std::string params_file){
 	max_range_vertex_movement = read_real_par(it);
 	temperature_positive_energy = read_real_par(it);
 	temperature_negative_energy = read_real_par(it);
+	temperature_means_proportion_of_acceptance = read_real_par(it) > 0;
 
 	energy_term1 = read_real_par(it);
 	energy_term2 = read_real_par(it);
@@ -330,7 +334,7 @@ void Tissue::initialize_params(std::string params_file){
 	cell_cycle_limit = read_celltype_par(it, sz);
 
 	vary_line_tension = read_celltype_par(it, sz);
-	vary_edge_tension_with_time = static_cast<int>(read_real_par(it));
+	vary_edge_tension_with_time = read_real_par(it) > 0;
 	vary_edge_tension_time_exponent = read_real_par(it);
 	edge_angle_prop_external = read_celltype_par(it, sz);
 	edge_angle_prop_uniform = read_celltype_par(it, sz);
@@ -339,6 +343,8 @@ void Tissue::initialize_params(std::string params_file){
 	edge_maxangle = read_celltype_par(it, sz);
 	edge_spatialmax_tension = read_celltype_par(it, sz);
 	edge_spatialmin_tension = read_celltype_par(it, sz);
+	edge_temporal_angle_efect_max = read_celltype_par(it, sz);
+	edge_temporal_angle_efect_min = read_celltype_par(it, sz);
 }
 
 /*
@@ -625,43 +631,76 @@ void Tissue::setEdgeType(int e){
 	float edge_maxangle;
 	float edge_spatialmax_tension;
 	float edge_spatialmin_tension;
+
+
+	vary_edge_tension_with_time = false;
+	vary_edge_tension_time_exponent = 0;
+	edge_angle_prop_external = vary_line_tension;
+	edge_angle_prop_uniform = vary_line_tension;
+	edge_angle_prop_maxangle = vary_line_tension;
+	edge_tension_external = vary_line_tension;
+	edge_maxangle = vary_line_tension;
+	edge_spatialmax_tension = vary_line_tension;
+	edge_spatialmin_tension = vary_line_tension;
+	edge_temporal_angle_efect_max = vary_line_tension;
+	edge_temporal_angle_efect_min = vary_line_tension;
+}
 */
 void Tissue::setEdgeTension(int e){
 	if(edges[e].type == EdgeType::tissue_boundary) return;
 	if(! cells[edges[e].cells[0]].vary_line_tension && !cells[edges[e].cells[1]].vary_line_tension ) return;
 	float mins, maxs, maxangle, angle, pex, pmaxan, punif, tensionext;
-	int cellvar, cellconst;
-	if(cells[edges[e].cells[0]].vary_line_tension && cells[edges[e].cells[1]].vary_line_tension ){
+	int cellvar;
+	
+	if(cells[edges[e].cells[0]].vary_line_tension && cells[edges[e].cells[1]].vary_line_tension ){//If both cells make edge tension vary
 		mins = 0.5*(cells[edges[e].cells[0]].edge_spatialmin_tension + cells[edges[e].cells[1]].edge_spatialmin_tension);
 		maxs = 0.5*(cells[edges[e].cells[0]].edge_spatialmax_tension + cells[edges[e].cells[1]].edge_spatialmax_tension);
 		maxangle = 0.5*(cells[edges[e].cells[0]].edge_maxangle + cells[edges[e].cells[1]].edge_maxangle);
 		tensionext = 0.5*(cells[edges[e].cells[0]].edge_tension_external + cells[edges[e].cells[1]].edge_tension_external); //This is not an angle! is tension value set from gene Expression directly 
 
-		pex = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_external + cells[edges[e].cells[1]].edge_angle_prop_external);
-		pmaxan = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_maxangle + cells[edges[e].cells[1]].edge_angle_prop_maxangle);
-		punif = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_uniform + cells[edges[e].cells[1]].edge_angle_prop_uniform);
+		if(vary_edge_tension_with_time){//If proportion determined by angle varies with time
+			double time_factor = static_cast<double>(counter_moves_accepted)/max_accepted_movements;
+			time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
+			double mint = (edge_temporal_angle_efect_min[cells[edges[e].cells[0]].type] + edge_temporal_angle_efect_min[cells[edges[e].cells[1]].type])*0.5;
+			double maxt = (edge_temporal_angle_efect_max[cells[edges[e].cells[0]].type] + edge_temporal_angle_efect_max[cells[edges[e].cells[1]].type])*0.5;
+			pex = 0.0;
+			pmaxan = mint + (maxt - mint)*time_factor;
+			punif = 1.0 - pmaxan;
 
-	}else{
-		if(cells[edges[e].cells[0]].vary_line_tension){
-			cellvar = edges[e].cells[0];
-			cellconst = edges[e].cells[1];
-		}else{
-			cellvar = edges[e].cells[1];
-			cellconst = edges[e].cells[0];
-		}
-		mins = cells[cellvar].edge_spatialmin_tension;
-		maxs = cells[cellvar].edge_spatialmax_tension;
-		maxangle = cells[cellvar].edge_maxangle;
-		tensionext = cells[cellvar].edge_tension_external;
+		}else{ //Proportion is determined by exponential function of time
+			pex = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_external + cells[edges[e].cells[1]].edge_angle_prop_external);
+			pmaxan = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_maxangle + cells[edges[e].cells[1]].edge_angle_prop_maxangle);
+			punif = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_uniform + cells[edges[e].cells[1]].edge_angle_prop_uniform);
+		}//end if time determines influence of angle
 
-		pex = 0.5*cells[cellvar].edge_angle_prop_external;
-		pmaxan = 0.5*cells[cellvar].edge_angle_prop_maxangle;
-		punif = 0.5*(cells[cellvar].edge_angle_prop_uniform + 1.0);
-	}
+	}else{ //If only one cell makes edge tension vary
+		cellvar = cells[edges[e].cells[0]].vary_line_tension? edges[e].cells[0] : edges[e].cells[1];//find out which cell
+
+		mins = cells[cellvar].edge_spatialmin_tension; //Minimal tension depending on angle
+		maxs = cells[cellvar].edge_spatialmax_tension; //Maximal tension depending on angle
+		maxangle = cells[cellvar].edge_maxangle; //Angle of max tension (in degrees)
+		tensionext = cells[cellvar].edge_tension_external; //Tension set from outside (gene expression etc)
+
+
+		if(vary_edge_tension_with_time){ //If proportion determined by angle varies with time
+			double time_factor = static_cast<double>(counter_moves_accepted)/max_accepted_movements;
+			time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
+			double mint = edge_temporal_angle_efect_min[cells[cellvar].type];
+			double maxt = edge_temporal_angle_efect_max[cells[cellvar].type];
+			pex = 0.0;
+			pmaxan = mint + (maxt - mint)*time_factor; //Proportion is determined by exponential function of time
+			punif = 1.0 - pmaxan;
+
+		}else{ //If proportion determined by angle does not vary with time
+			pex = 0.5*cells[cellvar].edge_angle_prop_external; //Proportions are determined by cell params directly
+			pmaxan = 0.5*cells[cellvar].edge_angle_prop_maxangle;
+			punif = 0.5*(cells[cellvar].edge_angle_prop_uniform + 1.0);
+		}//end if time determines influence of angle
+	}//End if which cells determine edge variation
 
 	maxangle *= M_PI/180;
-	angle = atan2(vertices[edges[e].vertices[1]].y - vertices[edges[e].vertices[0]].y, vertices[edges[e].vertices[1]].x - vertices[edges[e].vertices[0]].x);
-	angle = abs(sin(0.5*M_PI + abs(angle - maxangle))); //Point of sin wave
+	angle = atan2(vertices[edges[e].vertices[1]].y - vertices[edges[e].vertices[0]].y, vertices[edges[e].vertices[1]].x - vertices[edges[e].vertices[0]].x); //angle of edge
+	angle = abs(sin(0.5*M_PI + abs(angle - maxangle))); //Point of sin wave (from 0 to 1)
 	angle = mins + angle*(maxs - mins);  //Value of tension at this point of sin wave
 	
 	//Now integrate with other factors influencing tension
@@ -971,11 +1010,14 @@ bool Tissue::tryMoveVertex(std::default_random_engine& generator, std::uniform_r
 		new_y = old_y + sin(angle)*radius;
 		moveVertex(vertices[vertex_to_move], new_x, new_y);
 		vertices[vertex_to_move].energy = calculateEnergy(vertices[vertex_to_move]);
-		/*move_prob = vertices[vertex_to_move].energy <= old_energy? 
+
+		if(temperature_means_proportion_of_acceptance){ //Prob of accepting unfavourable movement ins constant
+			move_prob = vertices[vertex_to_move].energy <= old_energy ? temperature_negative_energy : temperature_positive_energy;
+		}else{ //Prob of accepting unfavourable movement depends on how much unfavourable the movement is
+			move_prob = vertices[vertex_to_move].energy <= old_energy? 
 							exp((vertices[vertex_to_move].energy - old_energy)/temperature_negative_energy) : 
 							exp(-(vertices[vertex_to_move].energy - old_energy)/temperature_positive_energy) ;
-		*/
-		move_prob = vertices[vertex_to_move].energy <= old_energy ? temperature_negative_energy : temperature_positive_energy;
+		}
 		if(CHECK_EDGES_CROSS_AFTER_MOVE){
 			cell_borders_cross = check_if_edges_cross(vertex_to_move);
 			if(cell_borders_cross){
@@ -1344,7 +1386,7 @@ void Tissue::make_t1_at_border_inwards(Rearrangement& r){
 
 	this->counter_t1_inwards++;
 
-	//cout << "T1 transition inwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 in: " << counter_t1_inwards << endl;
+	if(REPORT_OUT) cout << "T1 transition inwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 in: " << counter_t1_inwards << endl;
 
 	if(REPORT_T1){
 		ff << "\n\nAFTER\n\n";
@@ -1471,7 +1513,7 @@ void Tissue::make_t1_at_border_outwards(Rearrangement& r){
 	edges[edge].type = EdgeType::tissue_boundary;
 	this->counter_t1_outwards++;
 
-	//cout << "T1 transition outwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 out: " << counter_t1_outwards <<endl;
+	if(REPORT_OUT) cout << "T1 transition outwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 out: " << counter_t1_outwards <<endl;
 
 	if(REPORT_T1){
 		ff << "\n\nAFTER\n\n";
@@ -1642,7 +1684,7 @@ void Tissue::make_divide_cell(Rearrangement& r){
 	if(REPORT_DIV) writeAllData(simname + "_div_2" + to_string(counter_divisions));
 
 	past_divisions.push(DivisionRecord{cell, newcind});
-	cout << ">DIVISION: moves accepted= " << counter_moves_accepted << "; divi. accepted= " << counter_divisions << "; Cell= " << cell << "; New cell=" << newcind << "; new vertex 1= " << newvind1 << "; new vertex 2=" << newvind2 << "; centroid_x= " << 0.5*(vertices[newvind1].x + vertices[newvind2].x) << "; centroid_y= " << 0.5*(vertices[newvind1].y + vertices[newvind2].y) << "; cell_type= " << static_cast<int>(cells[cell].type) << endl;
+	if(REPORT_OUT) cout << ">DIVISION: moves accepted= " << counter_moves_accepted << "; divi. accepted= " << counter_divisions << "; Cell= " << cell << "; New cell=" << newcind << "; new vertex 1= " << newvind1 << "; new vertex 2=" << newvind2 << "; centroid_x= " << 0.5*(vertices[newvind1].x + vertices[newvind2].x) << "; centroid_y= " << 0.5*(vertices[newvind1].y + vertices[newvind2].y) << "; cell_type= " << static_cast<int>(cells[cell].type) << endl;
 	
 	
 }// END make_divide_cell
@@ -1911,7 +1953,7 @@ void Tissue::make_t1(Rearrangement& r){
 	setEdgeTension(edge); //Tension depends on angle and on values of neighboring cells
 	this->counter_t1++;
 
-	cout << ">T1 transition: v1=" << v1->ind << "; v2=" << v2->ind << "; mov. accepted=" << this->counter_moves_accepted << "; T1=" << counter_t1 << "; T1 abortions=" << counter_t1_abortions << "; centroid_x=" << 0.5*(v1->x + v2->x)  << "; centroid_y=" << 0.5*(v1->y + v2->y)<< "; edge type=" << static_cast<int>(edges[edge].type) << endl;
+	if(REPORT_OUT) cout << ">T1 transition: v1=" << v1->ind << "; v2=" << v2->ind << "; mov. accepted=" << this->counter_moves_accepted << "; T1=" << counter_t1 << "; T1 abortions=" << counter_t1_abortions << "; centroid_x=" << 0.5*(v1->x + v2->x)  << "; centroid_y=" << 0.5*(v1->y + v2->y)<< "; edge type=" << static_cast<int>(edges[edge].type) << endl;
 	if(REPORT_T1){
 		ff << "\n\nAFTER\n\n";
 		ff << VERTEX_HEADER << *v1 << "\n" << *v2 << "\n\n";
@@ -2599,7 +2641,7 @@ void Tissue::make_t2(Rearrangement& r){
 			}
 		}
 	}
-	cout << ">T2 transition: cell=" << cell << "; survivor vertex =" << v1 << "; v2= " << v2 << "; v3= " << v3 << "; v2nei= " << v2nei << "; v3nei= " << v3nei << "; mov. accepted= " << this->counter_moves_accepted << "; T1= " << counter_t1 << "; T1 abortions=" << counter_t1_abortions << "; T2= " << counter_t2 << "; centroid_x= " << vertices[v1].x << "; centroid_y= " << vertices[v1].y << "; cell_type= " << static_cast<int>(cells[cell].type) << endl;
+	if(REPORT_OUT) cout << ">T2 transition: cell=" << cell << "; survivor vertex =" << v1 << "; v2= " << v2 << "; v3= " << v3 << "; v2nei= " << v2nei << "; v3nei= " << v3nei << "; mov. accepted= " << this->counter_moves_accepted << "; T1= " << counter_t1 << "; T1 abortions=" << counter_t1_abortions << "; T2= " << counter_t2 << "; centroid_x= " << vertices[v1].x << "; centroid_y= " << vertices[v1].y << "; cell_type= " << static_cast<int>(cells[cell].type) << endl;
 	//cout << "K\n";
 }//End make transition T2
 
