@@ -1,6 +1,14 @@
 
 
- mkdir $1
+#ARGS:
+#1: initial conditions name
+#2: name of param file (without .vp)
+#3: Total number of accepted moves
+#4: Write output every N accepted moves
+
+###
+
+mkdir $1
 cp src/VertexSystem.cpp src/VertexSystem.h src/vertex_cmm.cpp src/plotOps_loop.py 'param_files/'$2'.vp' $1
 
 cd $1
@@ -18,6 +26,6 @@ rm vertex
 #mv $1'_moved'* $1
 
 #cd $1
-mkdir t1_transitions
-mv T1_REPORT* t1_transitions
-cd ../
+#mkdir t1_transitions
+#mv T1_REPORT* t1_transitions
+#cd ../

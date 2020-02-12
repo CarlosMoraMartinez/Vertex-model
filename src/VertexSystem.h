@@ -118,6 +118,14 @@ struct Cell{
 	float division_angle_longest;
 	float division_angle_external; 
 	float division_angle_external_degrees;
+	bool vary_line_tension;
+	float edge_angle_prop_external;
+	float edge_angle_prop_uniform;
+	float edge_angle_prop_maxangle;
+	float edge_tension_external;
+	float edge_maxangle;
+	float edge_spatialmax_tension;
+	float edge_spatialmin_tension;
 	float max_area;
 	float cell_cycle_state;
 	float cell_cycle_limit;
@@ -260,8 +268,20 @@ class Tissue{
 		cell_type_param division_angle_longest_axis, division_angle_random_noise, division_angle_external, division_angle_external_degrees;
 
 		cell_type_param cell_cycle_limit, xcoord_size_control_factor;
-		bool autonomous_cell_cycle, cell_cycle_controls_size, time_controls_size, xcoord_controls_size, keep_area_after_division;
+		bool autonomous_cell_cycle, start_cell_cycle_at_random, cell_cycle_controls_size, time_controls_size, xcoord_controls_size, keep_area_after_division;
 		float time_decrease_exponent, xcoord_decrease_exponent;
+
+		//Parameters related to edge tension modification
+		cell_type_param vary_line_tension;
+		int vary_edge_tension_with_time;
+		float vary_edge_tension_time_exponent;
+		cell_type_param edge_angle_prop_external;
+		cell_type_param edge_angle_prop_uniform;
+		cell_type_param edge_angle_prop_maxangle;
+		cell_type_param edge_tension_external; //initial values
+		cell_type_param edge_maxangle;
+		cell_type_param edge_spatialmax_tension;
+		cell_type_param edge_spatialmin_tension;
 
 		float length_rotated_edge; 
 
@@ -287,6 +307,7 @@ class Tissue{
 		void addEdge(int v1, int v2, int cell);		//Creates single edge
 		void set_default_params();			//Sets model parameters for each vertex, cell and edge, from constants defined in this file
 		void setEdgeType(int e);
+		void setEdgeTension(int e);
 		void addCellToVertex(int vertex, int cell); 	//Adds one cell to the array of cells in a vertex structure
 		void addNeighbourVertex(int vertex1, int vertex2);
 		void addEdgeToVertex(int vertex, int edge); 	//Adds one edge to the array of edges in a vertex structure
@@ -325,6 +346,7 @@ class Tissue{
 		void killCellWith2Vertices(int cell);
 
 		//Other
+		double expAdvance(double x, float exponent);
 		void advanceCellCycle(int vertex_moved);
 		void advanceSizeWithTime(int vertex_moved);
 		void advanceSizeWithXcoordAndTime(int vertex_moved);

@@ -137,6 +137,7 @@ void Tissue::set_default_simulation_params(){
 
 	autonomous_cell_cycle = AUTONOMOUS_CELL_CYCLE;
 	cell_cycle_controls_size = CELL_CYCLE_CONTROLS_SIZE;
+	start_cell_cycle_at_random = true;
 	keep_area_after_division = KEEP_AREA_AFTER_DIVISION;
 	time_controls_size = TIME_CONTROLS_SIZE;
 	time_decrease_exponent = TIME_DECREASE_EXPONENT;
@@ -212,7 +213,20 @@ void Tissue::set_default_simulation_params(){
 	cell_cycle_limit.insert(pair<CellType, double>(CellType::vein_blade, CELL_CYCLE_LIMIT));
 	cell_cycle_limit.insert(pair<CellType, double>(CellType::vein_hinge, CELL_CYCLE_LIMIT));
 	
+	vary_line_tension.insert(pair<CellType, double>(CellType::blade, -1.0));
+	vary_line_tension.insert(pair<CellType, double>(CellType::hinge, -1.0));
+	vary_line_tension.insert(pair<CellType, double>(CellType::vein_blade, -1.0));
+	vary_line_tension.insert(pair<CellType, double>(CellType::vein_hinge, -1.0));
 
+	vary_edge_tension_with_time = -1;
+	vary_edge_tension_time_exponent = 0;
+	edge_angle_prop_external = vary_line_tension;
+	edge_angle_prop_uniform = vary_line_tension;
+	edge_angle_prop_maxangle = vary_line_tension;
+	edge_tension_external = vary_line_tension;
+	edge_maxangle = vary_line_tension;
+	edge_spatialmax_tension = vary_line_tension;
+	edge_spatialmin_tension = vary_line_tension;
 }
 
 double Tissue::read_real_par(std::vector<std::string>::iterator& it){
@@ -293,6 +307,7 @@ void Tissue::initialize_params(std::string params_file){
 	//max_cell_area = read_real_par(it);
 	max_edge_length = read_real_par(it);
 	autonomous_cell_cycle = read_real_par(it) > 0;
+	start_cell_cycle_at_random = read_real_par(it) > 0;
 	cell_cycle_controls_size = read_real_par(it) > 0;
 	keep_area_after_division = read_real_par(it) > 0;
 	time_controls_size = read_real_par(it) > 0;
@@ -313,6 +328,17 @@ void Tissue::initialize_params(std::string params_file){
 	spring_type_constants = read_springtype_par(it, sz);
 	max_cell_area = read_celltype_par(it, sz);
 	cell_cycle_limit = read_celltype_par(it, sz);
+
+	vary_line_tension = read_celltype_par(it, sz);
+	vary_edge_tension_with_time = static_cast<int>(read_real_par(it));
+	vary_edge_tension_time_exponent = read_real_par(it);
+	edge_angle_prop_external = read_celltype_par(it, sz);
+	edge_angle_prop_uniform = read_celltype_par(it, sz);
+	edge_angle_prop_maxangle = read_celltype_par(it, sz);
+	edge_tension_external = read_celltype_par(it, sz);  //Initial values, then gene expression will change it in cells
+	edge_maxangle = read_celltype_par(it, sz);
+	edge_spatialmax_tension = read_celltype_par(it, sz);
+	edge_spatialmin_tension = read_celltype_par(it, sz);
 }
 
 /*
@@ -446,7 +472,7 @@ void Tissue::initialize_cells(std::ifstream& inp){
 			}	
 		}
 		c.type = vertex == EMPTY_CONNECTION ? CellType::blade : static_cast<CellType>(vertex);
-		c.cell_cycle_state = std::rand() % static_cast<int>(cell_cycle_limit[c.type]);
+		c.cell_cycle_state = start_cell_cycle_at_random ? std::rand() % static_cast<int>(cell_cycle_limit[c.type]) : 0;
 		this->cells.push_back(c);
 		cell_count++;
 	}//while rows in file
@@ -526,10 +552,21 @@ void Tissue::set_default_params(){
 
 		cells[c].cell_cycle_limit = cell_cycle_limit[cells[c].type];
 		cells[c].max_area = max_cell_area[cells[c].type];
+
+		cells[c].vary_line_tension = vary_line_tension[cells[c].type];
+		cells[c].edge_angle_prop_external =  edge_angle_prop_external[cells[c].type];
+		cells[c].edge_angle_prop_uniform =  edge_angle_prop_uniform[cells[c].type];
+		cells[c].edge_angle_prop_maxangle =  edge_angle_prop_maxangle[cells[c].type];
+		cells[c].edge_tension_external =  edge_tension_external[cells[c].type];
+		cells[c].edge_maxangle =  edge_maxangle[cells[c].type];
+		cells[c].edge_spatialmax_tension =  edge_spatialmax_tension[cells[c].type];
+		cells[c].edge_spatialmin_tension =  edge_spatialmin_tension[cells[c].type];
+
 	}
 
 	for(int e = 0; e < edges.size(); e++){
 		setEdgeType(e);
+		setEdgeTension(e);
 	}
 	for(int v = 0; v < vertices.size(); v++){
 		vertices[v].energy = calculateEnergy(vertices[v]);
@@ -579,6 +616,59 @@ void Tissue::setEdgeType(int e){
 			edges[e].can_transition = false;
 		}
 }
+/*
+	Remember cell fields:
+	float edge_angle_prop_external;
+	float edge_angle_prop_uniform;
+	float edge_angle_prop_maxangle;
+	float edge_tension_external;
+	float edge_maxangle;
+	float edge_spatialmax_tension;
+	float edge_spatialmin_tension;
+*/
+void Tissue::setEdgeTension(int e){
+	if(edges[e].type == EdgeType::tissue_boundary) return;
+	if(! cells[edges[e].cells[0]].vary_line_tension && !cells[edges[e].cells[1]].vary_line_tension ) return;
+	float mins, maxs, maxangle, angle, pex, pmaxan, punif, tensionext;
+	int cellvar, cellconst;
+	if(cells[edges[e].cells[0]].vary_line_tension && cells[edges[e].cells[1]].vary_line_tension ){
+		mins = 0.5*(cells[edges[e].cells[0]].edge_spatialmin_tension + cells[edges[e].cells[1]].edge_spatialmin_tension);
+		maxs = 0.5*(cells[edges[e].cells[0]].edge_spatialmax_tension + cells[edges[e].cells[1]].edge_spatialmax_tension);
+		maxangle = 0.5*(cells[edges[e].cells[0]].edge_maxangle + cells[edges[e].cells[1]].edge_maxangle);
+		tensionext = 0.5*(cells[edges[e].cells[0]].edge_tension_external + cells[edges[e].cells[1]].edge_tension_external); //This is not an angle! is tension value set from gene Expression directly 
+
+		pex = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_external + cells[edges[e].cells[1]].edge_angle_prop_external);
+		pmaxan = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_maxangle + cells[edges[e].cells[1]].edge_angle_prop_maxangle);
+		punif = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_uniform + cells[edges[e].cells[1]].edge_angle_prop_uniform);
+
+	}else{
+		if(cells[edges[e].cells[0]].vary_line_tension){
+			cellvar = edges[e].cells[0];
+			cellconst = edges[e].cells[1];
+		}else{
+			cellvar = edges[e].cells[1];
+			cellconst = edges[e].cells[0];
+		}
+		mins = cells[cellvar].edge_spatialmin_tension;
+		maxs = cells[cellvar].edge_spatialmax_tension;
+		maxangle = cells[cellvar].edge_maxangle;
+		tensionext = cells[cellvar].edge_tension_external;
+
+		pex = 0.5*cells[cellvar].edge_angle_prop_external;
+		pmaxan = 0.5*cells[cellvar].edge_angle_prop_maxangle;
+		punif = 0.5*(cells[cellvar].edge_angle_prop_uniform + 1.0);
+	}
+
+	maxangle *= M_PI/180;
+	angle = atan2(vertices[edges[e].vertices[1]].y - vertices[edges[e].vertices[0]].y, vertices[edges[e].vertices[1]].x - vertices[edges[e].vertices[0]].x);
+	angle = abs(sin(0.5*M_PI + abs(angle - maxangle))); //Point of sin wave
+	angle = mins + angle*(maxs - mins);  //Value of tension at this point of sin wave
+	
+	//Now integrate with other factors influencing tension
+	edges[e].tension = (punif*edges[e].tension + pmaxan*angle + pex*tensionext)/(punif + pmaxan + pex);
+	//cout << "maxt: " << maxs << ", mint: " << mins <<", tension: " << edges[e].tension << ", angle: " << 180*atan2(vertices[edges[e].vertices[1]].y - vertices[edges[e].vertices[0]].y, vertices[edges[e].vertices[1]].x - vertices[edges[e].vertices[0]].x)/M_PI << endl;
+}
+
 /*
 Adds a cell index to the vector of cells in a vertex structure
 Input: 
@@ -841,7 +931,11 @@ void Tissue::moveVertex(Vertex& v, float x, float y){
 	//Length of edge in index v.edges[i] is updated
 	//Distance function is called with indexes of vertices touching edge (edge.vertices[0] and edge.vertices[1], where edge is edges[ v.edges[i] ])
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){ 
-		if(v.edges[i] != EMPTY_CONNECTION) this->edges[v.edges[i]].length = distance(this->edges[v.edges[i]].vertices[0], this->edges[v.edges[i]].vertices[1]);
+		if(v.edges[i] != EMPTY_CONNECTION){
+			this->edges[v.edges[i]].length = distance(this->edges[v.edges[i]].vertices[0], this->edges[v.edges[i]].vertices[1]);
+			setEdgeType(v.edges[i]);
+			setEdgeTension(v.edges[i]);
+		}
 	}
 	if(v.spring != EMPTY_CONNECTION) this->springs[v.spring].length = distance(this->springs[v.spring].vertices[0], this->springs[v.spring].vertices[1]);
 	// Loop to re-calculate Cell areas
@@ -926,12 +1020,15 @@ bool Tissue::tryMoveVertex(std::default_random_engine& generator, std::uniform_r
 	
 }
 
+inline double Tissue::expAdvance(double x, float exponent){
+	return exponent > 0 ? (1 - exp(-pow(x, exponent)))/EXP_FACTOR : ((1 - exp(-pow(x, exponent))) - EXP_FACTOR)/(1  - EXP_FACTOR);
+}
 
 void Tissue::advanceSizeWithXcoordAndTime(int vertex_moved){
 	int caux;
 	double auxprint;
 	double time_factor = static_cast<double>(counter_moves_accepted)/max_accepted_movements;
-	time_factor = (1 - exp(-pow(time_factor, time_decrease_exponent)))/EXP_FACTOR;
+	time_factor = expAdvance(time_factor, time_decrease_exponent);//(1 - exp(-pow(time_factor, time_decrease_exponent)))/EXP_FACTOR;
 	float pos_factor = 0, aux_area;
 
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
@@ -944,14 +1041,15 @@ void Tissue::advanceSizeWithXcoordAndTime(int vertex_moved){
 			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
 			pos_factor = pos_factor < 0 ? 0 : pos_factor/(hinge_max_xpos - hinge_min_xpos);
 			aux_area = preferred_area_initial[CellType::vein_blade] + (preferred_area_final[CellType::vein_blade] - preferred_area_initial[CellType::vein_blade]) * time_factor;
-			cells[caux].preferred_area += (aux_area - cells[caux].preferred_area)*(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
+			cells[caux].preferred_area += (aux_area - cells[caux].preferred_area)*expAdvance(pos_factor, xcoord_decrease_exponent); //(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
 			//cout << "HingeVein-Cell="<< caux << "; time= "<<counter_moves_accepted<<"; Type=" << static_cast<int>(cells[caux].type) << "; pos factor=" << pos_factor << "; time factor=" << time_factor << "; Init_area=" << preferred_area_initial[cells[caux].type]<< "; Final_area=" << preferred_area_final[cells[caux].type] << "; Init area in blade vein= " << preferred_area_initial[CellType::vein_blade] << "; Final area in blade vein= " << preferred_area_final[CellType::vein_blade] << "; aux_area(for vein_blade)=" << aux_area << "; pref_area (only time)" << auxprint << "; pref_area=" << cells[caux].preferred_area << endl;
 		}else if(cells[caux].type == CellType::hinge){
 			calculateCellCentroid(cells[caux]);
 			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
 			pos_factor = pos_factor < 0 ? 0 : pos_factor/(hinge_max_xpos - hinge_min_xpos);
 			aux_area = preferred_area_initial[CellType::blade] + (preferred_area_final[CellType::blade] - preferred_area_initial[CellType::blade]) * time_factor;
-			cells[caux].preferred_area += (aux_area - cells[caux].preferred_area)*(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
+			cells[caux].preferred_area += (aux_area - cells[caux].preferred_area)*expAdvance(pos_factor, xcoord_decrease_exponent);//(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
+			
 			//cout << "Hinge-Cell="<<caux << "; time= "<<counter_moves_accepted<<"; Type=" << static_cast<int>(cells[caux].type) << "; pos factor=" << pos_factor << "; time factor=" << time_factor << "; Init_area=" << preferred_area_initial[cells[caux].type]<< "; Final_area=" << preferred_area_final[cells[caux].type] << "; Init area in blade = " << preferred_area_initial[CellType::blade] << "; Final area in blade vein= " << preferred_area_final[CellType::blade] << "; aux_area(for blade)=" << aux_area << "; pref_area (only time)" << auxprint << "; pref_area=" << cells[caux].preferred_area << endl;
 		}else{
 			//cout << "BladeOrBladeVein-Cell="<<caux << "; time= "<<counter_moves_accepted<<"; Type=" << static_cast<int>(cells[caux].type) << "; pos factor=" << pos_factor << "; time factor=" << time_factor << "; Init_area=" << preferred_area_initial[cells[caux].type]<< "; Final_area=" << preferred_area_final[cells[caux].type] << "; pref_area=" << cells[caux].preferred_area;
@@ -975,7 +1073,7 @@ void Tissue::advanceSizeWithXcoord(int vertex_moved){
 			calculateCellCentroid(cells[caux]);
 			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
 			pos_factor = pos_factor < 0 ? 0 : pos_factor/(hinge_max_xpos - hinge_min_xpos);
-			cells[caux].preferred_area = preferred_area_initial[CellType::vein_hinge] + (preferred_area_initial[CellType::vein_blade] - preferred_area_initial[CellType::vein_hinge])*(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
+			cells[caux].preferred_area = preferred_area_initial[CellType::vein_hinge] + (preferred_area_initial[CellType::vein_blade] - preferred_area_initial[CellType::vein_hinge])*expAdvance(pos_factor, xcoord_decrease_exponent);//(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
 			if(keep_area_after_division){
 				cells[caux].preferred_area /= pow(2, cells[caux].num_divisions);
 			}
@@ -984,7 +1082,7 @@ void Tissue::advanceSizeWithXcoord(int vertex_moved){
 			calculateCellCentroid(cells[caux]);
 			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
 			pos_factor = pos_factor < 0 ? 0 : pos_factor/(hinge_max_xpos - hinge_min_xpos);
-			cells[caux].preferred_area = preferred_area_initial[CellType::hinge] + (preferred_area_initial[CellType::blade] - preferred_area_initial[CellType::hinge])*(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
+			cells[caux].preferred_area = preferred_area_initial[CellType::hinge] + (preferred_area_initial[CellType::blade] - preferred_area_initial[CellType::hinge])*expAdvance(pos_factor, xcoord_decrease_exponent);//(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
 			//cout << "Hinge cell: " << " x abs = " << cells[caux].centroid_x << ", x rel = " << pos_factor << ", pref area = " << cells[caux].preferred_area << endl;
 			if(keep_area_after_division){
 				cells[caux].preferred_area /= pow(2, cells[caux].num_divisions);
@@ -1011,7 +1109,7 @@ void Tissue::advanceCellCycle(int vertex_moved){
 void Tissue::advanceSizeWithTime(int vertex_moved){
 	int caux;
 	double time_factor = static_cast<double>(counter_moves_accepted)/max_accepted_movements;
-	time_factor = (1 - exp(-pow(time_factor, time_decrease_exponent)))/EXP_FACTOR;
+	time_factor = expAdvance(time_factor, time_decrease_exponent);//(1 - exp(-pow(time_factor, time_decrease_exponent)))/EXP_FACTOR;
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
 		caux = vertices[vertex_moved].cells[i];
 		if(caux == EMPTY_CONNECTION) continue;
@@ -1030,7 +1128,7 @@ void Tissue::produceOutputs(std::string add_to_name){
 	writeCellsFile(fname);
 	writePointsFile(fname);
 	if(num_springs > 0) writeSpringsFile(fname);
-	//writeAllData(fname); //THIS IS USEFUL TO DEBUG, BUT THE FORMAT IS NOT READ BY PLOTTING PROGRAM
+	writeAllData(fname); //THIS IS USEFUL TO DEBUG, BUT THE FORMAT IS NOT READ BY PLOTTING PROGRAM
 	writeCellDataTable(fname);
 	std::cout << getStats() << endl;
 }
@@ -1241,30 +1339,7 @@ void Tissue::make_t1_at_border_inwards(Rearrangement& r){
 	//cout << "K\n";
 	//10) Change edge tension and type
 	setEdgeType(edge);
-	/*if(sp1->type == CellType::vein_blade){
-		if(sp2->type == CellType::blade){
-			edges[edge].type = EdgeType::vein_blade;
-			edges[edge].tension = line_tension[CellType::vein_blade];
-		}else{
-			edges[edge].type = EdgeType::vein_hinge;
-			edges[edge].tension = line_tension[CellType::vein_hinge];
-		}
-	}else if(sp2->type == CellType::vein_blade ){
-		if(sp1->type == CellType::blade){
-			edges[edge].type = EdgeType::vein_blade;
-			edges[edge].tension = line_tension[CellType::vein_blade];;
-		}else{
-			edges[edge].type = EdgeType::vein_hinge;
-			edges[edge].tension = line_tension[CellType::vein_hinge];;
-		}
-	}else if(sp1->type == CellType::hinge || sp2->type == CellType::hinge){ //No special tension for hinge-blade separation; hinge tension used
-		edges[edge].type = EdgeType::hinge;
-		edges[edge].tension = line_tension[CellType::hinge];;		
-	}else{
-		edges[edge].type = EdgeType::blade;
-		edges[edge].tension = line_tension[CellType::blade];;
-	}*/
-
+	setEdgeTension(edge);
 	//cout << "L\n";
 
 	this->counter_t1_inwards++;
@@ -1437,6 +1512,7 @@ void Tissue::make_divide_cell(Rearrangement& r){
 	//edges[newe].tension = edges[e1].type == EdgeType::tissue_boundary? edges[e2].tension : edges[e1].tension;//make this more sophisticated to take into account veins etc.
 	//edges[newe].type = edges[e1].type == EdgeType::tissue_boundary? edges[e2].type : edges[e1].type; //make this more sophisticated to take into account veins etc.
 	setEdgeType(newe);
+	setEdgeTension(newe);
 
 	cells[cell].edges[which(EMPTY_CONNECTION, cells[cell].edges, MAX_SIDES_PER_CELL)] = newe;
 	cells[newcind].edges[which(EMPTY_CONNECTION, cells[newcind].edges, MAX_SIDES_PER_CELL)] = newe;
@@ -1515,6 +1591,15 @@ void Tissue::make_divide_cell(Rearrangement& r){
 	cells[newcind].division_angle_longest = cells[cell].division_angle_longest;
 	cells[newcind].division_angle_external = cells[cell].division_angle_external;
 	cells[newcind].division_angle_external_degrees = cells[cell].division_angle_external_degrees;
+
+	cells[newcind].vary_line_tension = cells[cell].vary_line_tension;
+	cells[newcind].edge_angle_prop_external =  cells[cell].edge_angle_prop_external;
+	cells[newcind].edge_angle_prop_uniform =  cells[cell].edge_angle_prop_uniform;
+	cells[newcind].edge_angle_prop_maxangle =  cells[cell].edge_angle_prop_maxangle;
+	cells[newcind].edge_tension_external =  cells[cell].edge_tension_external;
+	cells[newcind].edge_maxangle =  cells[cell].edge_maxangle;
+	cells[newcind].edge_spatialmax_tension =  cells[cell].edge_spatialmax_tension;
+	cells[newcind].edge_spatialmin_tension =  cells[cell].edge_spatialmin_tension;
 
 	cells[newcind].area = calculateCellArea(cells[newcind]);
 	cells[newcind].perimeter = calculateCellPerimeter(cells[newcind]);
@@ -1695,7 +1780,7 @@ void Tissue::splitEdgeWithVertex(int e, int cell, int  v){
 	edges[e2ind].vertices[1] = n2;
 	edges[e2ind].cells[0] = edges[e].cells[0];
 	edges[e2ind].cells[1] = edges[e].cells[1];
-	edges[e2ind].tension = edges[e].tension;
+	edges[e2ind].tension = edges[e].tension; //This holds true because both edges will have the same angle
 	edges[e2ind].type = edges[e].type;	
 	edges[e].length = distance(v, n1);
 	edges[e2ind].length = distance(v, n2);
@@ -1816,12 +1901,14 @@ void Tissue::make_t1(Rearrangement& r){
 	t1_add_vertices_to_cells(v1, v2, sp2, remove_from_v2);
 	t1_add_vertices_to_cells(v2, v1, sp1, remove_from_v1);
 
-	//8)Update edge lengths and areas.
+	//8)Update edge lengths, areas and tension.
 	t1_update_sizes(v1, v2, edge);
 
 	//9) Update cells in edge
 	edges[edge].cells[0] = sp1->ind;
 	edges[edge].cells[1] = sp2->ind;
+
+	setEdgeTension(edge); //Tension depends on angle and on values of neighboring cells
 	this->counter_t1++;
 
 	cout << ">T1 transition: v1=" << v1->ind << "; v2=" << v2->ind << "; mov. accepted=" << this->counter_moves_accepted << "; T1=" << counter_t1 << "; T1 abortions=" << counter_t1_abortions << "; centroid_x=" << 0.5*(v1->x + v2->x)  << "; centroid_y=" << 0.5*(v1->y + v2->y)<< "; edge type=" << static_cast<int>(edges[edge].type) << endl;
@@ -1838,8 +1925,14 @@ void Tissue::make_t1(Rearrangement& r){
 void Tissue::t1_update_sizes(Vertex* v1, Vertex* v2, int edge){
 
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
-		if(v1->edges[i] != edge && v1->edges[i] != EMPTY_CONNECTION) this->edges[v1->edges[i]].length = distance(this->edges[v1->edges[i]].vertices[0], this->edges[v1->edges[i]].vertices[1]);
-		if(v2->edges[i] != edge && v2->edges[i] != EMPTY_CONNECTION) this->edges[v2->edges[i]].length = distance(this->edges[v2->edges[i]].vertices[0], this->edges[v2->edges[i]].vertices[1]);	
+		if(v1->edges[i] != edge && v1->edges[i] != EMPTY_CONNECTION){
+			this->edges[v1->edges[i]].length = distance(this->edges[v1->edges[i]].vertices[0], this->edges[v1->edges[i]].vertices[1]);
+			setEdgeTension(v1->edges[i]);
+		}
+		if(v2->edges[i] != edge && v2->edges[i] != EMPTY_CONNECTION){
+			this->edges[v2->edges[i]].length = distance(this->edges[v2->edges[i]].vertices[0], this->edges[v2->edges[i]].vertices[1]);
+			setEdgeTension(v2->edges[i]);
+		}	
 	}
 
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){
@@ -2466,6 +2559,10 @@ void Tissue::make_t2(Rearrangement& r){
 		dead_vertices.push(static_v);
 	}
 	//cout << "J\n";
+
+	for(int  i = 0; i < CELLS_PER_VERTEX;i++){
+		if(vertices[v1].edges[i] != EMPTY_CONNECTION) setEdgeTension(vertices[v1].edges[i]);
+	}
 	this->num_cells--;
 	this->num_vertices-=2;
 	this->num_edges-=3;
@@ -2956,7 +3053,7 @@ void Tissue::writeAllData(std::string fname){ //Writes tables with all data (inc
 
 void Tissue::writeCellDataTable(std::string fname){
 	ofstream of;
-	of.open(fname + ".out");
+	of.open(fname + ".celltab");
 	of << CELL_HEADER;
 	for(Cell c : cells){
 		if(!c.dead) of << c << "\n";

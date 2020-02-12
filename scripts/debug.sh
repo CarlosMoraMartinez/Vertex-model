@@ -1,8 +1,17 @@
-cp src/VertexSystem.cpp src/VertexSystem.h src/vertex_cmm.cpp src/plotOps_loop.py 'param_files/'$2'.vp' $1
-cd $1
 
+#ARGS:
+#1: initial conditions name
+#2: name of param file (without .vp)
+#3: Total number of accepted moves
+#4: Write output every N accepted moves
+
+###
+
+mkdir $1
+cp src/VertexSystem.cpp src/VertexSystem.h src/vertex_cmm.cpp src/plotOps_loop.py 'param_files/'$2'.vp' $1
+
+cd $1
 g++ -ggdb -std=c++11 -c VertexSystem.cpp
 g++ -ggdb -std=c++11 -c vertex_cmm.cpp
 g++ -o vertex vertex_cmm.o VertexSystem.o
-gdb --args vertex $1 $2 $3 $4 #winglike2_s3.25_20x20_n0.4 100000000 1000000
-
+gdb --args vertex $1 $2 $3 $4 #>$1'.log' 

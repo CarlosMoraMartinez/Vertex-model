@@ -780,6 +780,7 @@ def getArgDict(args):
         argdict.setdefault('Hinge', args.Hinge)
         argdict.setdefault('Veins', args.Veins)
         argdict.setdefault('Outname', args.Outname + '_s'+str(args.Size) + '_' + str(args.Rows) + 'x' + str(args.Cols) + '_n' + str(args.Noise))
+        argdict.setdefault('Read', args.Read)
 
         print('size: ', args.Size, '; num. rows: ', args.Rows, '; num. cols: ', args.Cols, '; noise: ', args.Noise, '; strecht: ', args.Pull, '; output files: ', argdict['Outname'])
 
@@ -789,6 +790,8 @@ def getArgDict(args):
 parser = argparse.ArgumentParser(description='Hexagonal grid arguments.')
 parser.add_argument('-o', '--Outname', metavar='outname', type=str, default = "hexgrid", 
                                         help='Identifier. Used as prefix of all output files. ')
+parser.add_argument('-i', '--Read', metavar='Read', type=str, default = "", 
+                                        help='Identifier. Read hexagonal grid. ')
 parser.add_argument('-s', '--Size', metavar='size', type=float, default = size,
                                         help=' Hexagon size: distance between center and vertices. ')
 parser.add_argument('-r', '--Rows', metavar='rows', type=int, default = nrow,
