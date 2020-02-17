@@ -237,6 +237,10 @@ class Tissue{
 		int getCounterT1();
 		void emptyDivisions();
 
+		void addSpringsAutomatically();
+		bool AddSpringToVertex(int v, float minx, float maxx);
+		void readNewParameters(std::string filename);
+
 		std::vector<int> getNeighbourCells(int cell);
 		
 		friend std::ostream& operator<<(std::ostream& out, const Tissue& t); //Don't worry about these 4 lines, only important for output
@@ -260,6 +264,7 @@ class Tissue{
 		float energy_term1, energy_term2, energy_term3;
 		//float spring_constant;
                 spring_type_param spring_type_constants;
+                spring_type_param spring_type_min_positions;
 		cell_type_param perimeter_contract;
 
 		float t1_transition_critical_distance; 

@@ -230,6 +230,17 @@ void Tissue::set_default_simulation_params(){
 	edge_spatialmin_tension = vary_line_tension;
 	edge_temporal_angle_efect_max = vary_line_tension;
 	edge_temporal_angle_efect_min = vary_line_tension;
+
+	spring_type_min_positions.insert(pair<int, double>(0, 0.5));
+	spring_type_min_positions.insert(pair<int, double>(1, 0.5));
+	spring_type_min_positions.insert(pair<int, double>(2, 0.5));
+	spring_type_min_positions.insert(pair<int, double>(3, 0.5));
+}
+
+void Tissue::readNewParameters(std::string filename){
+	initialize_params(filename);
+	set_default_params();
+	setHingeMinAndMaxPositions();
 }
 
 double Tissue::read_real_par(std::vector<std::string>::iterator& it){
@@ -345,6 +356,8 @@ void Tissue::initialize_params(std::string params_file){
 	edge_spatialmin_tension = read_celltype_par(it, sz);
 	edge_temporal_angle_efect_max = read_celltype_par(it, sz);
 	edge_temporal_angle_efect_min = read_celltype_par(it, sz);
+
+	spring_type_min_positions = read_springtype_par(it, sz);
 }
 
 /*
@@ -3005,6 +3018,76 @@ std::vector<int> Tissue::getNeighbourCells(int cell){
 	}
 	return v;
 }
+
+
+
+void Tissue::addSpringsAutomatically(){
+	bool vertices_have_spring[num_vertices];
+	for(int i = 0; i < num_vertices; i++) vertices_have_spring[i] = false;
+	float minx=vertices[0].x;
+	float maxx=vertices[0].x;
+	for(int i = 1; i < num_vertices; i++){
+		minx = vertices[i].x < minx ? vertices[i].x : minx;
+		maxx = vertices[i].x > maxx ? vertices[i].x : maxx;
+	}
+
+	//cout << "min: " << minx << "max: " << maxx << endl;
+	Edge e;
+	for(int i = 0; i < num_edges; i++){
+		e = edges[i];
+		//cout << "a: edge " << e.ind << " of type: " << static_cast<int>(e.type) << endl;
+		if(e.type != EdgeType::tissue_boundary || e.dead) continue;
+		//cout << "b" << endl;
+		if(! vertices_have_spring[e.vertices[0]]) vertices_have_spring[e.vertices[0]] = AddSpringToVertex(e.vertices[0], minx, maxx);
+		//cout << "c" << endl;
+		if(! vertices_have_spring[e.vertices[1]]) vertices_have_spring[e.vertices[1]] = AddSpringToVertex(e.vertices[1], minx, maxx);	
+		//cout << "d" << endl;
+	}
+	//cout << "e" << endl;
+}
+
+bool Tissue::AddSpringToVertex(int v, float minx, float maxx){
+	//cout << "_A v: " << v << ", " << vertices[v].ind << endl;
+	float pos = (vertices[v].x - minx)/(maxx - minx);
+	bool thresholded = false;
+	for (auto const& minpos : spring_type_min_positions){
+		//cout << "A "<<minpos.first << " " << minpos.second << endl;
+		if(pos > minpos.second){
+			//cout << "B" << endl;
+			thresholded=true;
+		}else{
+			//cout << "C" << endl;
+			if(!thresholded) return false;
+			//cout << "D" << endl;
+			Edge e;
+			e.dead=false;
+			e.type = EdgeType::spring;
+			e.cells[0] = EMPTY_CONNECTION;
+			e.cells[1] = EMPTY_CONNECTION;
+			//cout << "E" << endl;
+			e.tension = spring_type_constants[minpos.first - 1];
+			e.length = 0;
+			//cout << "F" << endl;
+			e.ind = this->num_springs;
+			int vnew = newVertex(vertices[v].x, vertices[v].y);
+			//cout << "G" << endl;
+			vertices[vnew].movable = false;
+			vertices[vnew].spring = e.ind;
+			//cout << "H" << endl;
+			vertices[v].spring = e.ind;
+			e.vertices[0] = v;
+			e.vertices[1] = vnew;
+			//cout << "I" << endl;
+			this->springs.push_back(e);
+			this->num_springs++;
+			//cout << "J" << endl;
+			return true;
+
+		}
+	}
+}//AddSpringToVertex
+
+
 
 void Tissue::emptyDivisions(){
 	divisionrecord_q aux;

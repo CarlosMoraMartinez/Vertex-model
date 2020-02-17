@@ -230,6 +230,8 @@ parser.add_argument('-g', '--genes_to_plot_expression', metavar='gexpr', type=st
                     help='Plot grid with expression of all these genes. Integers separated by commas.')
 parser.add_argument('-t', '--plotCellTypes', metavar='plot_cell_types', type=bool, default = True, 
                     help='Color according to cell type or not')
+parser.add_argument('-l', '--FixedLimits', metavar='fixed_limits', type=bool, default = False, 
+                    help='Use max and min coordinates from first plot in all plots')
 
 
 def main():
@@ -238,7 +240,12 @@ def main():
     add_vnums = args.write_vertex_number
     color_expr = [int(i) for i in args.genes_to_plot_expression.split(',') if i != '']
     fig = None
-    for fnum in range(args.Start_index, args.End_index):
+    if(args.Start_index < args.End_index):
+        step = 1
+    else:
+        step = -1
+    limsSet = False
+    for fnum in range(args.Start_index, args.End_index, step):
         if(fnum >= 0):
             name = args.Inputname + str(fnum)
         else:
@@ -252,8 +259,10 @@ def main():
         # Plotting the final polygons
         ########################################################################################################################
         print("%d files read..."%fnum)
-        if(fnum == 0):
+        if(not args.FixedLimits or not limsSet):
             limits = getLimits(pointsList)
+            limsSet = True
+
         fig = plot_grid2(111, polygonList, pointsList, sprList, add_vnums, celltypes, [] ,name, limits)  
         if(len(color_expr) > 0 and args.Input_expr != ""):
             xprList = readExpr(args.Input_expr + str(fnum))
