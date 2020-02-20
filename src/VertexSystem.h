@@ -57,6 +57,8 @@ const double EXP_FACTOR = 1 - exp(-1); //Used when time or x position changes eq
 
 const std::string VERTEX_FILE_EXTENSION = ".points";
 const std::string CELLS_FILE_EXTENSION = ".cells";
+const std::string CELLTAB_FILE_EXTENSION = ".celltab";
+const std::string EDGE_FILE_EXTENSION = ".edges";
 const std::string SPRING_FILE_EXTENSION = ".spr";
 const std::string PARAMS_FILE_EXTENSION = ".vp";
 
@@ -88,7 +90,7 @@ const std::string EDGE_HEADER = "ind\ttype\tlength\ttension\tvertices\tcells\n";
 enum class CellType{blade = 0, hinge = 1, vein_blade = 2, vein_hinge = 3};
 
 //Enum class to define types of edges
-enum class EdgeType{blade = 0, hinge = 1, vein_hinge = 2, vein_blade = 3, tissue_boundary = 4, spring = 5, vein = 4};
+enum class EdgeType{blade = 0, hinge = 1, vein_hinge = 2, vein_blade = 3, tissue_boundary = 4, spring = 5, vein = 6};
 
 //Enum class to define types of transitions
 enum class RearrangementType{t1 = 0, t2 = 1, divide_cell = 2, divide_edge = 3, join_limit_edges = 4, t1_at_border_outwards = 5, t1_at_border_inwards = 6, rotate_inwards = 7};
@@ -229,6 +231,7 @@ class Tissue{
 
 		void writeCellsFile(std::string fname);
 		void writeCellDataTable(std::string fname);
+		void writeEdgeDataTable(std::string fname);
 		void writePointsFile(std::string fname);
 		void writeSpringsFile(std::string fname);
 		void writeAllData(std::string fname);
@@ -238,6 +241,7 @@ class Tissue{
 		void emptyDivisions();
 
 		void addSpringsAutomatically();
+		void setStaticVertex(int v);
 		bool AddSpringToVertex(int v, float minx, float maxx);
 		void readNewParameters(std::string filename);
 
@@ -251,7 +255,7 @@ class Tissue{
 	private:
 		std::string simname;
 		int num_cells, num_vertices, num_edges, num_springs;
-		double hinge_min_xpos, hinge_max_xpos;
+		double hinge_min_xpos, hinge_max_xpos, hinge_min_ypos, hinge_max_ypos;
 		bool step_mode; //If the simulation is controlled by an external source, set this to true in order to avoid excessive printing of outputs
 		//parameters
 		float min_range_vertex_movement; 
@@ -265,6 +269,7 @@ class Tissue{
 		//float spring_constant;
                 spring_type_param spring_type_constants;
                 spring_type_param spring_type_min_positions;
+		float add_static_to_hinge;
 		cell_type_param perimeter_contract;
 
 		float t1_transition_critical_distance; 

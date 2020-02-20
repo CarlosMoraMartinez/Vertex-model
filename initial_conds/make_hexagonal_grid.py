@@ -159,6 +159,7 @@ class HexGrid:
         return (self.centers, self.vertices, self.cells, self.springs, self.celltypes, self.outname)
 
     def loadData(self):
+        os.chdir(self.inputname)
         self.vnum, self.vertices = self.readPointsFile()
         #print("verts", self.vertices)
         self.cells, self.celltypes = self.readCellsFile()
@@ -166,6 +167,7 @@ class HexGrid:
         self.springs = self.readSprings()
         #print("sprs", self.springs)
         self.centers = self.readCenters()
+        os.chdir("../")
 
     def readPointsFile(self):
         pointsFile = open(self.inputname + ".points", "r")

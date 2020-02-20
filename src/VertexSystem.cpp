@@ -235,6 +235,7 @@ void Tissue::set_default_simulation_params(){
 	spring_type_min_positions.insert(pair<int, double>(1, 0.5));
 	spring_type_min_positions.insert(pair<int, double>(2, 0.5));
 	spring_type_min_positions.insert(pair<int, double>(3, 0.5));
+	add_static_to_hinge = -1;
 }
 
 void Tissue::readNewParameters(std::string filename){
@@ -358,6 +359,7 @@ void Tissue::initialize_params(std::string params_file){
 	edge_temporal_angle_efect_min = read_celltype_par(it, sz);
 
 	spring_type_min_positions = read_springtype_par(it, sz);
+	add_static_to_hinge = read_real_par(it);
 }
 
 /*
@@ -613,11 +615,17 @@ void Tissue::setEdgeType(int e){
 			edges[e].type = EdgeType::hinge;
 			edges[e].tension = 0.5*(line_tension[CellType::hinge] + line_tension[CellType::blade]);
 			edges[e].can_transition = false;
-		}else if((cells[c1].type == CellType::blade && cells[c2].type == CellType::vein_blade) || (cells[c2].type == CellType::blade && cells[c1].type == CellType::vein_blade)){ 
+		}else if((cells[c1].type == CellType::blade && cells[c2].type == CellType::vein_blade) || 
+			(cells[c2].type == CellType::blade && cells[c1].type == CellType::vein_blade) ||
+			(cells[c1].type == CellType::blade && cells[c2].type == CellType::vein_hinge) || 
+			(cells[c2].type == CellType::blade && cells[c1].type == CellType::vein_hinge) ){ 
 			edges[e].type = EdgeType::vein_blade;
 			edges[e].tension = line_tension[CellType::vein_blade];
 			edges[e].can_transition = true;//false; true
-		}else if((cells[c1].type == CellType::hinge && cells[c2].type == CellType::vein_hinge) || (cells[c2].type == CellType::hinge && cells[c1].type == CellType::vein_hinge)){ 
+		}else if((cells[c1].type == CellType::hinge && cells[c2].type == CellType::vein_hinge) ||
+			(cells[c2].type == CellType::hinge && cells[c1].type == CellType::vein_hinge) ||
+			(cells[c1].type == CellType::hinge && cells[c2].type == CellType::vein_blade) ||
+			(cells[c2].type == CellType::hinge && cells[c1].type == CellType::vein_blade)  ){ 
 			edges[e].type = EdgeType::vein_hinge;
 			edges[e].tension =  line_tension[CellType::vein_hinge];
 			edges[e].can_transition = true;//false; true
@@ -883,7 +891,7 @@ void Tissue::setStepMode(bool mode, int steps){
 
 void Tissue::setHingeMinAndMaxPositions(){
 	calculateCellCentroid(cells[0]);
-	double min, max;
+	double min, max, miny, maxy;
 	bool set = false;
 	for(Cell c: cells){
 		if(c.type == CellType::hinge || c.type == CellType::vein_hinge){
@@ -891,15 +899,21 @@ void Tissue::setHingeMinAndMaxPositions(){
 			if(set){
 				if(c.centroid_x < min) min = c.centroid_x;
 				else if(c.centroid_x > max) max = c.centroid_x;
+				if(c.centroid_y < miny) miny = c.centroid_y;
+				else if(c.centroid_y > maxy) maxy = c.centroid_y;
 			}else{
 				min = c.centroid_x;
 				max = c.centroid_x;
+				miny = c.centroid_y;
+				maxy = c.centroid_y;
 				set = true;
 			}
 		}	
 	}
 	hinge_min_xpos = min;
 	hinge_max_xpos = max;
+	hinge_min_ypos = miny;
+	hinge_max_ypos = maxy;
 	//cout << "Min hinge position: " << hinge_min_xpos << "; Max hinge position: " << hinge_max_xpos << endl;
 }
 
@@ -1182,8 +1196,9 @@ void Tissue::produceOutputs(std::string add_to_name){
 	std:string fname = simname + "_" + add_to_name + "_" + std::to_string(int(counter_moves_accepted / write_every_N_moves));
 	writeCellsFile(fname);
 	writePointsFile(fname);
+	writeEdgeDataTable(fname);
 	if(num_springs > 0) writeSpringsFile(fname);
-	writeAllData(fname); //THIS IS USEFUL TO DEBUG, BUT THE FORMAT IS NOT READ BY PLOTTING PROGRAM
+	//writeAllData(fname); //THIS IS USEFUL TO DEBUG, BUT THE FORMAT IS NOT READ BY PLOTTING PROGRAM
 	writeCellDataTable(fname);
 	std::cout << getStats() << endl;
 }
@@ -3029,62 +3044,51 @@ void Tissue::addSpringsAutomatically(){
 	for(int i = 1; i < num_vertices; i++){
 		minx = vertices[i].x < minx ? vertices[i].x : minx;
 		maxx = vertices[i].x > maxx ? vertices[i].x : maxx;
-	}
+	}//min and max of the whole wing
+	setHingeMinAndMaxPositions(); //min and max of hinge
 
-	//cout << "min: " << minx << "max: " << maxx << endl;
 	Edge e;
 	for(int i = 0; i < num_edges; i++){
 		e = edges[i];
-		//cout << "a: edge " << e.ind << " of type: " << static_cast<int>(e.type) << endl;
 		if(e.type != EdgeType::tissue_boundary || e.dead) continue;
-		//cout << "b" << endl;
 		if(! vertices_have_spring[e.vertices[0]]) vertices_have_spring[e.vertices[0]] = AddSpringToVertex(e.vertices[0], minx, maxx);
-		//cout << "c" << endl;
-		if(! vertices_have_spring[e.vertices[1]]) vertices_have_spring[e.vertices[1]] = AddSpringToVertex(e.vertices[1], minx, maxx);	
-		//cout << "d" << endl;
+		if(! vertices_have_spring[e.vertices[1]]) vertices_have_spring[e.vertices[1]] = AddSpringToVertex(e.vertices[1], minx, maxx);
+		if(! vertices_have_spring[e.vertices[0]] && vertices[e.vertices[0]].movable) setStaticVertex(e.vertices[0]);	
+		if(! vertices_have_spring[e.vertices[1]] && vertices[e.vertices[0]].movable) setStaticVertex(e.vertices[1]);	
 	}
-	//cout << "e" << endl;
+}
+
+void Tissue::setStaticVertex(int v){
+	float xprop = (vertices[v].x - hinge_min_xpos)/(hinge_max_xpos - hinge_min_xpos);
+	float yprop = (vertices[v].y - hinge_min_ypos)/(hinge_max_ypos - hinge_min_ypos);
+	if(yprop > 0.5 && xprop < add_static_to_hinge) vertices[v].movable = false; //Assumes that blade is always to the right of hinge  
+
 }
 
 bool Tissue::AddSpringToVertex(int v, float minx, float maxx){
-	//cout << "_A v: " << v << ", " << vertices[v].ind << endl;
 	float pos = (vertices[v].x - minx)/(maxx - minx);
-	bool thresholded = false;
-	for (auto const& minpos : spring_type_min_positions){
-		//cout << "A "<<minpos.first << " " << minpos.second << endl;
-		if(pos > minpos.second){
-			//cout << "B" << endl;
-			thresholded=true;
-		}else{
-			//cout << "C" << endl;
-			if(!thresholded) return false;
-			//cout << "D" << endl;
+	for (auto minpos = spring_type_min_positions.rbegin(); minpos != spring_type_min_positions.rend(); ++minpos){
+		if(pos > minpos->second){
 			Edge e;
 			e.dead=false;
 			e.type = EdgeType::spring;
 			e.cells[0] = EMPTY_CONNECTION;
 			e.cells[1] = EMPTY_CONNECTION;
-			//cout << "E" << endl;
-			e.tension = spring_type_constants[minpos.first - 1];
+			e.tension = spring_type_constants[minpos->first];
 			e.length = 0;
-			//cout << "F" << endl;
 			e.ind = this->num_springs;
 			int vnew = newVertex(vertices[v].x, vertices[v].y);
-			//cout << "G" << endl;
 			vertices[vnew].movable = false;
 			vertices[vnew].spring = e.ind;
-			//cout << "H" << endl;
 			vertices[v].spring = e.ind;
 			e.vertices[0] = v;
 			e.vertices[1] = vnew;
-			//cout << "I" << endl;
 			this->springs.push_back(e);
 			this->num_springs++;
-			//cout << "J" << endl;
 			return true;
-
 		}
 	}
+	return false;
 }//AddSpringToVertex
 
 
@@ -3096,18 +3100,18 @@ void Tissue::emptyDivisions(){
 
 std::string Tissue::getStats(){
 	std::string s = "";
-	s += "Move trials: " + std::to_string(counter_move_trials) + "\n";
-	s += ", Moves accepted: " + std::to_string(counter_moves_accepted) + "\n";
-	s += ", prop. accepted: " + std::to_string(counter_moves_accepted/float(counter_move_trials)) + "\n";
-	s += "Prop. Positive E accepted: " + std::to_string(counter_unfav_accepted/float(counter_unfav_accepted + counter_unfav_rejected)) + "\n";	
-	s += "Prop. Negative E accepted: " + std::to_string(counter_favorable_accepted/float(counter_favorable_accepted + counter_favorable_rejected)) + "\n";	
-	s += ", T1 accepted: " + std::to_string(counter_t1) + "\n";
-	s += ", T1 rejected: "  + std::to_string(counter_t1_abortions) + "\n";
-	s += ", T1 margin outwards: "  + std::to_string(counter_t1_outwards) + "\n";
-	s += ", T1 margin inwards: "  + std::to_string(counter_t1_inwards) + "\n";
-	s += ", T2: "  + std::to_string(counter_t2) + "\n";
-	s += ", Edges removed: " + std::to_string(counter_edges_removed) + "\n";
-	s += ", Divisions: "  + std::to_string(counter_divisions) + "\n";
+	s += "Move trials: " + std::to_string(counter_move_trials) + ", \n";
+	s += "Moves accepted: " + std::to_string(counter_moves_accepted) + ", \n";
+	s += "prop. accepted: " + std::to_string(counter_moves_accepted/float(counter_move_trials)) + ", \n";
+	s += "Prop. Positive E accepted: " + std::to_string(counter_unfav_accepted/float(counter_unfav_accepted + counter_unfav_rejected)) + ", \n";	
+	s += "Prop. Negative E accepted: " + std::to_string(counter_favorable_accepted/float(counter_favorable_accepted + counter_favorable_rejected)) + ", \n";	
+	s += "T1 accepted: " + std::to_string(counter_t1) + ", \n";
+	s += "T1 rejected: "  + std::to_string(counter_t1_abortions) + ", \n";
+	s += "T1 margin outwards: "  + std::to_string(counter_t1_outwards) + ", \n";
+	s += "T1 margin inwards: "  + std::to_string(counter_t1_inwards) + ", \n";
+	s += "T2: "  + std::to_string(counter_t2) + ", \n";
+	s += "Edges removed: " + std::to_string(counter_edges_removed) + ", \n";
+	s += "Divisions: "  + std::to_string(counter_divisions) + "\n";
 	return s;
 }
 
@@ -3178,7 +3182,7 @@ void Tissue::writeAllData(std::string fname){ //Writes tables with all data (inc
 
 void Tissue::writeCellDataTable(std::string fname){
 	ofstream of;
-	of.open(fname + ".celltab");
+	of.open(fname + CELLTAB_FILE_EXTENSION);
 	of << CELL_HEADER;
 	for(Cell c : cells){
 		if(!c.dead) of << c << "\n";
@@ -3186,6 +3190,15 @@ void Tissue::writeCellDataTable(std::string fname){
 	of.close();
 }
 
+void Tissue::writeEdgeDataTable(std::string fname){
+	ofstream of;
+	of.open(fname + EDGE_FILE_EXTENSION);
+	of << EDGE_HEADER;
+	for(Edge e : edges){
+		if(!e.dead) of << e << "\n";
+	}
+	of.close();
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 //What follows is only useful to print easily, not part of the model
