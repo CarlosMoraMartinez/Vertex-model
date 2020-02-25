@@ -39,6 +39,7 @@ class TournamentPopulation:
         self.individuals = self.init_pop(startingOrg)
         self.fitness = np.zeros(self.num_genes)
         self.current = 0
+        print([i.ind for i in self.individuals])
     def __getitem__(self, i):
         return self.individuals[i]
     def __iter__(self):
@@ -51,15 +52,16 @@ class TournamentPopulation:
             return ind
         else:
             raise StopIteration()
-    def init_pop(org):
+    def init_pop(self, org):
         chrom = org.chromosome
         orgs = []
         for i in range(self.N):
             new_chromosome = np.array(chrom, copy=True)
-            for i in range(self.num_genes):
-                if(not self.organism_class.mask[i]):
-                    new_chromosome[i] += new_chromosome[i]*np.random.uniform(low=-1*self.mutation_rate, high=self.mutation_rate) 
-            orgs.append(self.organism_class(new_chromosome))
+            for j in range(self.num_genes):
+                if(not self.organism_class.mask[j]):
+                    new_chromosome[j] += new_chromosome[j]*np.random.uniform(low=-1*self.mutation_rate, high=self.mutation_rate) 
+            orgs.append(self.organism_class(new_chromosome, '-'.join(['0', str(i)])))
+        return orgs
     def tournamentSelection(self):        
         """
         Tournament selection algorithm
@@ -70,10 +72,10 @@ class TournamentPopulation:
         self.fitness = np.zeros(self.num_genes)
         mean_fitness = [np.mean(self.fitness)]
 
-        for gen in range(self.max_generations):
+        for gen in range(1, self.max_generations + 1):
             self.fitness = self.simulator.par_simulate(self.individuals)  ## This step can be easily parallelized with multiprocessing library
             self.generation += 1 #needs to be before self.getNewIndividual 
-            self.individuals = getNewIndividuals() 
+            self.individuals = self.getNewIndividuals() 
             mean_fitness.append(np.mean(self.fitness))
             if(self.generation %1000 == 0):
                 print(self.generation, ': ', mean_fitness[-1])
@@ -87,7 +89,7 @@ class TournamentPopulation:
             parent_index1 = participants[np.argmax(self.fitness[participants])] #The best one will be parent 1
             participants = np.random.choice(range(self.N), self.K, replace = False) #The same for parent 2
             parent_index2 = participants[np.argmax(self.fitness[participants])]
-            new_ind = self.combine2individuals(self[parent_index1], self[parent_index2], i)
+            new_ind = self.combine2individuals(self[parent_index1].chromosome, self[parent_index2].chromosome, i)
             next_gen.append(new_ind) #Mix individuals
         return np.array(next_gen)
     def combine2individuals(self, org1, org2, ind=0):
@@ -96,7 +98,7 @@ class TournamentPopulation:
         for i in range(len(new_chromosome)):
             if(not self.organism_class.mask[i]):
                 new_chromosome[i] += new_chromosome[i]*np.random.uniform(low=-1*self.mutation_rate, high=self.mutation_rate) 
-        return self.organism_class(np.array(new_chromosome), '_'.join(self.generation, ind))
+        return self.organism_class(np.array(new_chromosome), '-'.join([str(self.generation), str(ind)]))
 
 
 
@@ -119,7 +121,7 @@ parser.add_argument('-k', '--K', metavar='K', type=int, default = 7,
                     help='K parameter for tournament selection (recommended: 40 for N = 100)')
 parser.add_argument('-x', '--MaxGen', metavar='x', type=int, default = 100, 
                     help='Max number of generations')
-parser.add_argument('-e', '--Error', metavar='e', type=float, default = 100, 
+parser.add_argument('-e', '--Error', metavar='e', type=float, default = 0.01, 
                     help='Minimal error threshold')
 parser.add_argument('-c', '--Cores', metavar='cores', type=int, default = 24, 
                     help='Number of cores used by multiprocessing')
@@ -156,7 +158,8 @@ def main():
 
     fitness_evaluator = WingFitnessEvaluator
     fitness_evaluator.setTargetShape(targetShapeFile) 
-    simulator = VertexSimulator(simname, ncores, starting_wing, fitness_evaluator, vertex_numsteps, vertex_writefreq)
+
+    simulator = VertexSimulator(simname, starting_wing, fitness_evaluator, ncores, vertex_numsteps, vertex_writefreq)
 
 
     pop = TournamentPopulation(organism_class = org_class, \

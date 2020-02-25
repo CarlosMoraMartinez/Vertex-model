@@ -3,6 +3,8 @@ import subprocess
 import multiprocessing
 from string import ascii_lowercase
 
+import numpy as np
+
 PARAM_EXT  ='.vp'
 COMMAND_BASE = "./vertex"
 
@@ -21,23 +23,31 @@ class VertexSimulator:
     def simulate_single(self, individual):
         paramfiles = self.printIndividualFiles(individual)
         command  = self.getCommandString(individual, paramfiles)
-        proc = os.system(command)
-        indfile = individual.ind + '_' + str(int(self.nsteps/self.write_frequency)
-        ind_fitness = self.fitness_evaluator_class.getFitness(indfile)
+        print("COMMAND: ", command)
+        try:
+            proc = os.system(command)
+            indfile = individual.ind + '_moved_' + str(2*int(self.nsteps/self.write_frequency))
+            ind_fitness = self.fitness_evaluator_class.getFitness(indfile)
+        except:
+            ind_fitness = 0
         return ind_fitness
 
     def printIndividualFiles(self, individual):
         pl = individual.paramlist
         filenames = []
         for i, pfile in enumerate(pl.keys()):
-            fname = '_'.join(self.basename, individual.ind, VertexSimulator.alphabet[i]) + PARAM_EXT
+            letter = pfile.strip(PARAM_EXT)[-1]
+            fname = '_'.join([self.basename, individual.ind, letter + PARAM_EXT]) #VertexSimulator.alphabet[i]])
+            print('OUT FNAME: ', fname)
             filenames.append(fname)
             outF = open(fname, "w")
-            outF.writelines(pl[pfile])
+            outF.writelines('\n'.join(pl[pfile]))
             outF.close()
-        return filenames
+        return [f.strip(PARAM_EXT) for f in filenames]
     def getCommandString(self, individual, paramfiles):
-        return ' '.join(COMMAND_BASE, self.initial_cond, paramfiles[0], str(self.nsteps), str(self.write_frequency), paramfiles[1], individual.ind)
+        paramfiles.sort() #Since they are hash keys, make sure then are in order
+        print(paramfiles)
+        return ' '.join([COMMAND_BASE, self.initial_cond, str(paramfiles[0]), str(self.nsteps), str(self.write_frequency), str(paramfiles[1]), str(individual.ind)])
 
 
 

@@ -95,16 +95,15 @@ class ParamModelFactory:
         s = '\n'.join([str(i) for i in self.params])
         return s
     def getParamClass(self):
-        def __init__(self, values=None, ind=0):
+        def __init__(self, values=None, ind='0'):
             """
             If no values, uses values from Model. Otherwise, values can be either a list of tuples or a numpy array            
             """
-
-            assert(len(values) == self.__class__.num_params)
             self.ind = ind
             if(values is None):
                 self._chromosome = np.array([p.value for p in self.__class__.model])  
             else:
+                assert(len(values) == self.__class__.num_params)
                 self._chromosome = values if(type(values) is np.ndarray) else np.array([p.value for p in values])  
         def __str__(self):
             s= self.ind + "\n".join(["*** FILE: " + f +  " ***\n" + '\n'.join(d) for f, d in zip(self.paramlist.keys(), self.paramlist.values())])
@@ -143,6 +142,8 @@ class ParamModelFactory:
                     plist.append(str(self._chromosome[p.array_index]))
                 else:
                     if(p.cell == 0):
+                        if(last_cell):
+                            plist.append(OUTPUT_CELLTYPE_END)
                         last_cell = True
                         plist.append(OUTPUT_CELLTYPE_BEGIN + p.name)
                         plist.append(str(p.cell) + CELLTYPE_SEP + str(self._chromosome[p.array_index]))
@@ -156,7 +157,7 @@ class ParamModelFactory:
 
 
 def main():
-    a=ParamModelFactory(['test2steps_1a.vp', 'test2steps_1b.vp'])
+    a=ParamModelFactory(['param_files/test2steps_1a.vp', 'param_files/test2steps_1b.vp'])
     b=a.getParamClass()
     binst = b(a.params)
     binst2 = b(np.random.rand(b.num_params))

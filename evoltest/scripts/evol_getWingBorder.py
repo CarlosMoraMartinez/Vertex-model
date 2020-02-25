@@ -86,9 +86,13 @@ class WingFitnessEvaluator:
         return p[['x', 'y']].loc[v].tolist()
     @staticmethod
     def errorFunc(p1, p2):
-        intersect = p1.intersection(p2)
-        union = p1.union(p2)
-        return intersect.area/union.area
+        try:
+            intersect = p1.intersection(p2)
+            union = p1.union(p2)
+            fitness = intersect.area/union.area
+        except:
+            fitness = 0
+        return fitness
 
 
 
