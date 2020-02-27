@@ -125,6 +125,7 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 	//No file with parameters, therefore use constants defined in VertexSystem.h.
 	//Also initializes cell area and vertex energy
 	set_default_params();
+	if(REPORT_OUT) cout << "parameters set to cells\n";
 	setHingeMinAndMaxPositions();
 }
 
@@ -388,6 +389,7 @@ void Tissue::initialize_vertices(std::ifstream& inp){
 		v.y = stod(s, &sz);
 		s = s.substr(sz);
 		v.ind = stoi(s, &sz);
+		cout << v.ind;
 		s = s.substr(sz);
 		v.movable = s.empty()? true : stoi(s);	
 		this->vertices.push_back(v);
@@ -976,8 +978,10 @@ void Tissue::moveVertex(Vertex& v, float x, float y){
 	for(int i = 0; i < CELLS_PER_VERTEX; i++){ 
 		if(v.edges[i] != EMPTY_CONNECTION){
 			this->edges[v.edges[i]].length = distance(this->edges[v.edges[i]].vertices[0], this->edges[v.edges[i]].vertices[1]);
-			setEdgeType(v.edges[i]);
-			if(UPDATE_EDGE_TENSION_EVERY_MOVE) setEdgeTension(v.edges[i]);
+			if(UPDATE_EDGE_TENSION_EVERY_MOVE){
+				setEdgeType(v.edges[i]);
+				setEdgeTension(v.edges[i]);
+			}
 		}
 	}
 	if(v.spring != EMPTY_CONNECTION) this->springs[v.spring].length = distance(this->springs[v.spring].vertices[0], this->springs[v.spring].vertices[1]);

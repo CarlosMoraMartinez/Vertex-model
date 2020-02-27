@@ -77,10 +77,10 @@ const bool TIME_CONTROLS_SIZE = false;
 const bool XCOORD_CONTROLS_SIZE = false;
 const bool STATIC_PRESENT = true;
 const int MOVE_TRIALS = 100;  //Times it tries to move a vertex before it quits because always makes edges to cross
-const bool UPDATE_EDGE_TENSION_EVERY_MOVE = false; //Update edge tension if tension is dependent on edge angle (if true, do it in every iteration, if false do it only in transitions and start)
+const bool UPDATE_EDGE_TENSION_EVERY_MOVE = true; //Update edge tension if tension is dependent on edge angle (if true, do it in every iteration, if false do it only in transitions and start)
 const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
-const bool REPORT_OUT = false;
+const bool REPORT_OUT = true;
 
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tcells\tedges\tneighbour_vertices\n";
 const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\tcentroid_x\tcentroid_y\tangle_longest\tangle_signal\tangle_random\tdegrees_signal\tmax_area\tcell_cycle_state\tcell_cycle_limit\tcan_divide\tnum_vertices\tvertices\tedges\tnum_divisions\n";
