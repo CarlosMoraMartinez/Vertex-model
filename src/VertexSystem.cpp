@@ -39,7 +39,7 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  in
 	fin_vertex.open(vertexfile);
 	initialize_vertices(fin_vertex);
 	fin_vertex.close();
-	cout << ".points file read...\n";
+	if(REPORT_OUT) cout << ".points file read...\n";
 
 	//Read file of cells (indicates vertices for each cell)
 	try{
@@ -47,7 +47,7 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  in
 		ifstream fin_cells(cellfile);
 		initialize_cells(fin_cells);
 		fin_cells.close();
-		cout << ".cells file read...\n";
+		if(REPORT_OUT) cout << ".cells file read...\n";
 	}catch(const char* msg){
 		exit(1);
 	}
@@ -60,20 +60,20 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  in
 		ifstream fin_springs(springsfile);
 		if(fin_springs.good()){
 			initialize_springs(fin_springs);
-			cout << ".spr file read...\n";
+			if(REPORT_OUT) cout << ".spr file read...\n";
 		}else{
 			num_springs = 0;
 		}
 		fin_springs.close();
 	}catch(const char* msg){
 		num_springs = 0;
-		cout << msg << endl;
-		cout << "No spring file\n";
+		if(REPORT_OUT) cout << msg << endl;
+		if(REPORT_OUT) cout << "No spring file\n";
 	}
 	//No file with parameters, therefore use constants defined in VertexSystem.h.
 	//Also initializes cell area and vertex energy
 	set_default_params();
-	cout << "parameters set to cells\n";
+	if(REPORT_OUT) cout << "parameters set to cells\n";
 	setHingeMinAndMaxPositions();
 }
 
@@ -92,7 +92,7 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 	fin_vertex.open(vertexfile);
 	initialize_vertices(fin_vertex);
 	fin_vertex.close();
-	cout << ".points file read...\n";
+	if(REPORT_OUT) cout << ".points file read...\n";
 
 	//Read file of cells (indicates vertices for each cell)
 	try{
@@ -100,7 +100,7 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 		ifstream fin_cells(cellfile);
 		initialize_cells(fin_cells);
 		fin_cells.close();
-		cout << ".cells file read...\n";
+		if(REPORT_OUT) cout << ".cells file read...\n";
 	}catch(const char* msg){
 		cout << msg << endl;
 		exit(1);
@@ -112,15 +112,15 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 		ifstream fin_springs(springsfile);
 		if(fin_springs.good()){
 			initialize_springs(fin_springs);
-			cout << ".spr file read...\n";
+			if(REPORT_OUT) cout << ".spr file read...\n";
 		}else{
 			num_springs = 0;
 		}
 		fin_springs.close();
 	}catch(const char* msg){
 		num_springs = 0;
-		cout << msg << endl;
-		cout << "No spring file\n";
+		if(REPORT_OUT) cout << msg << endl;
+		if(REPORT_OUT) cout << "No spring file\n";
 	}
 	//No file with parameters, therefore use constants defined in VertexSystem.h.
 	//Also initializes cell area and vertex energy
@@ -301,7 +301,7 @@ void Tissue::initialize_params(std::string params_file){
 	std::vector<std::string> inp;
 	std::string::size_type sz;
 
-	cout << "Reading .vp file...\n";
+	if(REPORT_OUT) cout << "Reading .vp file...\n";
 	while(getline(fin, line)) if(!(line.empty() || line.find_first_not_of(' ') == std::string::npos)) if(line.at(0) != '#') inp.push_back(line);
 	std::vector<std::string>::iterator it = inp.begin(); 
 
@@ -454,7 +454,7 @@ void Tissue::initialize_cells(std::ifstream& inp){
 	this->num_cells = stoi(s, &sz);//stoi(s.substr(0, split_ind));
 
 	if(stoi(s.substr(sz)) > MAX_SIDES_PER_CELL){
-		throw "Cell file has more vertices by cels than allowed by MAX_SIDES_PER_CELL constant";
+		throw "Cell file has more vertices by cell than allowed by MAX_SIDES_PER_CELL constant";
 	}
 	int vertex, vert_count;
 
@@ -643,30 +643,7 @@ void Tissue::setEdgeType(int e){
 			edges[e].can_transition = false;
 		}
 }
-/*
-	Remember cell fields:
-	float edge_angle_prop_external;
-	float edge_angle_prop_uniform;
-	float edge_angle_prop_maxangle;
-	float edge_tension_external;
-	float edge_maxangle;
-	float edge_spatialmax_tension;
-	float edge_spatialmin_tension;
 
-
-	vary_edge_tension_with_time = false;
-	vary_edge_tension_time_exponent = 0;
-	edge_angle_prop_external = vary_line_tension;
-	edge_angle_prop_uniform = vary_line_tension;
-	edge_angle_prop_maxangle = vary_line_tension;
-	edge_tension_external = vary_line_tension;
-	edge_maxangle = vary_line_tension;
-	edge_spatialmax_tension = vary_line_tension;
-	edge_spatialmin_tension = vary_line_tension;
-	edge_temporal_angle_efect_max = vary_line_tension;
-	edge_temporal_angle_efect_min = vary_line_tension;
-}
-*/
 void Tissue::setEdgeTension(int e){
 	if(edges[e].type == EdgeType::tissue_boundary) return;
 	if(! cells[edges[e].cells[0]].vary_line_tension && !cells[edges[e].cells[1]].vary_line_tension ) return;
@@ -1000,7 +977,7 @@ void Tissue::moveVertex(Vertex& v, float x, float y){
 		if(v.edges[i] != EMPTY_CONNECTION){
 			this->edges[v.edges[i]].length = distance(this->edges[v.edges[i]].vertices[0], this->edges[v.edges[i]].vertices[1]);
 			setEdgeType(v.edges[i]);
-			setEdgeTension(v.edges[i]);
+			if(UPDATE_EDGE_TENSION_EVERY_MOVE) setEdgeTension(v.edges[i]);
 		}
 	}
 	if(v.spring != EMPTY_CONNECTION) this->springs[v.spring].length = distance(this->springs[v.spring].vertices[0], this->springs[v.spring].vertices[1]);
@@ -1110,22 +1087,16 @@ void Tissue::advanceSizeWithXcoordAndTime(int vertex_moved){
 			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
 			pos_factor = pos_factor < 0 ? 0 : pos_factor/(hinge_max_xpos - hinge_min_xpos);
 			aux_area = preferred_area_initial[CellType::vein_blade] + (preferred_area_final[CellType::vein_blade] - preferred_area_initial[CellType::vein_blade]) * time_factor;
-			cells[caux].preferred_area += (aux_area - cells[caux].preferred_area)*expAdvance(pos_factor, xcoord_decrease_exponent); //(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
-			//cout << "HingeVein-Cell="<< caux << "; time= "<<counter_moves_accepted<<"; Type=" << static_cast<int>(cells[caux].type) << "; pos factor=" << pos_factor << "; time factor=" << time_factor << "; Init_area=" << preferred_area_initial[cells[caux].type]<< "; Final_area=" << preferred_area_final[cells[caux].type] << "; Init area in blade vein= " << preferred_area_initial[CellType::vein_blade] << "; Final area in blade vein= " << preferred_area_final[CellType::vein_blade] << "; aux_area(for vein_blade)=" << aux_area << "; pref_area (only time)" << auxprint << "; pref_area=" << cells[caux].preferred_area << endl;
+			cells[caux].preferred_area += (aux_area - cells[caux].preferred_area)*expAdvance(pos_factor, xcoord_decrease_exponent); 
 		}else if(cells[caux].type == CellType::hinge){
 			calculateCellCentroid(cells[caux]);
 			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
 			pos_factor = pos_factor < 0 ? 0 : pos_factor/(hinge_max_xpos - hinge_min_xpos);
 			aux_area = preferred_area_initial[CellType::blade] + (preferred_area_final[CellType::blade] - preferred_area_initial[CellType::blade]) * time_factor;
-			cells[caux].preferred_area += (aux_area - cells[caux].preferred_area)*expAdvance(pos_factor, xcoord_decrease_exponent);//(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
-			
-			//cout << "Hinge-Cell="<<caux << "; time= "<<counter_moves_accepted<<"; Type=" << static_cast<int>(cells[caux].type) << "; pos factor=" << pos_factor << "; time factor=" << time_factor << "; Init_area=" << preferred_area_initial[cells[caux].type]<< "; Final_area=" << preferred_area_final[cells[caux].type] << "; Init area in blade = " << preferred_area_initial[CellType::blade] << "; Final area in blade vein= " << preferred_area_final[CellType::blade] << "; aux_area(for blade)=" << aux_area << "; pref_area (only time)" << auxprint << "; pref_area=" << cells[caux].preferred_area << endl;
-		}else{
-			//cout << "BladeOrBladeVein-Cell="<<caux << "; time= "<<counter_moves_accepted<<"; Type=" << static_cast<int>(cells[caux].type) << "; pos factor=" << pos_factor << "; time factor=" << time_factor << "; Init_area=" << preferred_area_initial[cells[caux].type]<< "; Final_area=" << preferred_area_final[cells[caux].type] << "; pref_area=" << cells[caux].preferred_area;
+			cells[caux].preferred_area += (aux_area - cells[caux].preferred_area)*expAdvance(pos_factor, xcoord_decrease_exponent);
 		}
 		if(keep_area_after_division){
 			cells[caux].preferred_area /= pow(2, cells[caux].num_divisions);
-			//cout << "; Num divisions=" << cells[caux].num_divisions << "; pref. area After=" << cells[caux].preferred_area;
 		}
 		//cout << endl;
 	}
@@ -1200,7 +1171,7 @@ void Tissue::produceOutputs(std::string add_to_name){
 	if(num_springs > 0) writeSpringsFile(fname);
 	//writeAllData(fname); //THIS IS USEFUL TO DEBUG, BUT THE FORMAT IS NOT READ BY PLOTTING PROGRAM
 	writeCellDataTable(fname);
-	std::cout << getStats() << endl;
+	if(REPORT_OUT) std::cout << getStats() << endl;
 }
 
 void Tissue::simulate(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif){
@@ -1232,9 +1203,6 @@ void Tissue::detectChangesAfterMove(int vertex_moved){
 		Vertex* v2 = &vertices[ ee->vertices[1] ];
 		if(ee->length <= t1_transition_critical_distance && v1->movable && v2->movable && ee->can_transition){ //if length < critical distance
 			if(ee->cells[0] != EMPTY_CONNECTION && ee->cells[1] != EMPTY_CONNECTION){ //if the edge touches two cells, and there are 4 cells involved, then T1
-				//int empty_connections = 0;
-				//for(int j = 0; j < CELLS_PER_VERTEX; j++) if(v1->cells[j] == EMPTY_CONNECTION) empty_connections++;
-				//for(int j = 0; j < CELLS_PER_VERTEX; j++) if(v2->cells[j] == EMPTY_CONNECTION) empty_connections++;
 				int cellnum = 0;
 				for(int j = 0; j < CELLS_PER_VERTEX; j++) if(v1->cells[j] != EMPTY_CONNECTION) cellnum++;
 				for(int j = 0; j < CELLS_PER_VERTEX; j++) if(v2->cells[j] != EMPTY_CONNECTION && !contains(v2->cells[j], v1->cells, CELLS_PER_VERTEX)) cellnum++;
@@ -1719,10 +1687,6 @@ void Tissue::make_divide_cell(Rearrangement& r){
 
 bool Tissue::getDivisionPoints(const int cell, double &x1, double &x2, double &y1, double &y2, int &e1, int &e2){
 
-	/*Final angle = cell.division_angle_random_noise * rand() +
-			cell.division_angle_longest * (angle_of_longest_distance - 0.5*PI) + 
-			cell.division_angle_external * cell.division_angle_external_degrees; */
-			
 	float division_angle_longest;
 	float division_angle_external; 
 	float division_angle_external_degrees;
@@ -1733,7 +1697,6 @@ bool Tissue::getDivisionPoints(const int cell, double &x1, double &x2, double &y
 	for(int i = 0; i < cells[cell].num_vertices - 1; i++){
 		for(int j  = i + 1; j < cells[cell].num_vertices; j++){
 			dist = distance(cells[cell].vertices[i], cells[cell].vertices[j]);
-			//cout << "    Comparing: " << cells[cell].vertices[i] << " and " << cells[cell].vertices[j] << ". Dist: " << dist << ", Current max: " << max_dist << endl;
 			if(dist > max_dist){ // || max_dist < 0
 				max_dist = dist;
 				mv1 = cells[cell].vertices[i];
@@ -1750,7 +1713,6 @@ bool Tissue::getDivisionPoints(const int cell, double &x1, double &x2, double &y
 	calculateCellCentroid(cells[cell]);
 	double center_x = cells[cell].centroid_x;
 	double center_y = cells[cell].centroid_y;
-	//cout << "\n\ncentroid: " << cells[cell].centroid_x << ", " << cells[cell].centroid_y << endl;
 
 	double angle_hertwig = cells[cell].division_angle_longest == 0 ? 0 : cells[cell].division_angle_longest * (atan2(vertices[mv1].y - vertices[mv2].y, vertices[mv1].x - vertices[mv2].x) + 0.5*M_PI);
 	double random_angle = cells[cell].division_angle_random_noise == 0 ? 0 : cells[cell].division_angle_random_noise * (rand()%360)*M_PI/180;
@@ -1761,13 +1723,6 @@ bool Tissue::getDivisionPoints(const int cell, double &x1, double &x2, double &y
 		//WARNING! This is a not very elegant fix of the problem of vertical lines (they have infinite slope), and can happen in other parts of the program
 		final_angle += 0.01;
 	}
-
-	/*cout << "\ncell: " << cell << " of type " << static_cast<int>(cells[cell].type) << "; v1: " << mv1 << ", v2: " << mv2 << ", final_angle: " << 180*final_angle/M_PI << endl;
-	cout << "- angle hertwig: " << 180*angle_hertwig/M_PI << endl;
-        cout << "- cell angle_longest: " << cells[cell].division_angle_longest << ", atan2 longest: " << 180*atan2(vertices[mv1].y - vertices[mv2].y, vertices[mv1].x - vertices[mv2].x)/M_PI << endl;
-        cout << "- random angle final: " << random_angle << ", random angle proportion: " << cells[cell].division_angle_random_noise << endl;
-        cout << "- ext final: " << externally_controlled_angle << ", ext proportion: " << cells[cell].division_angle_external << ", ext degrees: " << cells[cell].division_angle_external_degrees << endl;
-	*/
 
 	//Get point positions of new edge (new edge is first set to be longer than the longest distance between vertices, so that it intersects with at least two edges)
 	x1 = center_x + cos(final_angle)*max_dist*1.1; 
@@ -1794,12 +1749,8 @@ bool Tissue::getDivisionPoints(const int cell, double &x1, double &x2, double &y
 
 bool Tissue::findEdgesToCut(const int cell, double x1, double x2, double y1, double y2, int &e1, int &e2, StraightLine &l1, StraightLine &l2, StraightLine &l3, StraightLine &l4){
 	l1 = getLineFromEdge(x1, x2, y1, y2);
-        //cout << "Cutting edge: x1 = " << l1.x1 << ", y1 = " << l1.y1 << ", x2 = " << l1.x2 << ", y2 = " << l1.y2 << ", b0 = " << l1.intercept << ", b1 = " << l1.slope << ", is inf: " << l1.vertical << endl;
 	for(int i = 0; i < cells[cell].num_vertices; i++){
 		l2 = getLineFromEdge(&this->edges[cells[cell].edges[i]]);
-                //cout << "  l2: x1 = " << l2.x1 << ", y1 = " << l2.y1 << ", x2 = " << l2.x2 << ", y2 = " << l2.y2 << ", b0 = " << l2.intercept << ", b1 = " << l2.slope << ", is inf: " << l2.vertical << endl;
-		//cout << "    x intersect: " << (l2.intercept - l1.intercept)/(l1.slope - l2.slope) << endl;
-		//cout << "    cross: " << lines_cross(l1, l2) << endl;
 		if(lines_cross(l1, l2)){
 			if(e1 < 0){
 				e1 = cells[cell].edges[i];
@@ -1811,8 +1762,7 @@ bool Tissue::findEdgesToCut(const int cell, double x1, double x2, double y1, dou
 			}
 		}
 	}//end for find edges that intersect with division edge
-	//cout << "D " << cell << "\n";
-	if(e1 < 0  || e2 < 0){
+	if(REPORT_OUT && (e1 < 0  || e2 < 0)){
 		cout << ">> Error: new edge does not cut other cell edges. Cell: " << cell << " ****** "<<endl;
 		return false;
 	}
@@ -2032,7 +1982,7 @@ void Tissue::t1_add_vertices_to_cells(Vertex* v1, Vertex* v2, Cell* sp2, int rem
 			}else if(sp2->vertices[(i - 1 + sp2->num_vertices) % sp2->num_vertices] == v2->ind){
 				move_from = i;
 			}else{
-				cout << ">> Error in t1 transition: unable to insert vertex in cell: v1=" << v1->ind << " v2=" << v2->ind << " cell:" << sp2->ind << endl;
+				if(REPORT_OUT) cout << ">> Error in t1 transition: unable to insert vertex in cell: v1=" << v1->ind << " v2=" << v2->ind << " cell:" << sp2->ind << endl;
 			}
 			break;
 		}
@@ -2649,21 +2599,8 @@ void Tissue::make_t2(Rearrangement& r){
 				neicell = edges[celledge].cells[j];
 				if(neicell != EMPTY_CONNECTION && neicell != cell){
 					if(cells[neicell].num_vertices < 3 ){
-						//make_remove_size2cell(neicell ); 
-						//cell_with_two_sides = neicell;
-						//edge_to_split = cells[neicell].edges[0];
-						//int othercell2print = edges[edge_to_split].cells[0] == neicell ? edges[edge_to_split].cells[1] : edges[edge_to_split].cells[0];
-						//x = 0.5*(vertices[edges[edge_to_split].vertices[0]].x + vertices[edges[edge_to_split].vertices[1]].x);
-						//y = 0.5*(vertices[edges[edge_to_split].vertices[0]].y + vertices[edges[edge_to_split].vertices[1]].y);
-						//new_v = newVertex(x, y);
-						cout << "  in T2: Killing cell of size 2: "<<endl << cells[neicell] << endl;
-						//if(othercell2print != EMPTY_CONNECTION){ cout << cells[othercell2print] << endl;}
+						if(REPORT_OUT) cout << "  in T2: Killing cell of size 2: "<<endl << cells[neicell] << endl;
 						killCellWith2Vertices(neicell);
-						//splitEdgeWithVertex(edge_to_split, neicell, new_v);
-						//cout << "  in T2: Added extra vertex " << endl << cells[neicell] << endl;
-						//if(othercell2print != EMPTY_CONNECTION){ cout << cells[othercell2print] << endl;}
-						//cells[neicell].area = 0; //make sure it dies
-						//rearrangements_needed.push(Rearrangement{neicell, RearrangementType::t2}); 
 					}
 				}
 			}
@@ -2716,24 +2653,7 @@ void Tissue::killCellWith2Vertices(int cell){
 		v2 = &vertices[cells[cell].vertices[0]];	
 		v1 = &vertices[cells[cell].vertices[1]];	
 	}
-	//cout << "*<<\n\nE , enei1: " << enei1 << ", enei2: " << enei2 << endl;
-	//cout << VERTEX_HEADER;
-	//cout << "    v1: " << *v1 << endl;
-	//cout << "    v2: " << *v2 << endl;
-	//cout << EDGE_HEADER;
-	//cout << "    e1: " << *e1 << endl;
-	//cout << "    e2: " << *e2 << endl;
-	//cout << CELL_HEADER;
-	//cout << "    cell: " << *c << endl;
-	//if(auxcell1 != EMPTY_CONNECTION){cout << "    auxc1: " << cells[auxcell1] << endl;}
-	//if(auxcell2 != EMPTY_CONNECTION){cout << "    auxc2: " << cells[auxcell2] << endl;}
 	if(enei1 == EMPTY_CONNECTION){
-		//cout << "  Difficult situation: one of vertices in 2-sides cell has no neighbours. This will eventually crash. Vertices: "<< v1->ind << ", " << v2->ind << endl;
-		//cout << "    v1: " << *v1 << endl;
-		//cout << "    v2: " << *v2 << endl;
-		//cout << "    e1: " << *e1 << endl;
-		//cout << "    e2: " << *e2 << endl;
-		//cout << "    cell: " << *c << endl;
 		c->dead = true;
 		e1->dead = true;
 		e2->dead = true;
@@ -2756,10 +2676,7 @@ void Tissue::killCellWith2Vertices(int cell){
 	//Get other vertices
 	vnei1 = edges[enei1].vertices[0] == v1->ind ? edges[enei1].vertices[1] : edges[enei1].vertices[0];
 	vnei2 = edges[enei2].vertices[0] == v2->ind ? edges[enei2].vertices[1] : edges[enei2].vertices[0];
-	//cout << "G, vnei1: " << vnei1 << ", vnei2: " << vnei2 << endl;
-	//cout << VERTEX_HEADER;
-	//cout << "    vNEI1: " << vertices[vnei1] << endl;
-	//cout << "    vNEI2: " << vertices[vnei2] << endl;
+
 	//Change neighbour vertices
 	vertices[vnei1].neighbour_vertices[which(v1->ind, vertices[vnei1].neighbour_vertices, CELLS_PER_VERTEX)] = vnei2;
 	vertices[vnei2].neighbour_vertices[which(v2->ind, vertices[vnei2].neighbour_vertices, CELLS_PER_VERTEX)] = vnei1;
@@ -2810,109 +2727,19 @@ void Tissue::killCellWith2Vertices(int cell){
 
 	if(auxcell1 != EMPTY_CONNECTION){
 		if(cells[auxcell1].num_vertices < 3){
-			//cout << "    Killed cell of size 2 " << cell << " but now its neighbour 1, " << auxcell1 << " has " << cells[auxcell1].num_vertices << " vertices." << endl;
 			killCellWith2Vertices(auxcell1);
 		}
 	}
 	if(auxcell2 != EMPTY_CONNECTION){
 		if(cells[auxcell2].num_vertices < 3){
-			//cout << "    Killed cell of size 2 " << cell << " but now its neighbour 2, " << auxcell2 << " has " << cells[auxcell2].num_vertices << " vertices." << endl;
 			killCellWith2Vertices(auxcell2);
 		}
 	}
-	//cout << "    KILLED SIZE 2 CELL: " << cell << endl << "<<*" << endl;
+	if(REPORT_OUT) cout << "    KILLED SIZE 2 CELL: " << cell << endl << "<<*" << endl;
 	return;
 
 }//Kill cell with 2 edges
-/*void Tissue::make_remove_size2cell(int cell){
 
-	cout << "Removing cell with 2 vertices: " << cell << endl;
-	int e1 = cells[cell].edges[0];
-	int e2 = cells[cell].edges[1];
-	int v1 = cells[cell].vertices[0];
-	int v2 = cells[cell].vertices[1];
-	int c1  = edges[e1].cells[0] == cell ? edges[e1].cells[1] : edges[e1].cells[0];
-	int c2  = edges[e2].cells[0] == cell ? edges[e2].cells[1] : edges[e2].cells[0];
-
-	vertices[v1].cells[which(cell, vertices[v1].cells, CELLS_PER_VERTEX)] = EMPTY_CONNECTION;
-	vertices[v2].cells[which(cell, vertices[v2].cells, CELLS_PER_VERTEX)] = EMPTY_CONNECTION;
-	int rep = 0;
-	for(int i = 0; i < CELLS_PER_VERTEX; i++){
-		if(vertices[v1].neighbour_vertices[i] == v2) rep++;
-		if(rep > 1) vertices[v1].neighbour_vertices[i] = EMPTY_CONNECTION;			
-	}
-	for(int i = 0; i < CELLS_PER_VERTEX; i++){
-		if(vertices[v2].neighbour_vertices[i] == v1) rep++;
-		if(rep > 1) vertices[v2].neighbour_vertices[i] = EMPTY_CONNECTION;			
-	}
-
-
-	if (c1 == EMPTY_CONNECTION && c2 == EMPTY_CONNECTION){
-		edges[e1].dead = true;
-		edges[e2].dead = true;
-		dead_edges.push(e1);
-		dead_edges.push(e2);
-		this->num_edges-=2;
-		vertices[edges[e1].vertices[0]].edges[which(e1, vertices[edges[e1].vertices[0]].edges, CELLS_PER_VERTEX)] = EMPTY_CONNECTION;
-		vertices[edges[e1].vertices[1]].edges[which(e1, vertices[edges[e1].vertices[1]].edges, CELLS_PER_VERTEX)] = EMPTY_CONNECTION;
-		vertices[edges[e2].vertices[0]].edges[which(e2, vertices[edges[e2].vertices[0]].edges, CELLS_PER_VERTEX)] = EMPTY_CONNECTION;
-		vertices[edges[e2].vertices[1]].edges[which(e2, vertices[edges[e2].vertices[1]].edges, CELLS_PER_VERTEX)] = EMPTY_CONNECTION;
-
-		cells[cell].dead = true;
-		dead_cells.push(cell);
-		this->num_cells--;
-		
-		if(count(EMPTY_CONNECTION, vertices[v1].cells, CELLS_PER_VERTEX) >= CELLS_PER_VERTEX){
-			vertices[v1].dead = true;
-			dead_vertices.push(v1);
-			this->num_vertices--;
-		}
-
-		if(count(EMPTY_CONNECTION, vertices[v1].cells, CELLS_PER_VERTEX) >= CELLS_PER_VERTEX){
-			vertices[v2].dead = true;
-			dead_vertices.push(v2);
-			this->num_vertices--;
-		}
-		return;
-
-	}else if (c2 != EMPTY_CONNECTION && c1 == EMPTY_CONNECTION){
-		int aux = c1;
-		c1 = c2;
-		c2 = aux;
-		aux = e1;	
-		e1 = e2;
-		e2 = aux;
-	}
-
-	edges[e1].cells[which(cell, edges[e1].cells, 2)] = c2;
-
-	if(c2 != EMPTY_CONNECTION){
-		if(! contains(e1, cells[cell].edges, cells[cell].num_vertices)){
-			cells[c2].edges[which(e2, cells[c2].edges, cells[c2].num_vertices)] = e1;
-		}else{
-			cout << "Weird geometry: cell of 2 vertices being deleted from inside a bigger cell. num. moves: " << counter_moves_accepted << "\n";
-			removeConnectionCell(e2, cells[cell].edges, cells[cell].num_vertices);
-			int c = count(v1, cells[cell].vertices, MAX_SIDES_PER_CELL);
-			if(c > 1){
-				removeConnectionCell(v1, cells[cell].vertices, cells[cell].num_vertices);
-				cells[cell].num_vertices--;
-			}
-			c = count(v2, cells[cell].vertices, MAX_SIDES_PER_CELL);
-			if(c > 1){
-				removeConnectionCell(v2, cells[cell].vertices, cells[cell].num_vertices);
-				cells[cell].num_vertices--;
-			}
-
-		}
-	}
-
-	edges[e2].dead = true;
-	dead_edges.push(e2);
-	this->num_edges--;
-	cout << "Removed cell with 2 vertices: " << cell << endl;
-	return;
-
-}*/
 
 //Assumes that array elements is at least 1 element longer than length
 void Tissue::removeConnectionCell(int elm, int* elements, int length){
@@ -2997,7 +2824,6 @@ inline StraightLine Tissue::getLineFromEdge(double x1, double x2, double y1, dou
 }
 
 inline bool Tissue::lines_cross(StraightLine& a, StraightLine& b){
-	//if(a.v1 == b.v1 || a.v1 == b.v2 || a.v2 == b.v1 || a.v2 == b.v2) return false;
 	double x_intersect;
 	if (a.vertical && b.vertical){
 		return false;

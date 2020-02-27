@@ -77,7 +77,7 @@ const bool TIME_CONTROLS_SIZE = false;
 const bool XCOORD_CONTROLS_SIZE = false;
 const bool STATIC_PRESENT = true;
 const int MOVE_TRIALS = 100;  //Times it tries to move a vertex before it quits because always makes edges to cross
-
+const bool UPDATE_EDGE_TENSION_EVERY_MOVE = false; //Update edge tension if tension is dependent on edge angle (if true, do it in every iteration, if false do it only in transitions and start)
 const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
 const bool REPORT_OUT = false;
