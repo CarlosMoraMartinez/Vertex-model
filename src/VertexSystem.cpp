@@ -26,9 +26,9 @@ Tissue::Tissue() : num_cells(0), num_vertices(0), num_edges(0),  counter_move_tr
 }
 
 //Constructor that reads vertex positions and cells from two different files, and initializes all variables using constants defined in VertexSystem.h
-Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  int write_every_N_moves) : Tissue(){
+Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  int write_every_N_moves, string simulname) : Tissue(){
 
-	this->simname = starting_tissue_file;
+	this->simname = simulname == "" ? starting_tissue_file : simulname;
 	this->max_accepted_movements = max_accepted_movements;
 	this->write_every_N_moves = write_every_N_moves;
 	step_mode = false;
@@ -77,9 +77,9 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  in
 	setHingeMinAndMaxPositions();
 }
 
-Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements,  int write_every_N_moves) : num_cells(0), num_vertices(0), num_edges(0),  counter_move_trials(0), counter_moves_accepted(0), counter_favorable_accepted(0), counter_favorable_rejected(0), counter_unfav_accepted(0), counter_unfav_rejected(0),  counter_t1(0), counter_t1_abortions(0), counter_edges_removed(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0){
+Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements,  int write_every_N_moves, string simulname) : num_cells(0), num_vertices(0), num_edges(0),  counter_move_trials(0), counter_moves_accepted(0), counter_favorable_accepted(0), counter_favorable_rejected(0), counter_unfav_accepted(0), counter_unfav_rejected(0),  counter_t1(0), counter_t1_abortions(0), counter_edges_removed(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0){
 
-	this->simname = starting_tissue_file;
+	this->simname = simulname == "" ? starting_tissue_file : simulname;
 	this->max_accepted_movements = max_accepted_movements;
 	this->write_every_N_moves = write_every_N_moves;
 	step_mode = false;
@@ -1072,7 +1072,7 @@ inline double Tissue::expAdvance(double x, float exponent){
 
 void Tissue::advanceSizeWithXcoordAndTime(int vertex_moved){
 	int caux;
-	double auxprint;
+	//double auxprint;
 	double time_factor = static_cast<double>(counter_moves_accepted)/max_accepted_movements;
 	time_factor = expAdvance(time_factor, time_decrease_exponent);//(1 - exp(-pow(time_factor, time_decrease_exponent)))/EXP_FACTOR;
 	float pos_factor = 0, aux_area;
@@ -1081,7 +1081,7 @@ void Tissue::advanceSizeWithXcoordAndTime(int vertex_moved){
 		caux = vertices[vertex_moved].cells[i];
 		if(caux == EMPTY_CONNECTION) continue;
 		cells[caux].preferred_area = preferred_area_initial[cells[caux].type] + (preferred_area_final[cells[caux].type] - preferred_area_initial[cells[caux].type]) * time_factor; //Caution: problems if step_mode is on
-		auxprint = cells[caux].preferred_area;
+		//auxprint = cells[caux].preferred_area;
 		if(cells[caux].type == CellType::vein_hinge){
 			calculateCellCentroid(cells[caux]);
 			pos_factor = cells[caux].centroid_x - hinge_min_xpos;

@@ -189,8 +189,8 @@ class Tissue{
         friend class basicGRN;
 	public:
 		Tissue();
-		Tissue(std::string starting_tissue_file, int max_accepted_movements=1000000,  int write_every_N_moves=1000);
-		Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements=1000000,  int write_every_N_moves=1000); //not implemented
+		Tissue(std::string starting_tissue_file, int max_accepted_movements=1000000,  int write_every_N_moves=1000, std::string simulname="");
+		Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements=1000000,  int write_every_N_moves=1000, std::string simulname=""); //not implemented
 
 		void initialize_params(std::string params_file="");
 		double read_real_par(std::vector<std::string>::iterator& it);

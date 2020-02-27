@@ -1,5 +1,6 @@
 from operator import itemgetter
 import sys
+import os
 import argparse
 
 import numpy as np
@@ -37,6 +38,7 @@ def makeWingHex(args):
         f, ax, pc = hx.plotHex2()
         ax.imshow(im, extent = [0, maxx, 0, maxy])
         border.correctBorderManually((f, ax))
+        border.writePoints()
         hx.writeGrid(add='_b')
     else:
         plt.close()
@@ -612,6 +614,21 @@ class getPointsBorder2():
             self.point_selected = -1
             self.fig.canvas.draw_idle()
         print("Select border points to move. Z to stop/resume selection (useful to zoom etc); M to exit")
+    def writePoints(self):
+        dirname = ''
+        if(not os.path.isdir(self.hx.outname)):
+            try:
+                os.mkdir(self.hx.outname)
+                dirname = self.hx.outname + '/'
+            except OSError:
+                print ("Creation of the directory %s failed" % self.hx.outname)
+        else:
+            dirname = self.hx.outname + '/'
+        with open(dirname + self.hx.outname + '.border', 'w') as f:
+            f.write('x\ty\n')
+            for x, y in self.points:
+                f.write(str(x) + '\t' + str(y) + '\n')
+
 
 parser = argparse.ArgumentParser(description='Wing Drawer arguments.')
 parser.add_argument('-o', '--Outname', metavar='outname', type=str, default = "hexgrid", 
