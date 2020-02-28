@@ -38,8 +38,8 @@ int main(int argc, char *argv[]){
 	}else{
 		simulname = argv[6];
 	}
-	cout << "Reading from file\n\n"<<endl;
-	cout << "Arguments: input condition: " << inputfile << ", params: " << paramfile << ", moves: " << moves << ", print step: " << print_step << ", sim name: " << simulname << endl;
+	if(REPORT_OUT) cout << "Reading from file\n\n"<<endl;
+	if(REPORT_OUT) cout << "Arguments: input condition: " << inputfile << ", params: " << paramfile << ", moves: " << moves << ", print step: " << print_step << ", sim name: " << simulname << endl;
 	Tissue t = Tissue(inputfile, paramfile, moves, print_step, simulname);
 
 	srand(RANDOM_SEED);
@@ -48,15 +48,15 @@ int main(int argc, char *argv[]){
 
 	try{
 		t.simulate(generator, unif);
-		cout << t.getStats() << endl; 
+		if(REPORT_OUT) cout << t.getStats() << endl; 
 		if(second_paramfile != ""){
-			cout << "**** Adding springs ****"<<endl;
+			if(REPORT_OUT) cout << "**** Adding springs ****"<<endl;
 			t.addSpringsAutomatically();
-			t.produceOutputs("movedspr");
+			//t.produceOutputs("movedspr");
 			t.addAcceptedMovements(moves);
 			t.readNewParameters(second_paramfile);
 			t.simulate(generator, unif);
-			cout << t.getStats() << endl; 
+			if(REPORT_OUT) cout << t.getStats() << endl; 
 		}
 	}catch(const char* msg){
 		t.produceOutputs("crashed");
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]){
 		exit(1);
 	}
 
-	cout << t.getStats() << endl;
+	if(REPORT_OUT) cout << t.getStats() << endl;
 	exit(0);
 	
 }

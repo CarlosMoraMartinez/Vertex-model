@@ -389,7 +389,6 @@ void Tissue::initialize_vertices(std::ifstream& inp){
 		v.y = stod(s, &sz);
 		s = s.substr(sz);
 		v.ind = stoi(s, &sz);
-		cout << v.ind;
 		s = s.substr(sz);
 		v.movable = s.empty()? true : stoi(s);	
 		this->vertices.push_back(v);
@@ -2929,6 +2928,7 @@ void Tissue::emptyDivisions(){
 }
 
 std::string Tissue::getStats(){
+	if(! REPORT_OUT) return "-";
 	std::string s = "";
 	s += "Move trials: " + std::to_string(counter_move_trials) + ", \n";
 	s += "Moves accepted: " + std::to_string(counter_moves_accepted) + ", \n";

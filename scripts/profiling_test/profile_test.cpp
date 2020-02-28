@@ -13,7 +13,7 @@ using namespace std::chrono;
 const int RANDOM_SEED = 1234;
 const int N_ITERS =10000000;
 const int SHORT_LEN = 6;
-const int LONG_LEN = 100000;
+const int LONG_LEN = 1000;
 const int SHORT_REPS = 10;
 typedef std::map<int, double> mapa;
 
@@ -190,7 +190,7 @@ int main(int argc, char *argv[]){
 	auto duration8 = duration_cast<microseconds>(stop - start); 
 
 
-	/*std::cout << "Testing realocating array" << std::endl;		
+	std::cout << "Testing realocating array" << std::endl;		
 	//Test realocating to array
 	start = high_resolution_clock::now(); 
 	for(int i = 0; i < SHORT_REPS; i++){
@@ -198,7 +198,7 @@ int main(int argc, char *argv[]){
 	}
 	stop = high_resolution_clock::now();
 	auto duration9 = duration_cast<microseconds>(stop - start); 
-	*/
+	
 	
 	std::cout << "Testing mathematical function (distance) - main" << std::endl;	
 	//Test array sum in Inline function
@@ -320,7 +320,7 @@ int main(int argc, char *argv[]){
 
 
 	std::cout << "alloc Vector():" << duration8.count()/static_cast<double>(SHORT_REPS) << std::endl;
-	//std::cout << "alloc Array():" << duration9.count()/static_cast<double(SHORT_REPS) << std::endl;
+	std::cout << "alloc Array():" << duration9.count()/static_cast<double>(SHORT_REPS) << std::endl;
 	std::cout << "distance main:" << duration10.count()/static_cast<double>(N_ITERS) << std::endl;
 	std::cout << "distance func:" << duration11.count()/static_cast<double>(N_ITERS) << std::endl;
 	std::cout << "distance func inline:" << duration12.count()/static_cast<double>(N_ITERS) << std::endl;

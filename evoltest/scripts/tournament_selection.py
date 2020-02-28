@@ -1,5 +1,6 @@
 import sys
 import argparse
+import os
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,12 +27,12 @@ class TournamentPopulation:
     The fittest organisms reproduce sexually
     """
     
-    def __init__(self, organism_class, simulator, startingOrg, N, K, mutation_rate, max_generations=100, error=0.01):
+    def __init__(self, organism_class, simulator, startingOrg, N, K, mutation_rate, max_generations=100, error=0.01, removal_freq=-1):
         self.organism_class = organism_class
         self.simulator = simulator
         self.N = N #Number of individuals in a population
         self.K = K #Selection is stronger when this parameter is higher
-        self.num_genes = len(organism_class.model) #Number of parameters in an individual
+        self.num_genes = organism_class.chrom_size #Number of parameters in an individual
         self.mutation_rate = mutation_rate  #You can adjust this dynamically; low mutation rate in the end of the simulation will allow you to fine-tune parameters
         self.max_generations = max_generations
         self.error = error
@@ -39,7 +40,8 @@ class TournamentPopulation:
         self.individuals = self.init_pop(startingOrg)
         self.fitness = np.zeros(self.num_genes)
         self.current = 0
-        print([i.ind for i in self.individuals])
+        self.removal_freq = removal_freq
+        #print([i.ind for i in self.individuals])
     def __getitem__(self, i):
         return self.individuals[i]
     def __iter__(self):
@@ -58,8 +60,8 @@ class TournamentPopulation:
         for i in range(self.N):
             new_chromosome = np.array(chrom, copy=True)
             for j in range(self.num_genes):
-                if(not self.organism_class.mask[j]):
-                    new_chromosome[j] += new_chromosome[j]*np.random.uniform(low=-1*self.mutation_rate, high=self.mutation_rate) 
+                #if(not self.organism_class.mask[j]): #Encapsulated mask
+                new_chromosome[j] += new_chromosome[j]*np.random.uniform(low=-1*self.mutation_rate, high=self.mutation_rate) 
             orgs.append(self.organism_class(new_chromosome, '-'.join(['0', str(i)])))
         return orgs
     def tournamentSelection(self):        
@@ -77,8 +79,9 @@ class TournamentPopulation:
             self.generation += 1 #needs to be before self.getNewIndividual 
             self.individuals = self.getNewIndividuals() 
             mean_fitness.append(np.mean(self.fitness))
-            if(self.generation %1000 == 0):
-                print(self.generation, ': ', mean_fitness[-1])
+            if(self.generation % 1 == 0):
+                print('Generation: %d, mean fitness: %.4f'%( self.generation, mean_fitness[-1]))
+            self.remove_old_files()
             if(1 - mean_fitness[-1] < self.error):
                 break
         return mean_fitness
@@ -96,11 +99,20 @@ class TournamentPopulation:
         #prop = [np.mean([org1[gene], org2[gene]])for gene in range(self.num_genes)]
         new_chromosome = [np.random.choice([org1[gene], org2[gene]]) for gene in range(self.num_genes)]
         for i in range(len(new_chromosome)):
-            if(not self.organism_class.mask[i]):
-                new_chromosome[i] += new_chromosome[i]*np.random.uniform(low=-1*self.mutation_rate, high=self.mutation_rate) 
+            #if(not self.organism_class.mask[i]):
+            new_chromosome[i] += new_chromosome[i]*np.random.uniform(low=-1*self.mutation_rate, high=self.mutation_rate) 
         return self.organism_class(np.array(new_chromosome), '-'.join([str(self.generation), str(ind)]))
-
-
+    def remove_old_files(self):
+        if(self.generation < self.removal_freq):
+            return
+        i = self.generation - self.removal_freq
+        #for o in range(self.N):
+        #    command1 = 'rm ' + str(i) + '-' + str(o) + '_moved_*'
+        #    command2 = 'rm ' + self.simulator.basename + '_' + str(i) + '-' + str(o) + '_*.vp'
+        command1 = 'rm ' + str(i) + '-*_moved_*.*'
+        command2 = 'rm ' + self.simulator.basename + '_' + str(i) + '-*_*.vp' #[0-' + str(self.N - 1) + '] #[a-b]
+        os.system(command1)
+        os.system(command2)
 
 
 parser = argparse.ArgumentParser(description='Process arguments.')
@@ -132,7 +144,8 @@ parser.add_argument('-w', '--VertexNumSteps', metavar='w', type=int, default = 1
                     help='Max number of generations')
 parser.add_argument('-z', '--VertexWriteFreq', metavar='z', type=int, default = 100, 
                     help='Max number of generations')
-
+parser.add_argument('-v', '--FileRemovalFreq', metavar='v', type=int, default = 5, 
+                    help='Files of v generations older are removed')
 
 #python tournament_selection -o evotest1 -m 'test2steps_1a.vp,test2steps_1b.vp' -s 'bud2' -t 'contour1' -r 0.2 -n 30 -k 7 -x 100 -c 30 -w 50000000 -z 1000000
 def main():
@@ -151,6 +164,8 @@ def main():
     starting_wing = args.StartingWing
     initial_params = args.StartingParams.split(',')
     targetShapeFile = args.TargetShapeFile
+
+    removal_freq = args.FileRemovalFreq 
     
     orgGenerator=ParamModelFactory(initial_params)
     org_class=orgGenerator.getParamClass()
@@ -169,7 +184,8 @@ def main():
                                K = K, \
                                mutation_rate = mutation_rate, \
                                max_generations = max_generations, \
-                               error = error)
+                               error = error, \
+                               removal_freq = removal_freq)
 
     time_fitness = pop.tournamentSelection()
     print("Ending simulation at generation %d with error %.4f"%(pop.generation, 1 - time_fitness[-1]) )
