@@ -23,10 +23,11 @@ int main(int argc, char *argv[]){
 		moves = std::stoi(argv[3]);
 		print_step = std::stoi(argv[4]);
 	}
-	cout << "Reading from file\n\n"<<endl;
+	cout << "Reading arguments"<<endl;
 	std::string inputfile = argv[1];
 	std::string paramfile = argv[2];
-	Tissue t = Tissue(inputfile, paramfile, moves, print_step);
+	cout << "Reading from file\n\n"<<endl;
+	Tissue t = Tissue(inputfile, paramfile, moves, print_step, inputfile);
 
 	srand(RANDOM_SEED);
 	std::default_random_engine generator;

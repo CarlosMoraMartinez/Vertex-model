@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
 		if(second_paramfile != ""){
 			if(REPORT_OUT) cout << "**** Adding springs ****"<<endl;
 			t.addSpringsAutomatically();
-			//t.produceOutputs("movedspr");
+			t.produceOutputs("movedspr");
 			t.addAcceptedMovements(moves);
 			t.readNewParameters(second_paramfile);
 			t.simulate(generator, unif);

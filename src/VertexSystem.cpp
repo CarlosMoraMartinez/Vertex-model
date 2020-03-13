@@ -36,6 +36,7 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  in
 	//Read file of vertices (indicates coordinates for each vertex)
 	string vertexfile = starting_tissue_file + VERTEX_FILE_EXTENSION;
 	std::ifstream fin_vertex;
+	if(REPORT_OUT)  cout << "reading .points file...\n";
 	fin_vertex.open(vertexfile);
 	initialize_vertices(fin_vertex);
 	fin_vertex.close();
@@ -44,6 +45,7 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  in
 	//Read file of cells (indicates vertices for each cell)
 	try{
 		string cellfile = starting_tissue_file + CELLS_FILE_EXTENSION;
+		if(REPORT_OUT)  cout << "reading .cells file...\n";
 		ifstream fin_cells(cellfile);
 		initialize_cells(fin_cells);
 		fin_cells.close();
@@ -57,6 +59,7 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  in
 
 	try{
 		string springsfile = starting_tissue_file + SPRING_FILE_EXTENSION;
+		if(REPORT_OUT)  cout << "reading .spr file...\n";
 		ifstream fin_springs(springsfile);
 		if(fin_springs.good()){
 			initialize_springs(fin_springs);
@@ -78,17 +81,19 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements,  in
 }
 
 Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements,  int write_every_N_moves, string simulname) : num_cells(0), num_vertices(0), num_edges(0),  counter_move_trials(0), counter_moves_accepted(0), counter_favorable_accepted(0), counter_favorable_rejected(0), counter_unfav_accepted(0), counter_unfav_rejected(0),  counter_t1(0), counter_t1_abortions(0), counter_edges_removed(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0){
-
+	cout << "reading .vp file...\n";
 	this->simname = simulname == "" ? starting_tissue_file : simulname;
 	this->max_accepted_movements = max_accepted_movements;
 	this->write_every_N_moves = write_every_N_moves;
 	step_mode = false;
 
+	if(REPORT_OUT)  cout << "reading .vp file...\n";
 	initialize_params(params_file);
-
+	if(REPORT_OUT)  cout << ".vp file read...\n";
 	//Read file of vertices (indicates coordinates for each vertex)
 	string vertexfile = starting_tissue_file + VERTEX_FILE_EXTENSION;
 	std::ifstream fin_vertex;
+	if(REPORT_OUT)  cout << "reading .points file...\n";
 	fin_vertex.open(vertexfile);
 	initialize_vertices(fin_vertex);
 	fin_vertex.close();
@@ -97,6 +102,7 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 	//Read file of cells (indicates vertices for each cell)
 	try{
 		string cellfile = starting_tissue_file + CELLS_FILE_EXTENSION;
+		if(REPORT_OUT)  cout << "reading .cells file...\n";
 		ifstream fin_cells(cellfile);
 		initialize_cells(fin_cells);
 		fin_cells.close();
@@ -106,11 +112,13 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 		exit(1);
 	}
 	//Initialize edges from vertices and cells
+	if(REPORT_OUT)  cout << "Initializing edges...\n";
 	initialize_edges();
 	try{
 		string springsfile = starting_tissue_file + SPRING_FILE_EXTENSION;
 		ifstream fin_springs(springsfile);
 		if(fin_springs.good()){
+			if(REPORT_OUT)  cout << "reading .spr file...\n";
 			initialize_springs(fin_springs);
 			if(REPORT_OUT) cout << ".spr file read...\n";
 		}else{
@@ -225,6 +233,7 @@ void Tissue::set_default_simulation_params(){
 	edge_angle_prop_external = vary_line_tension;
 	edge_angle_prop_uniform = vary_line_tension;
 	edge_angle_prop_maxangle = vary_line_tension;
+	edge_angle_prop_random = vary_line_tension;
 	edge_tension_external = vary_line_tension;
 	edge_maxangle = vary_line_tension;
 	edge_spatialmax_tension = vary_line_tension;
@@ -352,6 +361,7 @@ void Tissue::initialize_params(std::string params_file){
 	edge_angle_prop_external = read_celltype_par(it, sz);
 	edge_angle_prop_uniform = read_celltype_par(it, sz);
 	edge_angle_prop_maxangle = read_celltype_par(it, sz);
+	edge_angle_prop_random = read_celltype_par(it, sz);
 	edge_tension_external = read_celltype_par(it, sz);  //Initial values, then gene expression will change it in cells
 	edge_maxangle = read_celltype_par(it, sz);
 	edge_spatialmax_tension = read_celltype_par(it, sz);
@@ -404,6 +414,7 @@ void Tissue::initialize_springs(std::ifstream& inp){
 
 	getline(inp, s);
 	this->num_springs = stoi(s);
+	if(this->num_springs == 0) return;
 	Edge e;
 	e.dead=false;
 	e.type = EdgeType::spring;
@@ -447,13 +458,10 @@ Input: ifstream pointing to a file defining vertex identifiers (starting from 0)
 */
 void Tissue::initialize_cells(std::ifstream& inp){
 	string s, s2;
-	//int split_ind, split_ind2;
+
 	std::string::size_type sz;
 	getline(inp, s);
-	//split_ind = s.find("\t");
-
 	this->num_cells = stoi(s, &sz);//stoi(s.substr(0, split_ind));
-
 	if(stoi(s.substr(sz)) > MAX_SIDES_PER_CELL){
 		throw "Cell file has more vertices by cell than allowed by MAX_SIDES_PER_CELL constant";
 	}
@@ -462,7 +470,6 @@ void Tissue::initialize_cells(std::ifstream& inp){
 	Cell c;
 	c.dead=false;
 	c.can_divide = !this->autonomous_cell_cycle;
-	//c.cell_cycle_state = 0;
 	c.centroid_x = 0;
 	c.centroid_y = 0;
 	c.num_divisions = 0;
@@ -579,6 +586,7 @@ void Tissue::set_default_params(){
 		cells[c].edge_angle_prop_external =  edge_angle_prop_external[cells[c].type];
 		cells[c].edge_angle_prop_uniform =  edge_angle_prop_uniform[cells[c].type];
 		cells[c].edge_angle_prop_maxangle =  edge_angle_prop_maxangle[cells[c].type];
+		cells[c].edge_angle_prop_random =  edge_angle_prop_random[cells[c].type];
 		cells[c].edge_tension_external =  edge_tension_external[cells[c].type];
 		cells[c].edge_maxangle =  edge_maxangle[cells[c].type];
 		cells[c].edge_spatialmax_tension =  edge_spatialmax_tension[cells[c].type];
@@ -646,41 +654,18 @@ void Tissue::setEdgeType(int e){
 }
 
 void Tissue::setEdgeTension(int e){
-	if(edges[e].type == EdgeType::tissue_boundary) return;
-	if(! cells[edges[e].cells[0]].vary_line_tension && !cells[edges[e].cells[1]].vary_line_tension ) return;
-	float mins, maxs, maxangle, angle, pex, pmaxan, punif, tensionext;
+	float mins, maxs, maxangle, angle, pex, pmaxan, punif, prand, tensionext, tensionrand;
 	int cellvar;
-	
-	if(cells[edges[e].cells[0]].vary_line_tension && cells[edges[e].cells[1]].vary_line_tension ){//If both cells make edge tension vary
-		mins = 0.5*(cells[edges[e].cells[0]].edge_spatialmin_tension + cells[edges[e].cells[1]].edge_spatialmin_tension);
-		maxs = 0.5*(cells[edges[e].cells[0]].edge_spatialmax_tension + cells[edges[e].cells[1]].edge_spatialmax_tension);
-		maxangle = 0.5*(cells[edges[e].cells[0]].edge_maxangle + cells[edges[e].cells[1]].edge_maxangle);
-		tensionext = 0.5*(cells[edges[e].cells[0]].edge_tension_external + cells[edges[e].cells[1]].edge_tension_external); //This is not an angle! is tension value set from gene Expression directly 
+	if(edges[e].type == EdgeType::tissue_boundary){
+		/*cellvar = edges[e].cells[0] == EMPTY_CONNECTION ? edges[e].cells[1] : edges[e].cells[0];//find out which cell
+		if(! cells[cellvar].vary_line_tension) return;
+		float boundary_factor = edges[e].tension/(0.5*(cells[cellvar].edge_spatialmin_tension + cells[cellvar].edge_spatialmax_tension));
 
-		if(vary_edge_tension_with_time){//If proportion determined by angle varies with time
-			double time_factor = static_cast<double>(counter_moves_accepted)/max_accepted_movements;
-			time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
-			double mint = (edge_temporal_angle_efect_min[cells[edges[e].cells[0]].type] + edge_temporal_angle_efect_min[cells[edges[e].cells[1]].type])*0.5;
-			double maxt = (edge_temporal_angle_efect_max[cells[edges[e].cells[0]].type] + edge_temporal_angle_efect_max[cells[edges[e].cells[1]].type])*0.5;
-			pex = 0.0;
-			pmaxan = mint + (maxt - mint)*time_factor;
-			punif = 1.0 - pmaxan;
-
-		}else{ //Proportion is determined by exponential function of time
-			pex = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_external + cells[edges[e].cells[1]].edge_angle_prop_external);
-			pmaxan = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_maxangle + cells[edges[e].cells[1]].edge_angle_prop_maxangle);
-			punif = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_uniform + cells[edges[e].cells[1]].edge_angle_prop_uniform);
-		}//end if time determines influence of angle
-
-	}else{ //If only one cell makes edge tension vary
-		cellvar = cells[edges[e].cells[0]].vary_line_tension? edges[e].cells[0] : edges[e].cells[1];//find out which cell
-
-		mins = cells[cellvar].edge_spatialmin_tension; //Minimal tension depending on angle
-		maxs = cells[cellvar].edge_spatialmax_tension; //Maximal tension depending on angle
+		mins = cells[cellvar].edge_spatialmin_tension*boundary_factor; //Minimal tension depending on angle
+		maxs = cells[cellvar].edge_spatialmax_tension*boundary_factor; //Maximal tension depending on angle
 		maxangle = cells[cellvar].edge_maxangle; //Angle of max tension (in degrees)
 		tensionext = cells[cellvar].edge_tension_external; //Tension set from outside (gene expression etc)
-
-
+		prand = cells[cellvar].edge_angle_prop_random;
 		if(vary_edge_tension_with_time){ //If proportion determined by angle varies with time
 			double time_factor = static_cast<double>(counter_moves_accepted)/max_accepted_movements;
 			time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
@@ -691,20 +676,69 @@ void Tissue::setEdgeTension(int e){
 			punif = 1.0 - pmaxan;
 
 		}else{ //If proportion determined by angle does not vary with time
-			pex = 0.5*cells[cellvar].edge_angle_prop_external; //Proportions are determined by cell params directly
-			pmaxan = 0.5*cells[cellvar].edge_angle_prop_maxangle;
-			punif = 0.5*(cells[cellvar].edge_angle_prop_uniform + 1.0);
+			pex = cells[cellvar].edge_angle_prop_external; //Proportions are determined by cell params directly
+			pmaxan = cells[cellvar].edge_angle_prop_maxangle;
+			punif = (cells[cellvar].edge_angle_prop_uniform);
 		}//end if time determines influence of angle
-	}//End if which cells determine edge variation
+	*/
+		return;
+	}else{//not border
+		if(! cells[edges[e].cells[0]].vary_line_tension && !cells[edges[e].cells[1]].vary_line_tension ) return;	
+		if(cells[edges[e].cells[0]].vary_line_tension && cells[edges[e].cells[1]].vary_line_tension ){//If both cells make edge tension vary
+			mins = 0.5*(cells[edges[e].cells[0]].edge_spatialmin_tension + cells[edges[e].cells[1]].edge_spatialmin_tension);
+			maxs = 0.5*(cells[edges[e].cells[0]].edge_spatialmax_tension + cells[edges[e].cells[1]].edge_spatialmax_tension);
+			maxangle = 0.5*(cells[edges[e].cells[0]].edge_maxangle + cells[edges[e].cells[1]].edge_maxangle);
+			tensionext = 0.5*(cells[edges[e].cells[0]].edge_tension_external + cells[edges[e].cells[1]].edge_tension_external); //This is not an angle! is tension value set from gene Expression directly 
 
+			if(vary_edge_tension_with_time){//If proportion determined by angle varies with time
+				double time_factor = static_cast<double>(counter_moves_accepted)/max_accepted_movements;
+				time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
+				double mint = (edge_temporal_angle_efect_min[cells[edges[e].cells[0]].type] + edge_temporal_angle_efect_min[cells[edges[e].cells[1]].type])*0.5;
+				double maxt = (edge_temporal_angle_efect_max[cells[edges[e].cells[0]].type] + edge_temporal_angle_efect_max[cells[edges[e].cells[1]].type])*0.5;
+				pex = 0.0;
+				pmaxan = mint + (maxt - mint)*time_factor;
+				prand = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_random + cells[edges[e].cells[1]].edge_angle_prop_random);
+				punif = 1.0 - pmaxan; //prand only used in the end; this way it is easier to avoid negative proportions
+
+			}else{  //If proportion determined by angle does not vary with time
+				pex = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_external + cells[edges[e].cells[1]].edge_angle_prop_external);
+				pmaxan = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_maxangle + cells[edges[e].cells[1]].edge_angle_prop_maxangle);
+				punif = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_uniform + cells[edges[e].cells[1]].edge_angle_prop_uniform);
+				prand = 0.5*(cells[edges[e].cells[0]].edge_angle_prop_random + cells[edges[e].cells[1]].edge_angle_prop_random);
+			}//end if time determines influence of angle
+
+		}else{ //If only one cell makes edge tension vary
+			cellvar = cells[edges[e].cells[0]].vary_line_tension? edges[e].cells[0] : edges[e].cells[1];//find out which cell
+			mins = cells[cellvar].edge_spatialmin_tension; //Minimal tension depending on angle
+			maxs = cells[cellvar].edge_spatialmax_tension; //Maximal tension depending on angle
+			maxangle = cells[cellvar].edge_maxangle; //Angle of max tension (in degrees)
+			tensionext = cells[cellvar].edge_tension_external; //Tension set from outside (gene expression etc)
+			prand = cells[cellvar].edge_angle_prop_random;
+			if(vary_edge_tension_with_time){ //If proportion determined by angle varies with time
+				double time_factor = static_cast<double>(counter_moves_accepted)/max_accepted_movements;
+				time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
+				double mint = edge_temporal_angle_efect_min[cells[cellvar].type];
+				double maxt = edge_temporal_angle_efect_max[cells[cellvar].type];
+				pex = 0.0;
+				pmaxan = mint + (maxt - mint)*time_factor; //Proportion is determined by exponential function of time
+				punif = 1.0 - pmaxan;
+
+			}else{ //If proportion determined by angle does not vary with time
+				pex = cells[cellvar].edge_angle_prop_external; //Proportions are determined by cell params directly
+				pmaxan = cells[cellvar].edge_angle_prop_maxangle;
+				punif = (cells[cellvar].edge_angle_prop_uniform);
+			}//end if time determines influence of angle
+		}//End if which cells determine edge variation
+	}//End if is border 
 	maxangle *= M_PI/180;
 	angle = atan2(vertices[edges[e].vertices[1]].y - vertices[edges[e].vertices[0]].y, vertices[edges[e].vertices[1]].x - vertices[edges[e].vertices[0]].x); //angle of edge
 	angle = abs(sin(0.5*M_PI + abs(angle - maxangle))); //Point of sin wave (from 0 to 1)
 	angle = mins + angle*(maxs - mins);  //Value of tension at this point of sin wave
 	
 	//Now integrate with other factors influencing tension
-	edges[e].tension = (punif*edges[e].tension + pmaxan*angle + pex*tensionext)/(punif + pmaxan + pex);
-	//cout << "maxt: " << maxs << ", mint: " << mins <<", tension: " << edges[e].tension << ", angle: " << 180*atan2(vertices[edges[e].vertices[1]].y - vertices[edges[e].vertices[0]].y, vertices[edges[e].vertices[1]].x - vertices[edges[e].vertices[0]].x)/M_PI << endl;
+	tensionrand = prand > 0 ? mins + (maxs - mins)*((double) std::rand() / (RAND_MAX)) : 0;
+	edges[e].tension = (punif*edges[e].tension + pmaxan*angle + pex*tensionext + prand*tensionrand)/(punif + pmaxan + pex + prand);
+	//cout << "maxt: " << maxs << ", mint: " << mins <<", tension: " << edges[e].tension << ", angle: " << 180*atan2(vertices[edges[e].vertices[1]].y - vertices[edges[e].vertices[0]].y, vertices[edges[e].vertices[1]].x - vertices[edges[e].vertices[0]].x)/M_PI << ", angle tension: " << angle << ", random: " << tensionrand << ", prand: " << prand << endl;
 }
 
 /*
@@ -2882,15 +2916,15 @@ void Tissue::addSpringsAutomatically(){
 		if(e.type != EdgeType::tissue_boundary || e.dead) continue;
 		if(! vertices_have_spring[e.vertices[0]]) vertices_have_spring[e.vertices[0]] = AddSpringToVertex(e.vertices[0], minx, maxx);
 		if(! vertices_have_spring[e.vertices[1]]) vertices_have_spring[e.vertices[1]] = AddSpringToVertex(e.vertices[1], minx, maxx);
-		if(! vertices_have_spring[e.vertices[0]] && vertices[e.vertices[0]].movable) setStaticVertex(e.vertices[0]);	
-		if(! vertices_have_spring[e.vertices[1]] && vertices[e.vertices[0]].movable) setStaticVertex(e.vertices[1]);	
+		if(! vertices_have_spring[e.vertices[0]]) setStaticVertex(e.vertices[0]);	
+		if(! vertices_have_spring[e.vertices[1]]) setStaticVertex(e.vertices[1]);	
 	}
 }
 
 void Tissue::setStaticVertex(int v){
 	float xprop = (vertices[v].x - hinge_min_xpos)/(hinge_max_xpos - hinge_min_xpos);
 	float yprop = (vertices[v].y - hinge_min_ypos)/(hinge_max_ypos - hinge_min_ypos);
-	if(yprop > 0.5 && xprop < add_static_to_hinge) vertices[v].movable = false; //Assumes that blade is always to the right of hinge  
+	vertices[v].movable = !(yprop > 0.5 && xprop < add_static_to_hinge); //Assumes that blade is always to the right of hinge  
 
 }
 
