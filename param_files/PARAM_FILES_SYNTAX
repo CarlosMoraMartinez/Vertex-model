@@ -1,0 +1,26 @@
+# Carlos Mora 20200228
+# SYNTAX OF PARAMETER FILES:
+# 1) All parameters must be in order
+# 2) simple parameters are specified as:
+#	>Parameter name
+#	number (for boolean parameters, use 1 and -1 for true and false respectively)
+# 3) Cell type parameters are specified as:
+# 	>> Param name  
+#	type1:number
+#	type2:number
+#	...
+#	<
+# 4) Lines starting with '#' are understood as comments
+#
+# GENETIC ALGORITHM
+# 5) '{-}' written before a parameter value is read only when using evolutionary algorithm, to set this parameter as fixed (it is used by evoltest/scripts/params_to_vector.py)
+# 6) '{=}' written before a parameter value is read only when using evolutionary algorithm, to set this parameter identical in all cell types (it is used by evoltest/scripts/params_to_vector.py)
+#
+# PARAMETER ENSEMBLES
+# 7) x;y;l tuples as values are used to generate ranges from x to y of size l in parameter ensembles
+# 8) a,b,c...: all these values are used as parameters (no range is generated)
+# 9) % symbol in parameter name: in cell/spring type parameters, all combinations between types are generated, otherwise only 1-to-1 combinations are generated (therefore value vectors for all cell types must be of same length)
+# 10) ? symbol in parameter name: when generating random ensembles, only parameters with this symbol are randomly generated. In that case, an x,y tuple (min and max value) must be used, separated by ';'(like a range). The '?' symbol should be in the name, not in the cell type number. The same random number will be used in a param file for all cell types unless the '%' symbol is also included in the name. 
+#	the number of randomly generated ensembles is passed to the script, and it is not incorporated into the parameter file
+#
+########################################################################
