@@ -54,6 +54,10 @@ const int EMPTY_CONNECTION = -999;  //Value to initialize arrays (cells in verte
 const int RANDOM_SEED = 1234;
 const double NUMERIC_THRESHOLD = 1e-16;
 const double EXP_FACTOR = 1 - exp(-1); //Used when time or x position changes eq. size, to normalize the function 1 - exp(-(x**exp)) so its max value is 1
+const int INTEGR_MONTECARLO = 0;
+const int INTEGR_EULER = 1;
+const int INTEGR_MIXTURE = 2;
+const int INTEGR_RUNGEKUTTA4 = 3;
 
 const std::string VERTEX_FILE_EXTENSION = ".points";
 const std::string CELLS_FILE_EXTENSION = ".cells";
@@ -185,6 +189,11 @@ typedef std::queue<DivisionRecord> divisionrecord_q;
 typedef std::map<CellType, double> cell_type_param;
 typedef std::map<int, double> spring_type_param;
 
+struct pointDerivative{
+	double x;
+	double y;
+}
+typedef std::vector<pointDerivative> pointDerivative_v;
 
 class Tissue{
         friend class basicGRN;
@@ -201,6 +210,8 @@ class Tissue{
 		void setHingeMinAndMaxPositions();
 
 		void simulate(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif);
+		void simulatEuler(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif);
+		void simulateMonteCarlo(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif);			
 		double calculateCellArea(const Cell& c);
 		double calculateCellPerimeter(const Cell& c);
 		void calculateCellCentroid(Cell& c);
@@ -256,6 +267,7 @@ class Tissue{
 	private:
 		std::string simname;
 		int num_cells, num_vertices, num_edges, num_springs;
+		int integration_mode;
 		double hinge_min_xpos, hinge_max_xpos, hinge_min_ypos, hinge_max_ypos;
 		bool step_mode; //If the simulation is controlled by an external source, set this to true in order to avoid excessive printing of outputs
 		//parameters
