@@ -4,10 +4,10 @@
 
 maxCPU=35
 i=0
-wingarray=(wing2E) #(bud0 hex2020_1_s5.0_20x20_n0.4) #(wing2E wing2Edumpy) #(wing1D wingDumpy2) #wing2F wing2Edumpy #bud3b bud2 iso20_3_df gr1
+wingarray=(iso20-3-60dfs) #(bud0 hex2020_1_s5.0_20x20_n0.4) #(wing2E wing2Edumpy) #(wing1D wingDumpy2) #wing2F wing2Edumpy #bud3b bud2 iso20_3_df gr1
 
 cd param_files
-python ../src/vertex_parms_ensemble.py -i $3'.vp' -o $3
+python3 ../src/vertex_parms_ensemble.py -i $3'.vp' -o $3
 cd ../
 echo $3' Param Files generated'
 
