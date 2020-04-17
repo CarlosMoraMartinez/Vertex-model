@@ -2,7 +2,7 @@
 #$2: Write every N accepted movements
 #$3: Name of ensemble (.vp ensemble file needs to be in ./param_files) 
 
-maxCPU=35
+maxCPU=12
 i=0
 wingarray=(iso20-3-60dfs) #(bud0 hex2020_1_s5.0_20x20_n0.4) #(wing2E wing2Edumpy) #(wing1D wingDumpy2) #wing2F wing2Edumpy #bud3b bud2 iso20_3_df gr1
 
