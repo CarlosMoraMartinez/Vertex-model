@@ -11,7 +11,8 @@
 
 // Default model constants. From Ray et al. (2015) Dev. Cell.
 const float MIN_RANGE_VERTEX_MOVEMENT = 0; //not used so far
-const float MAX_RANGE_VERTEX_MOVEMENT = 0.02;
+const float MAX_RANGE_VERTEX_MOVEMENT = 0.02; //Monte Carlo
+const float DEFAULT_H = 0.01; //Euler, etc
 const float TEMPERATURE_POSITIVE_ENERGY = 0.005;
 const float TEMPERATURE_NEGATIVE_ENERGY = 0.1; //Acceptance probability is basically 1
 const bool TEMPERATURE_MEANS_PROPORTION_OF_ACCEPTANCE = true;
@@ -192,7 +193,7 @@ typedef std::map<int, double> spring_type_param;
 struct pointDerivative{
 	double x;
 	double y;
-}
+};
 typedef std::vector<pointDerivative> pointDerivative_v;
 
 class Tissue{
@@ -210,15 +211,16 @@ class Tissue{
 		void setHingeMinAndMaxPositions();
 
 		void simulate(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif);
-		void simulatEuler(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif);
-		void simulateMonteCarlo(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif);			
+		void simulateEuler();
+		void simulateMonteCarlo();	
 		double calculateCellArea(const Cell& c);
 		double calculateCellPerimeter(const Cell& c);
 		void calculateCellCentroid(Cell& c);
 		double distance(int v1, int v2);
 		double calculateEnergy(Vertex& v);
+		void derivativeVertexPos(const Vertex &v, pointDerivative & pd);
 		void moveVertex(Vertex& v, float x, float y);
-		bool tryMoveVertex(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif);
+		bool tryMoveVertex();
 		void detectChangesAfterMove(int vertex_moved);
 		void performRearrangements();
 		int newVertex();
@@ -268,11 +270,11 @@ class Tissue{
 		std::string simname;
 		int num_cells, num_vertices, num_edges, num_springs;
 		int integration_mode;
-		double hinge_min_xpos, hinge_max_xpos, hinge_min_ypos, hinge_max_ypos;
 		bool step_mode; //If the simulation is controlled by an external source, set this to true in order to avoid excessive printing of outputs
 		//parameters
 		float min_range_vertex_movement; 
-		float max_range_vertex_movement;
+		float max_range_vertex_movement; //In case of Monte Carlo integration
+		float h; //In case of Euler/Runge-Kutta integration
 		float temperature_positive_energy;
 		float temperature_negative_energy; 
 		bool temperature_means_proportion_of_acceptance;
@@ -313,7 +315,7 @@ class Tissue{
 		cell_type_param edge_temporal_angle_efect_min;
 
 		float length_rotated_edge; 
-
+		double hinge_min_xpos, hinge_max_xpos, hinge_min_ypos, hinge_max_ypos;
 		//Data structures
 		vertex_v vertices;
 		cell_v cells;
@@ -327,7 +329,8 @@ class Tissue{
 		//counters
 		int counter_move_trials, counter_moves_accepted, counter_favorable_accepted, counter_favorable_rejected, counter_unfav_accepted, counter_unfav_rejected, counter_edges_removed, counter_t1, counter_t1_abortions, counter_divisions, counter_t2, counter_t1_outwards, counter_t1_inwards;
 		int max_accepted_movements, write_every_N_moves;
-
+		std::default_random_engine generator;
+		std::uniform_real_distribution<double> unif;
 		//Methods used by constructors
 		void initialize_vertices(std::ifstream& inp);
 		void initialize_cells(std::ifstream& inp);  

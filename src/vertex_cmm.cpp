@@ -6,6 +6,7 @@
 #include <string>
 #include <cstdlib>
 #include <random>
+#include <chrono> 
 
 using namespace std;
 
@@ -34,8 +35,11 @@ int main(int argc, char *argv[]){
 	std::uniform_real_distribution<double> unif;
 
 	try{
-		t.simulate(generator, unif);
-		cout << t.getStats() << endl; 
+		auto start = chrono::high_resolution_clock::now(); 
+		t.simulate(generator, unif); 
+		auto stop = chrono::high_resolution_clock::now(); 
+		auto duration = chrono::duration_cast<chrono::milliseconds>(stop - start);
+		cout << "Simulation lasted " << duration.count() << " milliseconds." << endl;
 		//t.addAcceptedMovements(10);
 		//t.simulate(generator, unif);
 		//cout << t.getStats() << endl; 
@@ -44,7 +48,7 @@ int main(int argc, char *argv[]){
 		cout << msg << endl;
 		exit(1);
 	}
-	cout << t.getStats() << endl;
+	cout << "\nAfter stats:\n" << t.getStats() << endl;
 	exit(0);
 	
 }

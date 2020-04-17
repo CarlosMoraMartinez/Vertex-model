@@ -183,6 +183,7 @@ void Tissue::set_default_simulation_params()
 	integration_mode = INTEGR_MONTECARLO;
 	min_range_vertex_movement = MIN_RANGE_VERTEX_MOVEMENT;
 	max_range_vertex_movement = MAX_RANGE_VERTEX_MOVEMENT;
+	h = DEFAULT_H;
 	temperature_positive_energy = TEMPERATURE_POSITIVE_ENERGY;
 	temperature_negative_energy = TEMPERATURE_NEGATIVE_ENERGY;
 	temperature_means_proportion_of_acceptance = TEMPERATURE_MEANS_PROPORTION_OF_ACCEPTANCE;
@@ -370,10 +371,11 @@ void Tissue::initialize_params(std::string params_file)
 			if (line.at(0) != '#')
 				inp.push_back(line);
 	std::vector<std::string>::iterator it = inp.begin();
+	//READ PARAMETERS IN ORDER FROM HERE:
 	integration_mode = static_cast<int>(read_real_par(it));
 	min_range_vertex_movement = read_real_par(it);
-
 	max_range_vertex_movement = read_real_par(it);
+	h = read_real_par(it);
 	temperature_positive_energy = read_real_par(it);
 	temperature_negative_energy = read_real_par(it);
 	temperature_means_proportion_of_acceptance = read_real_par(it) > 0;
@@ -1191,7 +1193,7 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 	//v.energy = calculateEnergy(v);
 }
 //counter_favorable_accepted, counter_favorable_rejected, counter_unfav_accepted, counter_unfav_rejected
-bool Tissue::tryMoveVertex(std::default_random_engine &generator, std::uniform_real_distribution<double> &unif)
+bool Tissue::tryMoveVertex()
 {
 
 	int vertex_to_move;
@@ -1418,51 +1420,41 @@ std:
 	//writeAllData(fname); //THIS IS USEFUL TO DEBUG, BUT THE FORMAT IS NOT READ BY PLOTTING PROGRAM
 	writeCellDataTable(fname);
 	if (REPORT_OUT)
+		cout << "\nWritting file: " << int(counter_moves_accepted / write_every_N_moves) << " at move " << counter_moves_accepted << endl;
 		std::cout << getStats() << endl;
 }
 
-void Tissue::derivativeVertexPos(const Vertex &v; pointDerivative & pd)
+void Tissue::derivativeVertexPos(const Vertex &v, pointDerivative &pd)
 {
 	double t1x, t2x, t3x, t1y, t2y, t3y;
 	t1x = t2x = t3x = t1y = t2y = t3y = 0;
 	float pref_area, aux, auxd1, auxd2;
-	int aux_this, aux_prev, aux_next;
+	int aux_this, aux_prev, aux_next, c;
 	//TERM 1
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
 		if (v.cells[i] == EMPTY_CONNECTION)
 			continue;
-        aux = (cells[v.cells[i]].area/cells[v.cells[i]].preferred_area- 1)/cells[v.cells[i]].preferred_area;
+		c = v.cells[i];
+        aux = (cells[c].area/cells[c].preferred_area- 1)/cells[c].preferred_area;
 		aux_this = which(v.ind, cells[c].vertices, cells[c].num_vertices); //These three lines are repeated in TERM3 but since TERM3 is probably going to be optimized it doesnt matter
-		aux_prev = cells[c].vertices[(aux_this + cells[c].num_vertices - 1)%cells[c].num_vertices ];
-		aux_next = cells[c].vertices[(aux_this + 1)%cells[c].num_vertices ];
-		//aux_prev should keep the vertex with lower y coordinate
-		if(vertices[aux_prev].y > vertices[aux_next].y ){
-			aux_this = aux_prev; //here aux_this is used as a temporal variable to make the swap
-			aux_prev = aux_next;
-			aux_next = aux_this;
-		}
-		t1x += v.x > cells[v.cells[i]].centroid_x ?  aux*(vertices[aux_next].y - vertices[aux_prev].y) : aux*(vertices[aux_prev].y - vertices[aux_next].y);
-		//Now aux_prev should keep the vertex with lower x coordinate
-		if(vertices[aux_prev].x > vertices[aux_next].x ){
-			aux_this = aux_prev; //here aux_this is used as a temporal variable to make the swap
-			aux_prev = aux_next;
-			aux_next = aux_this;
-		}
-		t1y += v.y > cells[v.cells[i]].centroid_y ?  aux*(vertices[aux_next].x - vertices[aux_prev].x) : aux*(vertices[aux_prev].x - vertices[aux_next].x);
-
+		//IMPORTANT: ASSUMES THAT VERTICES IN CELLS ARE ORDERED CLOCK-WISE
+		aux_next = cells[c].vertices[(aux_this + cells[c].num_vertices - 1)%cells[c].num_vertices ];
+		aux_prev = cells[c].vertices[(aux_this + 1)%cells[c].num_vertices ];
+		t1x += v.x > cells[c].centroid_x ?  aux*(vertices[aux_next].y - vertices[aux_prev].y) : aux*(vertices[aux_prev].y - vertices[aux_next].y);
+		t1y += v.y > cells[c].centroid_y ?  aux*(vertices[aux_next].x - vertices[aux_prev].x) : aux*(vertices[aux_prev].x - vertices[aux_next].x);
 	} //Term1
 	//TERM 2
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
 		if (v.edges[i] == EMPTY_CONNECTION)
 			continue;
-
-		pref_area = edges[v.edges[i]].type == EdgeType::tissue_boundary ? edges[v.edges[i]].cells[0] == EMPTY_CONNECTION ? cells[edges[v.edges[i]].cells[1]].preferred_area
-																														 : cells[edges[v.edges[i]].cells[0]].preferred_area
-																		: (cells[edges[v.edges[i]].cells[0]].preferred_area + cells[edges[v.edges[i]].cells[1]].preferred_area) * 0.5;
-		aux_next = edges[v.edges[i]].vertices[0] == v.ind ? edges[v.edges[i]].vertices[1] : edges[v.edges[i]].vertices[0];
-		aux = edges[v.edges[i]].tension / (edges[v.edges[i]].length * pref_area);
+		c = v.edges[i];	
+		pref_area = edges[c].type == EdgeType::tissue_boundary ? edges[c].cells[0] == EMPTY_CONNECTION ? cells[edges[c].cells[1]].preferred_area
+																											 : cells[edges[c].cells[0]].preferred_area
+																		: (cells[edges[c].cells[0]].preferred_area + cells[edges[c].cells[1]].preferred_area) * 0.5;
+		aux_next = edges[c].vertices[0] == v.ind ? edges[c].vertices[1] : edges[c].vertices[0];
+		aux = edges[c].tension / (edges[c].length * pref_area);
 		t2x += (v.x - vertices[aux_next].x) * aux;
 		t2y += (v.y - vertices[aux_next].y) * aux;
 	} //Term 2
@@ -1477,21 +1469,35 @@ void Tissue::derivativeVertexPos(const Vertex &v; pointDerivative & pd)
 	{
 		if (v.cells[i] == EMPTY_CONNECTION)
 			continue;
+		c = v.cells[i];
 		aux_this = which(v.ind, cells[c].vertices, cells[c].num_vertices);
 		aux_prev = cells[c].vertices[(aux_this + cells[c].num_vertices - 1)%cells[c].num_vertices ];
 		aux_next = cells[c].vertices[(aux_this + 1)%cells[c].num_vertices ];
-		aux = cells[v.cells[i]].perimeter*cells[v.cells[i]].perimeter_contractility/cells[v.cells[i]].preferred_area;
+		aux = cells[c].perimeter*cells[c].perimeter_contractility/cells[c].preferred_area;
         auxd1 = distance(v.ind, aux_prev);
         auxd2 = distance(v.ind, aux_next);
 		t3x += aux*( (v.x - vertices[aux_prev].x)/auxd1 + (v.x - vertices[aux_next].x)/auxd2);
 		t3y += aux*( (v.y - vertices[aux_prev].y)/auxd1 + (v.x - vertices[aux_next].y)/auxd2);
 	} //Term3
+	t1x = isnan(t1x) ? 0 : t1x;
+	t1y = isnan(t1y) ? 0 : t1y;
+	t2x = isnan(t2x) ? 0 : t2x;
+	t2y = isnan(t2y) ? 0 : t2y;
+	t3x = isnan(t3x) ? 0 : t3x;
+	t3y = isnan(t3y) ? 0 : t3y;
 	pd.x = 0.5 * t1x * energy_term1 + t2x * energy_term2 + t3x * energy_term3;
 	pd.y = 0.5 * t1y * energy_term1 + t2y * energy_term2 + t3y * energy_term3;
-}
-void Tissue::simulateMonteCarlo(std::default_random_engine &generator, std::uniform_real_distribution<double> &unif)
+	//Add some noise
+	if(max_range_vertex_movement > 0){
+		double angle = 2 * M_PI * unif(generator);
+		double radius = unif(generator) * max_range_vertex_movement;
+		pd.x += cos(angle) * radius;
+		pd.y += sin(angle) * radius;
+	}
+}//derivativeVertexPos used in Simulate Euler
+void Tissue::simulateMonteCarlo()
 {
-
+	cout << "SIMULATING with MONTE CARLO method." << endl;
 	if (!step_mode)
 	{
 		produceOutputs();
@@ -1499,7 +1505,7 @@ void Tissue::simulateMonteCarlo(std::default_random_engine &generator, std::unif
 	//MAIN SIMULATION LOOP
 	do
 	{
-		if (tryMoveVertex(generator, unif))
+		if (tryMoveVertex())
 		{ //Tries a random movement; if accepted:
 			counter_moves_accepted++;
 			performRearrangements(); // Performs any transition/rearrangement needed
@@ -1510,16 +1516,22 @@ void Tissue::simulateMonteCarlo(std::default_random_engine &generator, std::unif
 	} while (counter_moves_accepted < max_accepted_movements);
 }//simulateMonteCarlo
 
-void Tissue::simulateEuler(std::default_random_engine &generator, std::uniform_real_distribution<double> &unif)
+void Tissue::simulateEuler()
 {
 	pointDerivative_v derxy(num_vertices, pointDerivative{0.0, 0.0});
-	float total_time = static_cast<float>(max_accepted_movements);
+	//float total_time = static_cast<float>(max_accepted_movements);
+	int h_factor = round(1.0/h);
+	int write_every_N_moves2 = write_every_N_moves*h_factor;
+	int max_accepted_movements2 = max_accepted_movements*h_factor;
+	cout << "SIMULATING with EULER method." << endl;
+	cout << "h: " << h << ", h factor: "<< h_factor << "write every: " << write_every_N_moves2 << ", max: " << max_accepted_movements2 <<endl;
 	if (!step_mode)
 		produceOutputs();
-	for (float t = 0.0; t < total_time; t += h)
+	for (int t = 1; t <= max_accepted_movements2; t ++)
 	{
+		//cout << t << ", t%h_factor: " << t % h_factor << ", t%write_every_N_moves2: " << t % write_every_N_moves2 << endl;
 		//Calculate derivative of x and y positions
-		for (int v; v < num_vertices; v++)
+		for (int v = 0; v < num_vertices; v++)
 		{
 			if (vertices[v].dead)
 				continue;
@@ -1527,20 +1539,22 @@ void Tissue::simulateEuler(std::default_random_engine &generator, std::uniform_r
 		}
 
 		//Now update vertices, edges and cells
-		for (int v; v < num_vertices; v++)
+		for (int v = 0; v < num_vertices; v++)
 		{
 			if (vertices[v].dead)
 				continue;
-			vertices[v].x += derxy[v].x;
-			vertices[v].y += derxy[v].y;
+			//cout << "     v: " << v << ", der_x: " << h*derxy[v].x << ", der_y: " << h*derxy[v].y << endl;
+			if(isnan(derxy[v].x) || isnan(derxy[v].y)) exit(1);
+			vertices[v].x += h*derxy[v].x;
+			vertices[v].y += h*derxy[v].y;
 		}
-		for (int e; e < num_edges; e++)
+		for (int e = 0; e < num_edges; e++)
 		{
 			if (edges[e].dead)
 				continue;
-			edges[e].length = distance(edges[e].vertices[0], edges[e].vertices[0];
+			edges[e].length = distance(edges[e].vertices[0], edges[e].vertices[0]);
 		}
-		for (int c; c < num_cells; c++)
+		for (int c = 0; c < num_cells; c++)
 		{
 			if (cells[c].dead)
 				continue;
@@ -1554,20 +1568,26 @@ void Tissue::simulateEuler(std::default_random_engine &generator, std::uniform_r
 		//Now update parameters that  change with time or space
 
 		//produce outputs
-		if (int(t) % write_every_N_moves == 0 && int(t) - t == 0 && !step_mode)
-			produceOutputs();
+		if(t % h_factor == 0){
+			counter_moves_accepted++;
+			if (t % write_every_N_moves2 == 0 && !step_mode)
+				produceOutputs();
+		}
 	} //end for time
+	//produceOutputs();
 } // end simulateEuler
 
 void Tissue::simulate(std::default_random_engine &generator, std::uniform_real_distribution<double> &unif)
 {
+	this->generator = generator;
+	this->unif = unif;
 	switch (this->integration_mode)
 	{
 	case INTEGR_MONTECARLO:
-		simulateMonteCarlo(generator, unif);
+		simulateMonteCarlo();
 		break;
 	case INTEGR_EULER:
-		simulateEuler(generator, unif);
+		simulateEuler();
 		break;
 	case INTEGR_MIXTURE:
 		break;
@@ -2011,7 +2031,7 @@ void Tissue::make_divide_cell(Rearrangement &r)
 	edges[newe].cells[0] = cell;
 	edges[newe].cells[1] = newcind;
 	edges[newe].vertices[0] = newvind1;
-	edges[newe].vertic,es[1] = newvind2;
+	edges[newe].vertices[1] = newvind2;
 	edges[newe].length = distance(newvind1, newvind2);
 	//edges[newe].tension = edges[e1].type == EdgeType::tissue_boundary? edges[e2].tension : edges[e1].tension;//make this more sophisticated to take into account veins etc.
 	//edges[newe].type = edges[e1].type == EdgeType::tissue_boundary? edges[e2].type : edges[e1].type; //make this more sophisticated to take into account veins etc.
@@ -2035,7 +2055,7 @@ void Tissue::make_divide_cell(Rearrangement &r)
 	int changeCounter = 0;
 	while (i != newv2_in_c1)
 	{
-		for (int j = 0; j < cells[cell].num_vertices; j++)
+		for (int j = 0; j < cells[cell].num_vertices; j++) //Move edge with vertex i to new cell
 		{
 			if (cells[cell].edges[j] == EMPTY_CONNECTION)
 				continue; //necessary when the first edge removed is not the last
@@ -2062,7 +2082,7 @@ void Tissue::make_divide_cell(Rearrangement &r)
 	//Reagrupate edges and vertices in cell
 	for (int j = 0; j < MAX_SIDES_PER_CELL - 1; j++)
 	{
-		if (cells[cell].edges[j] == EMPTY_CONNECTION)
+		if (cells[cell].edges[j] == EMPTY_CONNECTION) //reagrupate edges
 		{
 			for (int k = j + 1; k < MAX_SIDES_PER_CELL; k++)
 			{
@@ -2073,8 +2093,8 @@ void Tissue::make_divide_cell(Rearrangement &r)
 					break;
 				}
 			}
-		} //end if reagrupate vertices
-		if (cells[cell].vertices[j] == EMPTY_CONNECTION)
+		} //end if reagrupate edges
+		if (cells[cell].vertices[j] == EMPTY_CONNECTION) //reagrupate vertices
 		{
 			for (int k = j + 1; k < MAX_SIDES_PER_CELL; k++)
 			{
@@ -2084,7 +2104,7 @@ void Tissue::make_divide_cell(Rearrangement &r)
 					cells[cell].vertices[k] = EMPTY_CONNECTION;
 					break;
 				}
-			} //end if reagrupate edges
+			} //end if reagrupate vertices
 		}
 	}
 	cells[cell].num_vertices -= changeCounter;
