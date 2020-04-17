@@ -1479,12 +1479,12 @@ void Tissue::derivativeVertexPos(const Vertex &v, pointDerivative &pd)
 		t3x += aux*( (v.x - vertices[aux_prev].x)/auxd1 + (v.x - vertices[aux_next].x)/auxd2);
 		t3y += aux*( (v.y - vertices[aux_prev].y)/auxd1 + (v.x - vertices[aux_next].y)/auxd2);
 	} //Term3
-	t1x = isnan(t1x) ? 0 : t1x;
-	t1y = isnan(t1y) ? 0 : t1y;
-	t2x = isnan(t2x) ? 0 : t2x;
-	t2y = isnan(t2y) ? 0 : t2y;
-	t3x = isnan(t3x) ? 0 : t3x;
-	t3y = isnan(t3y) ? 0 : t3y;
+	t1x = isnan(t1x) || isinf(t1x) ? 0 : t1x;
+	t1y = isnan(t1y) || isinf(t1y) ? 0 : t1y;
+	t2x = isnan(t2x) || isinf(t2x) ? 0 : t2x;
+	t2y = isnan(t2y) || isinf(t2y) ? 0 : t2y;
+	t3x = isnan(t3x) || isinf(t3x) ? 0 : t3x;
+	t3y = isnan(t3y) || isinf(t3y) ? 0 : t3y;
 	pd.x = 0.5 * t1x * energy_term1 + t2x * energy_term2 + t3x * energy_term3;
 	pd.y = 0.5 * t1y * energy_term1 + t2y * energy_term2 + t3y * energy_term3;
 	//Add some noise
