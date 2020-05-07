@@ -1,33 +1,33 @@
-Ensemble	From	Code changed	Params changed	Results	Good simulations
-ensemble27				Best so far	18, 36
-ensemble28	ensemble27_18		Blade preferred area initial and final 	No better than 27_18 or 36	
-ensemble29	ensemble27_18		Blade preferred area initial and final (smaller than 28); spring tension	No better than 27_18 or 36	
-ensemble30	ensemble27_36		Spring tension (lower than 29)		
-ensemble31	ensemble27_36		Like 30, but division angle is 20% random		
-ensemble32	ensemble27_36		Spring tension (like 20) and lower values of border tension; division longest axis	Not much change	
-ensemble33	ensemble27_36		Like 32; division 20% random	slightly more disorganized, more T1s	
-ensemble34	ensemble27_36		Like 32; division 90% random	Not much change	
-ensemble35	ensemble27_36		Like 32; division 90% random only in blade and hinge; 100% longest axis in veins	Not much change	
-ensemble36	ensemble27_36		Negative tension in veins	Crazy, not useful	
-ensemble37	ensemble36	No transitions in veins and between veins and intervein tissue	Negative tension in veins	Not much change, but take into accound: some look good although less stable	
-ensemble38	ensemble27_36		Veins decreased cell size in blade		
-bud1ensemble3		With angle-dependent edge tension (which also varies over time)	Exponent of time change and angle influence; tension change with angle, others	Some look slightly good (eg., 464)	
-bud1ensemble4	Bud1ensemble3_464	Vary final size and others, but forgot to stop cell division			
-bud1ensemble5	Bud1ensemble3_464	Like ensemble4 but without cell division		4	
-bud1ensemble6					
-bud1ensemble7					
-bud1ensemble8					
-bud1ensemble9					
-bud1ensemble10	Bud1ensemble6_2				
-bud1ensemble11	Bud1ensemble6_2				
-bud1ensemble12	Bud1ensemble6_2				
-bud1ensemble13	Bud1ensemble6_2	300 million moves	Final area equilibrium: 200 or 300; random tension prop 0, 0.005, 0.002, min_spatial tension -0.02 or -0.04	En estas condiciones, añadir ruido a la tensión empeora la direccionalidad del crecimiento sin aumentar las T1s. La tensión mínima de -0.02 o -0.04 funciona bien; el área final de 200 da un resultado final un poco más relajado que el área final de 300. 	
-bud1ensemble14	Bud1ensemble6_2	300 million moves	Final area equilibrium: 40, 200 or 300; random tension prop 0, 0.005, 0.002, min_spatial tension -0.02 or -0.1	El área de equilibrio 40 da buen resultado, las alas se hinchan menos. Es compatible con un poco de ruido en la tensión. Tensión mínima de -0.1 da bien resultado	1, 3, 4
-bud1ensemble15		300 million moves	Final area equilibrium: 40 or 60; random tension prop 0, 0.005, 0.002, min_spatial tension -0.2, -0.3, -0.5	Conclusión: Peor que ensemble14. Un intermedio entre la sim 15_0 y la 14_1 podría estar bien. Spatial_min_tension de -0.2 es el límite inferior que se puede utilizar. Nada o 0.02 de proporción de tensión random es lo que mejor funciona.	0, 6, 9, 15
-bud1ensemble16		500 million moves	In this case, prop_angle depends on time (goes from 1 to 0.7 with exp = 5). Final area equilibrium: 40 or 60; random tension prop 0 or 0.001, min_spatial tension -0.2, -0.3, -0.5	 Área de 60 en este rango de tiempo permite mayor estiramiento relativamente natural, aunque la forma es un poco peor que con área de 40. 0.001 de ruido en el ángulo no está mal. -0.2 sigue siendo la mínima tensión que da resultadpos aceptables	0 (98000 T1s)
-bud1ensemble17		500 million moves	Final area equilibrium: 40 or 60; random tension prop 0, 0.001, 0.002, min_spatial tension -0.2, -0.3, -0.5	Muy parecido a ensemble 15 (15-0 similar a 17-2; 15-9 similar a 17-6); hacer la simulación más larga no parece mejorar demasiado. Las alas no son más largas	2,4,6,8,10
-bud1ensemble18		Like ensemble 16 but with angle prop time exponent -5 instead of 5. 500 million moves			
-bud1ensemble19		Like ensemble 14 but 1)deactivating time-dependent decrease in angle influence on edge tension (in 14 max prop == min prop, so there was no change, but the option was active) and 2) Now tension is always positive, although keeping the same difference between max and min tension. 500.000.000 moves		Bad. Wings retract.	
-bud1ensemble20		Similar to enemble 18, but 1500 000 000 moves. 	Exponent of time change and angle influence -2 and -5; Final eq. Area 60 and 30	All simulations are good. The ones with area = 30 are thinner and look better in shape, but elongate less overall. Exponent -2 is better than -5. -2 makes elongation proggressive, but -5 is too static until the end, so in -2 elongation is greater. Next, try lower exponents. However, in sim 2 there are 89000 T1s (exp = -5), versus 57000 in sim 3 (exp = -2)	
-bud1ensemble21		Similar to 21, try more exponents	Exponent of time change and angle influence -3.0,-2.0,-1.5,-1.2,-1.0,-0.7,-0.4 ; Final eq. Area 22 and 30	Final area 30→all wings very similar to 20_3, with slight changes in shape. Area=22, shorter wings but similar shape.	
-iso1ensemble1		Simulating isometric growth. 	Final Eq. Area of 80 and 200, different time exponents of angle influence	Final Eq. Area of 80 is fine, final area of 200 makes wings crash a little. All simulations get too rounded towards the end, simulation 0 is the most elongated one. Pick a shape at 80-95% of the simulation time. 	
+Ensemble,From,Code changed,Params changed,Results,Good simulations,,,,,,,,,,,,
+ensemble27,,,,Best so far,18,36,,,,,,,,,,,
+ensemble28,ensemble27_18,,Blade preferred area initial and final ,No better than 27_18 or 36,,,,,,,,,,,,,
+ensemble29,ensemble27_18,,Blade preferred area initial and final (smaller than 28), spring tension,No better than 27_18 or 36,,,,,,,,,,,,
+ensemble30,ensemble27_36,,Spring tension (lower than 29),,,,,,,,,,,,,,
+ensemble31,ensemble27_36,,Like 30, but division angle is 20% random,,,,,,,,,,,,,
+ensemble32,ensemble27_36,,Spring tension (like 20) and lower values of border tension, division longest axis,Not much change,,,,,,,,,,,,
+ensemble33,ensemble27_36,,Like 32, division 20% random,slightly more disorganized, more T1s,,,,,,,,,,,
+ensemble34,ensemble27_36,,Like 32, division 90% random,Not much change,,,,,,,,,,,,
+ensemble35,ensemble27_36,,Like 32, division 90% random only in blade and hinge, 100% longest axis in veins,Not much change,,,,,,,,,,,
+ensemble36,ensemble27_36,,Negative tension in veins,Crazy, not useful,,,,,,,,,,,,
+ensemble37,ensemble36,No transitions in veins and between veins and intervein tissue,Negative tension in veins,Not much change, but take into accound: some look good although less stable,,,,,,,,,,,,
+ensemble38,ensemble27_36,,Veins decreased cell size in blade,,,,,,,,,,,,,,
+bud1ensemble3,,With angle-dependent edge tension (which also varies over time),Exponent of time change and angle influence, tension change with angle, others,Some look slightly good (eg., 464),,,,,,,,,,
+bud1ensemble4,Bud1ensemble3_464,Vary final size and others, but forgot to stop cell division,,,,,,,,,,,,,,
+bud1ensemble5,Bud1ensemble3_464,Like ensemble4 but without cell division,,4,,,,,,,,,,,,,
+bud1ensemble6,,,,,,,,,,,,,,,,,
+bud1ensemble7,,,,,,,,,,,,,,,,,
+bud1ensemble8,,,,,,,,,,,,,,,,,
+bud1ensemble9,,,,,,,,,,,,,,,,,
+bud1ensemble10,Bud1ensemble6_2,,,,,,,,,,,,,,,,
+bud1ensemble11,Bud1ensemble6_2,,,,,,,,,,,,,,,,
+bud1ensemble12,Bud1ensemble6_2,,,,,,,,,,,,,,,,
+bud1ensemble13,Bud1ensemble6_2,300 million moves,Final area equilibrium: 200 or 300, random tension prop 0,0.005,0.002, min_spatial tension -0.02 or -0.04,En estas condiciones, añadir ruido a la tensión empeora la direccionalidad del crecimiento sin aumentar las T1s. La tensión mínima de -0.02 o -0.04 funciona bien, el área final de 200 da un resultado final un poco más relajado que el área final de 300. ,,,,,,,
+bud1ensemble14,Bud1ensemble6_2,300 million moves,Final area equilibrium: 40, 200 or 300, random tension prop 0,0.005,0.002, min_spatial tension -0.02 or -0.1,El área de equilibrio 40 da buen resultado, las alas se hinchan menos. Es compatible con un poco de ruido en la tensión. Tensión mínima de -0.1 da bien resultado,1,3,4,,,,
+bud1ensemble15,,300 million moves,Final area equilibrium: 40 or 60, random tension prop 0,0.005,0.002, min_spatial tension -0.2,-0.3,-0.5,Conclusión: Peor que ensemble14. Un intermedio entre la sim 15_0 y la 14_1 podría estar bien. Spatial_min_tension de -0.2 es el límite inferior que se puede utilizar. Nada o 0.02 de proporción de tensión random es lo que mejor funciona.,0,6,9,15,,,
+bud1ensemble16,,500 million moves,In this case, prop_angle depends on time (goes from 1 to 0.7 with exp = 5). Final area equilibrium: 40 or 60, random tension prop 0 or 0.001, min_spatial tension -0.2,-0.3,-0.5, Área de 60 en este rango de tiempo permite mayor estiramiento relativamente natural, aunque la forma es un poco peor que con área de 40. 0.001 de ruido en el ángulo no está mal. -0.2 sigue siendo la mínima tensión que da resultadpos aceptables,0 (98000 T1s),,,,,,
+bud1ensemble17,,500 million moves,Final area equilibrium: 40 or 60, random tension prop 0,0.001,0.002, min_spatial tension -0.2,-0.3,-0.5,Muy parecido a ensemble 15 (15-0 similar a 17-2, 15-9 similar a 17-6), hacer la simulación más larga no parece mejorar demasiado. Las alas no son más largas,2,4,6,8,10
+bud1ensemble18,,Like ensemble 16 but with angle prop time exponent -5 instead of 5. 500 million moves,,,,,,,,,,,,,,,
+bud1ensemble19,,Like ensemble 14 but 1)deactivating time-dependent decrease in angle influence on edge tension (in 14 max prop == min prop, so there was no change, but the option was active) and 2) Now tension is always positive, although keeping the same difference between max and min tension. 500.000.000 moves,,Bad. Wings retract.,,,,,,,,,,
+bud1ensemble20,,Similar to enemble 18, but 1500 000 000 moves. ,Exponent of time change and angle influence -2 and -5, Final eq. Area 60 and 30,All simulations are good. The ones with area = 30 are thinner and look better in shape, but elongate less overall. Exponent -2 is better than -5. -2 makes elongation proggressive, but -5 is too static until the end, so in -2 elongation is greater. Next, try lower exponents. However, in sim 2 there are 89000 T1s (exp = -5), versus 57000 in sim 3 (exp = -2),,,,,
+bud1ensemble21,,Similar to 21, try more exponents,Exponent of time change and angle influence -3.0,-2,-1.5,-1.2,-1,-0.7,-0.4, Final eq. Area 22 and 30,Final area 30→all wings very similar to 20_3, with slight changes in shape. Area=22, shorter wings but similar shape.,,,
+iso1ensemble1,,Simulating isometric growth. ,Final Eq. Area of 80 and 200, different time exponents of angle influence,Final Eq. Area of 80 is fine, final area of 200 makes wings crash a little. All simulations get too rounded towards the end, simulation 0 is the most elongated one. Pick a shape at 80-95% of the simulation time. ,,,,,,,,,,

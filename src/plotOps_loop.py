@@ -55,7 +55,7 @@ def set_limits(ax, x0, xN, y0, yN):
     ax.set_yticks(range(y0, yN+1))
     ax.set_aspect("equal")
 
-def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name):
+def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name, printsvg=False):
     fig, ax = plt.subplots()
     # In order to plot a MultiPolygon object, I need to iterate over each oplygon
     fig = plt.figure(1, figsize=(5,5), dpi=90)
@@ -98,12 +98,13 @@ def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, n
     if(add_vnums):
         for i in pointsList.keys():
             ax.annotate(i, pointsList[i][0:2], fontsize = 'xx-small')
-    #plt.savefig(name + '.svg', format='svg', dpi=1200)
+    if(printsvg):
+        plt.savefig(name + '.svg', format='svg', dpi=1200)
     plt.savefig(name + '.png', format='png')
     plt.clf()
 
 ##Not tested, probably doesn't works
-def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name, limits, figg=None):
+def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name, limits, figg=None, printsvg=False):
     from matplotlib.collections import PolyCollection
 
     if(figg is None):
@@ -128,10 +129,11 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     #        ax.scatter(pointsList[p][0], pointsList[p][1], color = RED)       
     if(add_vnums):
         for i in pointsList.keys():
-            ax.annotate(i, pointsList[i][0:2])
+            ax.annotate(i, pointsList[i][0:2], size=0.1)
 
     plt.savefig(name + '.png')
-    #plt.savefig(name + '.svg', format='svg', dpi=1200)
+    if(printsvg):
+        plt.savefig(name + '.svg', format='svg', dpi=1200)
     return (fig, ax)
     
 
@@ -232,7 +234,8 @@ parser.add_argument('-t', '--plotCellTypes', metavar='plot_cell_types', type=boo
                     help='Color according to cell type or not')
 parser.add_argument('-l', '--FixedLimits', metavar='fixed_limits', type=bool, default = False, 
                     help='Use max and min coordinates from first plot in all plots')
-
+parser.add_argument('-f', '--PlotSVG', metavar='plot_svg', type=bool, default = False, 
+                    help='Print .svg additionally to .png')
 
 def main():
     args = parser.parse_args()
@@ -263,7 +266,7 @@ def main():
             limits = getLimits(pointsList)
             limsSet = True
 
-        fig = plot_grid2(111, polygonList, pointsList, sprList, add_vnums, celltypes, [] ,name, limits)  
+        fig = plot_grid2(111, polygonList, pointsList, sprList, add_vnums, celltypes, [] ,name, limits, printsvg=args.PlotSVG)  
         if(len(color_expr) > 0 and args.Input_expr != ""):
             xprList = readExpr(args.Input_expr + str(fnum))
             plot_expr(111, polygonList, pointsList, sprList, add_vnums, celltypes, xprList, name, color_expr)

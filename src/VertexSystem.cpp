@@ -1439,10 +1439,13 @@ void Tissue::derivativeVertexPos(const Vertex &v, pointDerivative &pd)
         aux = (cells[c].area/cells[c].preferred_area- 1)/cells[c].preferred_area;
 		aux_this = which(v.ind, cells[c].vertices, cells[c].num_vertices); //These three lines are repeated in TERM3 but since TERM3 is probably going to be optimized it doesnt matter
 		//IMPORTANT: ASSUMES THAT VERTICES IN CELLS ARE ORDERED CLOCK-WISE
+		//Calculate derivative of area according to Shoelace formula from Wikipedia
 		aux_next = cells[c].vertices[(aux_this + cells[c].num_vertices - 1)%cells[c].num_vertices ];
 		aux_prev = cells[c].vertices[(aux_this + 1)%cells[c].num_vertices ];
-		t1x += v.x > cells[c].centroid_x ?  aux*(vertices[aux_next].y - vertices[aux_prev].y) : aux*(vertices[aux_prev].y - vertices[aux_next].y);
-		t1y += v.y > cells[c].centroid_y ?  aux*(vertices[aux_next].x - vertices[aux_prev].x) : aux*(vertices[aux_prev].x - vertices[aux_next].x);
+		t1x += aux*(vertices[aux_prev].y - vertices[aux_next].y);
+		t1y += aux*(vertices[aux_next].x - vertices[aux_prev].x);
+		cout << "    Term 1: aux " << aux << ", pref area " << cells[c].preferred_area << ", area " << cells[c].area << ", cell " << c << endl;
+	
 	} //Term1
 	//TERM 2
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
@@ -1454,15 +1457,25 @@ void Tissue::derivativeVertexPos(const Vertex &v, pointDerivative &pd)
 																											 : cells[edges[c].cells[0]].preferred_area
 																		: (cells[edges[c].cells[0]].preferred_area + cells[edges[c].cells[1]].preferred_area) * 0.5;
 		aux_next = edges[c].vertices[0] == v.ind ? edges[c].vertices[1] : edges[c].vertices[0];
-		aux = edges[c].tension / (edges[c].length * pref_area);
+		if(edges[c].length > NUMERIC_THRESHOLD){//Control for division by 0
+			aux = edges[c].tension / (edges[c].length * pref_area);
+		}else{
+			aux = edges[c].tension / (NUMERIC_THRESHOLD * pref_area);
+		}
 		t2x += (v.x - vertices[aux_next].x) * aux;
 		t2y += (v.y - vertices[aux_next].y) * aux;
+		cout << "    Term 2: aux " << aux << ", x - next: " << v.x - vertices[aux_next].x << ", y - next: " << v.y - vertices[aux_next].y << ", len: " << springs[v.spring].length << ", tens: " << springs[v.spring].tension  << ", edge " << c  << endl;	
 	} //Term 2
 	if (v.spring != EMPTY_CONNECTION){
-		aux = springs[v.spring].tension / springs[v.spring].length;
+		if(springs[v.spring].length > NUMERIC_THRESHOLD){//Control for division by 0
+			aux = springs[v.spring].tension / (springs[v.spring].length * pref_area);
+		}else{
+			aux = springs[v.spring].tension / (NUMERIC_THRESHOLD * pref_area);
+		}
 		aux_next = springs[v.spring].vertices[0] == v.ind ? springs[v.spring].vertices[1] : springs[v.spring].vertices[0];
-		t2x += (v.x - vertices[aux_next].x) * aux;
+		t2x += (v.x - vertices[aux_next].x) * aux; // Here may be a numeric problem when distance between 2 points is already 0
 		t2y += (v.y - vertices[aux_next].y) * aux;
+		cout << "    Term 2 spring: aux" << aux << ", x - next: " << v.x - vertices[aux_next].x << ", y - next: " << v.y - vertices[aux_next].y << ", len: " << springs[v.spring].length << ", tens: " << springs[v.spring].tension  << endl;
 	}//Spring part of term2
 	//Term 3 THIS TERM MUST BE OPTIMIZED
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
@@ -1475,25 +1488,37 @@ void Tissue::derivativeVertexPos(const Vertex &v, pointDerivative &pd)
 		aux_next = cells[c].vertices[(aux_this + 1)%cells[c].num_vertices ];
 		aux = cells[c].perimeter*cells[c].perimeter_contractility/cells[c].preferred_area;
         auxd1 = distance(v.ind, aux_prev);
-        auxd2 = distance(v.ind, aux_next);
+        auxd2 = distance(v.ind, aux_next); //Maybe numeric problem
+		auxd1 = auxd1 > NUMERIC_THRESHOLD ? auxd1 : NUMERIC_THRESHOLD;
+		auxd2 = auxd2 > NUMERIC_THRESHOLD ? auxd2 : NUMERIC_THRESHOLD;		
 		t3x += aux*( (v.x - vertices[aux_prev].x)/auxd1 + (v.x - vertices[aux_next].x)/auxd2);
-		t3y += aux*( (v.y - vertices[aux_prev].y)/auxd1 + (v.x - vertices[aux_next].y)/auxd2);
+		t3y += aux*( (v.y - vertices[aux_prev].y)/auxd1 + (v.y - vertices[aux_next].y)/auxd2);
+		cout << "    Term 3 aux " << aux << ", d1: " << auxd1 << ",d2 " << auxd2 << endl;	
 	} //Term3
+	cout << "v.ind=" << v.ind << ": x1=" << t1x << ", y1=" << t1y << ", x2=" << t2x << ", y2=" << t2y << ", x3=" << t3x << ", y3=" << t3y;
+
 	t1x = isnan(t1x) || isinf(t1x) ? 0 : t1x;
 	t1y = isnan(t1y) || isinf(t1y) ? 0 : t1y;
 	t2x = isnan(t2x) || isinf(t2x) ? 0 : t2x;
 	t2y = isnan(t2y) || isinf(t2y) ? 0 : t2y;
 	t3x = isnan(t3x) || isinf(t3x) ? 0 : t3x;
 	t3y = isnan(t3y) || isinf(t3y) ? 0 : t3y;
+	
 	pd.x = 0.5 * t1x * energy_term1 + t2x * energy_term2 + t3x * energy_term3;
 	pd.y = 0.5 * t1y * energy_term1 + t2y * energy_term2 + t3y * energy_term3;
+	if (max_range_vertex_movement > 0 && (abs(pd.x) > max_range_vertex_movement || abs(pd.y) > max_range_vertex_movement))
+	{
+		pd.x = pd.x / (pd.x + pd.y) * max_range_vertex_movement;
+		pd.y = pd.y / (pd.x + pd.y) * max_range_vertex_movement;
+	}
 	//Add some noise
-	if(max_range_vertex_movement > 0){
+	if(temperature_positive_energy > 0){
 		double angle = 2 * M_PI * unif(generator);
-		double radius = unif(generator) * max_range_vertex_movement;
+		double radius = unif(generator) * temperature_positive_energy;
 		pd.x += cos(angle) * radius;
 		pd.y += sin(angle) * radius;
 	}
+	cout << ", dx=" << pd.x << ", dy=" << pd.y << endl << endl;
 }//derivativeVertexPos used in Simulate Euler
 void Tissue::simulateMonteCarlo()
 {
@@ -1524,16 +1549,16 @@ void Tissue::simulateEuler()
 	int write_every_N_moves2 = write_every_N_moves*h_factor;
 	int max_accepted_movements2 = max_accepted_movements*h_factor;
 	cout << "SIMULATING with EULER method." << endl;
-	cout << "h: " << h << ", h factor: "<< h_factor << "write every: " << write_every_N_moves2 << ", max: " << max_accepted_movements2 <<endl;
+	cout << "h: " << h << ", h factor: "<< h_factor << ", write every: " << write_every_N_moves2 << ", max: " << max_accepted_movements2 <<endl;
 	if (!step_mode)
 		produceOutputs();
 	for (int t = 1; t <= max_accepted_movements2; t ++)
 	{
-		//cout << t << ", t%h_factor: " << t % h_factor << ", t%write_every_N_moves2: " << t % write_every_N_moves2 << endl;
+		//cout << "*****" << endl << endl << t << ", t%h_factor: " << t % h_factor << ", t%write_every_N_moves2: " << t % write_every_N_moves2 << endl;
 		//Calculate derivative of x and y positions
 		for (int v = 0; v < num_vertices; v++)
 		{
-			if (vertices[v].dead)
+			if (vertices[v].dead || !vertices[v].movable)
 				continue;
 			derivativeVertexPos(vertices[v], derxy[v]);
 		}
@@ -1541,19 +1566,32 @@ void Tissue::simulateEuler()
 		//Now update vertices, edges and cells
 		for (int v = 0; v < num_vertices; v++)
 		{
-			if (vertices[v].dead)
+			if (vertices[v].dead || !vertices[v].movable)
 				continue;
 			//cout << "     v: " << v << ", der_x: " << h*derxy[v].x << ", der_y: " << h*derxy[v].y << endl;
-			if(isnan(derxy[v].x) || isnan(derxy[v].y)) exit(1);
+			if(isnan(derxy[v].x) || isnan(derxy[v].y)){
+				cout << "Exiting because of NaN found: " << endl;
+				cout << "     v: " << v << ", der_x: " << h*derxy[v].x << ", der_y: " << h*derxy[v].y << endl;
+				exit(1);
+			}
 			vertices[v].x += h*derxy[v].x;
 			vertices[v].y += h*derxy[v].y;
-		}
+		}//end update vertices
+		//Update edges
 		for (int e = 0; e < num_edges; e++)
 		{
 			if (edges[e].dead)
 				continue;
-			edges[e].length = distance(edges[e].vertices[0], edges[e].vertices[0]);
-		}
+			edges[e].length = distance(edges[e].vertices[0], edges[e].vertices[1]);
+		}//end update edges
+		//update springs
+		for (int e = 0; e < num_springs; e++)
+		{
+			if (springs[e].dead)
+				continue;
+			springs[e].length = distance(springs[e].vertices[0], springs[e].vertices[1]);
+		}//end update springs
+		//update cells
 		for (int c = 0; c < num_cells; c++)
 		{
 			if (cells[c].dead)
@@ -1561,12 +1599,14 @@ void Tissue::simulateEuler()
 			cells[c].perimeter = calculateCellPerimeter(cells[c]);
 			cells[c].area = calculateCellArea(cells[c]);
 			calculateCellCentroid(cells[c]);
-		}
+		}//end update cells
+
+		for (int v = 0; v < num_vertices; v++)
+			detectChangesAfterMove(v);
 		performRearrangements();
 		while (vertices.size() > derxy.size())
 			derxy.push_back(pointDerivative{0.0, 0.0});
 		//Now update parameters that  change with time or space
-
 		//produce outputs
 		if(t % h_factor == 0){
 			counter_moves_accepted++;

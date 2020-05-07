@@ -3,12 +3,12 @@
 1
 >min_range_vertex_movement
 0.0
->max_range_vertex_movement (0.01) #Noise added if Euler integration; max range in MonteCarlo integration
-0.01
+>max_range_vertex_movement (0.01) #In Euler, if positive, derivatives are set to this value when they are bigger than it
+-1
 >h #When using Euler/Runge-Kutta integration
-0.001
->temperature_positive_energy
-0.05
+0.01
+>temperature_positive_energy #Noise added if Euler integration (if >0), temperature when E1 > E0 if Monte Carlo integration
+1.0
 >temperature_negative_energy
 2.0
 >temperature_means_proportion_of_acceptance #If true, unfavourable movements are rejected with negative_energy probability, independently of their energy increase (makes things easier to control)
@@ -65,7 +65,7 @@
 <
 
 >>preferred_area_initial
-0:60.0
+0:15.0
 1:10.0
 2:60.0
 3:10.0
@@ -107,14 +107,14 @@
 <
 
 >>spring_type_tension
-0:0.75
+0:10.0
 1:1.5
 2:2.0
 3:2.5
 <
 
 >>max_cell_area
-0:60.0
+0:40.0
 1:60.0
 2:60.0
 3:60.0
