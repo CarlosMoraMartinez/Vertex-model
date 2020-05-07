@@ -101,10 +101,10 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements, int
 
 Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements, int write_every_N_moves, string simulname) : num_cells(0), num_vertices(0), num_edges(0), counter_move_trials(0), counter_moves_accepted(0), counter_favorable_accepted(0), counter_favorable_rejected(0), counter_unfav_accepted(0), counter_unfav_rejected(0), counter_t1(0), counter_t1_abortions(0), counter_edges_removed(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0)
 {
-	cout << "reading .vp file...\n";
+	cout << "Initializing Tissue object...\n";
 	this->simname = simulname == "" ? starting_tissue_file : simulname;
-	this->max_accepted_movements = max_accepted_movements;
-	this->write_every_N_moves = write_every_N_moves;
+	this->max_accepted_movements = max_accepted_movements; //Will be overwritten by Parameter File unless value in file is 0!! (only conserved for compatibility with elder scripts)
+	this->write_every_N_moves = write_every_N_moves; //Will be overwritten by Parameter File unless value in file is 0!!
 	step_mode = false;
 
 	if (REPORT_OUT)
@@ -180,6 +180,14 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 
 void Tissue::set_default_simulation_params()
 {
+	t1_active = T1_ACTIVE;
+	t1_inwards_active = T1_BORDER_INWARDS_ACTIVE;
+	t1_outwards_active = T1_BORDER_OUTWARDS_ACTIVE;
+	division_active = DIVISION_ACTIVE;
+	t2_active = T2_ACTIVE;
+	join_edges_active = JOIN_EDGES_ACTIVE;
+	check_if_edges_cross_opt = CHECK_EDGES_CROSS_AFTER_MOVE;
+	control_cells_2sides = CONTROL_CELLS_2SIDES;
 	integration_mode = INTEGR_MONTECARLO;
 	min_range_vertex_movement = MIN_RANGE_VERTEX_MOVEMENT;
 	max_range_vertex_movement = MAX_RANGE_VERTEX_MOVEMENT;
@@ -364,14 +372,32 @@ void Tissue::initialize_params(std::string params_file)
 	std::vector<std::string> inp;
 	std::string::size_type sz;
 
-	if (REPORT_OUT)
-		cout << "Reading .vp file...\n";
 	while (getline(fin, line))
 		if (!(line.empty() || line.find_first_not_of(' ') == std::string::npos))
 			if (line.at(0) != '#')
 				inp.push_back(line);
 	std::vector<std::string>::iterator it = inp.begin();
 	//READ PARAMETERS IN ORDER FROM HERE:
+	cout << "read1" << endl;
+	t1_active = read_real_par(it) > 0;
+	cout << "read2" << endl;
+	cout << (t1_active ? "t1 true" : "t1 false") << endl;
+	t1_inwards_active = static_cast<bool>(read_real_par(it));
+	t1_outwards_active = static_cast<bool>(read_real_par(it));
+	division_active = static_cast<bool>(read_real_par(it));
+	t2_active = static_cast<bool>(read_real_par(it));
+	join_edges_active = static_cast<bool>(read_real_par(it));
+	control_cells_2sides = static_cast<bool>(read_real_par(it));
+	check_if_edges_cross_opt = static_cast<bool>(read_real_par(it));
+	cout << (check_if_edges_cross_opt ? "cross true" : " cross false") << endl;
+	int temp_num_moves = static_cast<int>(read_real_par(it));
+	if(temp_num_moves > 0)
+		max_accepted_movements = temp_num_moves;
+	cout << "max moves: " << max_accepted_movements << endl;
+
+	int temp_write_freq = static_cast<int>(read_real_par(it));
+	if(temp_write_freq > 0)
+		write_every_N_moves = temp_write_freq;
 	integration_mode = static_cast<int>(read_real_par(it));
 	min_range_vertex_movement = read_real_par(it);
 	max_range_vertex_movement = read_real_par(it);
@@ -386,7 +412,7 @@ void Tissue::initialize_params(std::string params_file)
 
 	//spring_constant = read_real_par(it);
 	t1_transition_critical_distance = read_real_par(it);
-	length_rotated_edge = read_real_par(it);
+	length_rotated_edge = read_real_par(it)*t1_transition_critical_distance;
 	t2_transition_critical_area = read_real_par(it);
 	//max_cell_area = read_real_par(it);
 	max_edge_length = read_real_par(it);
@@ -1226,7 +1252,7 @@ bool Tissue::tryMoveVertex()
 		{ //Prob of accepting unfavourable movement depends on how much unfavourable the movement is
 			move_prob = vertices[vertex_to_move].energy <= old_energy ? exp((vertices[vertex_to_move].energy - old_energy) / temperature_negative_energy) : exp(-(vertices[vertex_to_move].energy - old_energy) / temperature_positive_energy);
 		}
-		if (CHECK_EDGES_CROSS_AFTER_MOVE)
+		if (check_if_edges_cross_opt)
 		{
 			cell_borders_cross = check_if_edges_cross(vertex_to_move);
 			if (cell_borders_cross)
@@ -1723,34 +1749,34 @@ void Tissue::performRearrangements()
 		{
 		case RearrangementType::t1:
 			//cout << "Entering t1 \n";
-			if (T1_ACTIVE)
+			if (t1_active)
 				make_t1(r);
 			break;
 		case RearrangementType::t2:
 			//cout << "Entering t2 \n";
-			if (T2_ACTIVE)
+			if (t2_active)
 				make_t2(r);
 			break;
 		case RearrangementType::divide_cell:
 			//cout << "Entering division \n";
-			if (DIVISION_ACTIVE)
+			if (division_active)
 				make_divide_cell(r);
 			break;
 		case RearrangementType::divide_edge:
 			break;
 		case RearrangementType::join_limit_edges:
 			//cout << "Entering join edges\n";
-			if (JOIN_EDGES_ACTIVE)
+			if (join_edges_active)
 				make_join_limit_edges(r);
 			break;
 		case RearrangementType::t1_at_border_outwards:
 			//cout << "Entering t1 outwards\n";
-			if (T1_BORDER_OUTWARDS_ACTIVE)
+			if (t1_outwards_active)
 				make_t1_at_border_outwards(r);
 			break;
 		case RearrangementType::t1_at_border_inwards:
 			//cout << "Entering t1 inwards " << counter_move_trials << "\n";
-			if (T1_BORDER_INWARDS_ACTIVE)
+			if (t1_inwards_active)
 				make_t1_at_border_inwards(r);
 			break;
 		default:
@@ -3302,7 +3328,7 @@ void Tissue::make_t2(Rearrangement &r)
 
 	this->counter_t2++;
 
-	if (CONTROL_CELLS_2SIDES)
+	if (control_cells_2sides)
 	{
 		int new_v, edge_to_split; //, cell_with_two_sides;
 		double x, y;

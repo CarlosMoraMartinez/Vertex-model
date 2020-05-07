@@ -2,9 +2,9 @@
 #$2: Write every N accepted movements
 #$3: Name of ensemble (.vp ensemble file needs to be in ./param_files) 
 
-maxCPU=35
+maxCPU=10
 i=0
-wingarray=(wing2E) #(bud0 hex2020_1_s5.0_20x20_n0.4) #(wing2E wing2Edumpy) #(wing1D wingDumpy2) #wing2F wing2Edumpy #bud3b bud2 iso20_3_df gr1
+wingarray=(bud2) #(bud0 hex2020_1_s5.0_20x20_n0.4) #(wing2E wing2Edumpy) #(wing1D wingDumpy2) #wing2F wing2Edumpy #bud3b bud2 iso20_3_df gr1
 
 cd param_files
 python ../src/vertex_parms_ensemble.py -i $3'.vp' -o $3
@@ -22,6 +22,8 @@ nsims=$(( ${#wingarray[@]} * ($(ls $3/param_files | wc -l) - 1) ))
 echo 'Total number of simulations: '$nsims
 
 cd $3
+echo 'cd ../;bash ./scripts/runensemble_nogrn.sh ' $@ > RUN_AGAIN.sh
+
 FILES=./param_files/*.vp
 
 for vp in $FILES

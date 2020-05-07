@@ -272,6 +272,8 @@ class Tissue{
 		int integration_mode;
 		bool step_mode; //If the simulation is controlled by an external source, set this to true in order to avoid excessive printing of outputs
 		//parameters
+		bool t1_active , t1_inwards_active, t1_outwards_active, division_active, t2_active, join_edges_active, control_cells_2sides, check_if_edges_cross_opt;
+
 		float min_range_vertex_movement; 
 		float max_range_vertex_movement; //In case of Monte Carlo integration
 		float h; //In case of Euler/Runge-Kutta integration
