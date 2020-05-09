@@ -59,6 +59,7 @@ const int INTEGR_MONTECARLO = 0;
 const int INTEGR_EULER = 1;
 const int INTEGR_MIXTURE = 2;
 const int INTEGR_RUNGEKUTTA4 = 3;
+const int RESTORE_VEIN_ITERS = 1; //iterations in algorithm to re-fill veins after many movements 
 
 const std::string VERTEX_FILE_EXTENSION = ".points";
 const std::string CELLS_FILE_EXTENSION = ".cells";
@@ -258,6 +259,9 @@ class Tissue{
 		void setStaticVertex(int v);
 		bool AddSpringToVertex(int v, float minx, float maxx);
 		void readNewParameters(std::string filename);
+		void restoreHinge();
+		void restoreVeins();
+		void restoreShape();
 
 		std::vector<int> getNeighbourCells(int cell);
 		

@@ -103,26 +103,44 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 {
 	cout << "Initializing Tissue object...\n";
 	this->simname = simulname == "" ? starting_tissue_file : simulname;
-	this->max_accepted_movements = max_accepted_movements; //Will be overwritten by Parameter File unless value in file is 0!! (only conserved for compatibility with elder scripts)
-	this->write_every_N_moves = write_every_N_moves; //Will be overwritten by Parameter File unless value in file is 0!!
+	this->max_accepted_movements = 0; //max_accepted_movements; //Will be overwritten by Parameter File unless value in file is 0!! (only conserved for compatibility with elder scripts)
+	this->write_every_N_moves = 0; //write_every_N_moves; //Will be overwritten by Parameter File unless value in file is 0!!
 	step_mode = false;
 
-	if (REPORT_OUT)
-		cout << "reading .vp file...\n";
-	initialize_params(params_file);
-	if (REPORT_OUT)
-		cout << ".vp file read...\n";
+	try
+	{
+		if (REPORT_OUT)
+			cout << "reading .vp file...\n";
+		initialize_params(params_file);
+		if (REPORT_OUT)
+			cout << ".vp file read...\n";
+	}
+	catch (const char *msg)
+	{
+		cout << "Error in .vp file" << endl;
+		cout << msg << endl;
+		exit(1);
+	}
 	//Read file of vertices (indicates coordinates for each vertex)
-	string vertexfile = starting_tissue_file + VERTEX_FILE_EXTENSION;
-	std::ifstream fin_vertex;
-	if (REPORT_OUT)
-		cout << "reading .points file...\n";
-	fin_vertex.open(vertexfile);
-	initialize_vertices(fin_vertex);
-	fin_vertex.close();
-	if (REPORT_OUT)
-		cout << ".points file read...\n";
-
+	try
+	{
+		string vertexfile = starting_tissue_file + VERTEX_FILE_EXTENSION;
+		std::ifstream fin_vertex(vertexfile);
+		if (REPORT_OUT)
+			cout << "reading .points file...\n";
+		//fin_vertex.open(vertexfile);
+		if(! fin_vertex.good()) throw ".points file not present";
+		initialize_vertices(fin_vertex);
+		fin_vertex.close();
+		if (REPORT_OUT)
+			cout << ".points file read...\n";
+	}
+	catch (const char *msg)
+	{
+		cout << "Error in vertices file" << endl;
+		cout << msg << endl;
+		exit(1);
+	}
 	//Read file of cells (indicates vertices for each cell)
 	try
 	{
@@ -130,6 +148,7 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 		if (REPORT_OUT)
 			cout << "reading .cells file...\n";
 		ifstream fin_cells(cellfile);
+		if(! fin_cells.good()) throw ".cells file not present";
 		initialize_cells(fin_cells);
 		fin_cells.close();
 		if (REPORT_OUT)
@@ -137,6 +156,7 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 	}
 	catch (const char *msg)
 	{
+		cout << "Error in cell file" << endl;
 		cout << msg << endl;
 		exit(1);
 	}
@@ -159,16 +179,17 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 		else
 		{
 			num_springs = 0;
+			cout << "No spring file\n";
 		}
 		fin_springs.close();
 	}
 	catch (const char *msg)
 	{
 		num_springs = 0;
-		if (REPORT_OUT)
+		if (REPORT_OUT){
 			cout << msg << endl;
-		if (REPORT_OUT)
 			cout << "No spring file\n";
+		}
 	}
 	//No file with parameters, therefore use constants defined in VertexSystem.h.
 	//Also initializes cell area and vertex energy
@@ -378,10 +399,7 @@ void Tissue::initialize_params(std::string params_file)
 				inp.push_back(line);
 	std::vector<std::string>::iterator it = inp.begin();
 	//READ PARAMETERS IN ORDER FROM HERE:
-	cout << "read1" << endl;
 	t1_active = read_real_par(it) > 0;
-	cout << "read2" << endl;
-	cout << (t1_active ? "t1 true" : "t1 false") << endl;
 	t1_inwards_active = static_cast<bool>(read_real_par(it));
 	t1_outwards_active = static_cast<bool>(read_real_par(it));
 	division_active = static_cast<bool>(read_real_par(it));
@@ -389,12 +407,9 @@ void Tissue::initialize_params(std::string params_file)
 	join_edges_active = static_cast<bool>(read_real_par(it));
 	control_cells_2sides = static_cast<bool>(read_real_par(it));
 	check_if_edges_cross_opt = static_cast<bool>(read_real_par(it));
-	cout << (check_if_edges_cross_opt ? "cross true" : " cross false") << endl;
 	int temp_num_moves = static_cast<int>(read_real_par(it));
 	if(temp_num_moves > 0)
-		max_accepted_movements = temp_num_moves;
-	cout << "max moves: " << max_accepted_movements << endl;
-
+		max_accepted_movements += temp_num_moves;
 	int temp_write_freq = static_cast<int>(read_real_par(it));
 	if(temp_write_freq > 0)
 		write_every_N_moves = temp_write_freq;
@@ -3719,6 +3734,76 @@ bool Tissue::AddSpringToVertex(int v, float minx, float maxx)
 	}
 	return false;
 } //AddSpringToVertex
+
+void Tissue::restoreHinge(){
+	float sum_x = 0;
+	int num = 0;
+	// Calculate mean x coordinate
+	for(Edge e : edges){
+		if(e.dead || e.cells[0] == EMPTY_CONNECTION || e.cells[1] == EMPTY_CONNECTION )
+			continue;
+		if((cells[e.cells[0]].type == CellType::blade && cells[e.cells[1]].type == CellType::hinge) || 
+		(cells[e.cells[1]].type == CellType::blade && cells[e.cells[0]].type == CellType::hinge) ||
+		(cells[e.cells[0]].type == CellType::vein_blade && cells[e.cells[1]].type == CellType::vein_hinge) || 
+		(cells[e.cells[1]].type == CellType::vein_blade && cells[e.cells[0]].type == CellType::vein_hinge)){
+			num += 2;
+			sum_x += vertices[e.vertices[0]].x + vertices[e.vertices[1]].x; 
+		}
+	}// end calculate mean x coordinate of hinge-blade interface
+	// Now change cell types accordingly (cell centroid < mean -> type=hinge, otherwise type=blade )
+	sum_x /= num;
+	for(Cell &c : cells){
+		if(c.dead)
+			continue;
+		calculateCellCentroid(c);
+		if(c.centroid_x <= sum_x){
+			c.type = c.type == CellType::vein_blade || c.type == CellType::vein_hinge ? CellType::vein_hinge : CellType::hinge;
+		}else{
+			c.type = c.type == CellType::vein_blade || c.type == CellType::vein_hinge ? CellType::vein_blade : CellType::blade;
+		}
+	}// end change cell types depending on whether they are at one side or another from the mean x coordinate
+
+}
+
+void Tissue::restoreVeins(){
+	std::vector<int> vnei;
+	int vein_neighbours, num_neighbours;
+    CellType newtypes[cells.size()];
+	for(Cell c : cells){
+			if(c.dead)
+				continue;
+			vnei = getNeighbourCells(c.ind);
+			num_neighbours = vnei.size();
+			vein_neighbours = 0;
+			for(int nei : vnei){
+				if(nei == EMPTY_CONNECTION){
+					num_neighbours--;
+				}else{
+					if(cells[nei].type == CellType::vein_blade || cells[nei].type == CellType::vein_hinge)
+						vein_neighbours++;
+				}
+			}//for cell neighbours
+			if(vein_neighbours < num_neighbours/2.0){
+				newtypes[c.ind] = c.type == CellType::hinge || c.type == CellType::vein_hinge ? CellType::hinge : CellType::blade; 
+			}else if(vein_neighbours > num_neighbours/2.0){
+				newtypes[c.ind] = c.type == CellType::hinge || c.type == CellType::vein_hinge ? CellType::vein_hinge : CellType::vein_blade; 
+			}else{//Do not change type
+				newtypes[c.ind] = c.type;
+			}
+	}//for cells
+	//Now set new types
+	for(Cell &c : cells){
+		if(c.dead)
+				continue;
+		c.type = newtypes[c.ind];
+	}
+} //End restore veins 
+void Tissue::restoreShape(){
+	restoreHinge();
+	for(int i = 0; i < 3; i++)
+		restoreVeins();
+}
+
 
 void Tissue::emptyDivisions()
 {
