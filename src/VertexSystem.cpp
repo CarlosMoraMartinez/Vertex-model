@@ -229,6 +229,8 @@ void Tissue::set_default_simulation_params()
 	energy_term1 = ENERGY_TERM1;
 	energy_term2 = ENERGY_TERM2;
 	energy_term3 = ENERGY_TERM3;
+	energy_term4 = ENERGY_TERM4;
+	difference_flow_rate = 0;
 
 	line_tension.insert(pair<CellType, double>(CellType::blade, LINE_TENSION_BLADE));
 	line_tension.insert(pair<CellType, double>(CellType::hinge, LINE_TENSION_HINGE));
@@ -424,6 +426,7 @@ void Tissue::initialize_params(std::string params_file)
 	energy_term1 = read_real_par(it);
 	energy_term2 = read_real_par(it);
 	energy_term3 = read_real_par(it);
+	energy_term4 = read_real_par(it);
 
 	//spring_constant = read_real_par(it);
 	t1_transition_critical_distance = read_real_par(it);
@@ -470,6 +473,7 @@ void Tissue::initialize_params(std::string params_file)
 
 	spring_type_min_positions = read_springtype_par(it, sz);
 	add_static_to_hinge = read_real_par(it);
+	difference_flow_rate = read_real_par(it);
 }
 
 /*
@@ -1260,6 +1264,7 @@ bool Tissue::tryMoveVertex()
 		new_y = old_y + sin(angle) * radius;
 		moveVertex(vertices[vertex_to_move], new_x, new_y);
 		vertices[vertex_to_move].energy = calculateEnergy(vertices[vertex_to_move]);
+		if(energy_term4 > 0) vertices[vertex_to_move].energy += calculateTerm4Energy(vertices[vertex_to_move], old_x, old_y);
 
 		if (temperature_means_proportion_of_acceptance)
 		{ //Prob of accepting unfavourable movement ins constant
@@ -1330,6 +1335,12 @@ bool Tissue::tryMoveVertex()
 	}
 }
 
+double Tissue::calculateTerm4Energy(Vertex &v, double old_x, double old_y)
+{
+	double ycent = 0.5*(hinge_max_ypos - hinge_min_ypos);
+	double yval = (1 - abs(ycent - old_y)/ycent)*(1 - difference_flow_rate) + difference_flow_rate;
+	return (old_x - v.x)*energy_term4*yval;
+}
 inline double Tissue::expAdvance(double x, float exponent)
 {
 	return exponent > 0 ? (1 - exp(-pow(x, exponent))) / EXP_FACTOR : ((1 - exp(-pow(x, exponent))) - EXP_FACTOR) / (1 - EXP_FACTOR);
