@@ -40,7 +40,7 @@
 >ENERGY_TERM3 (Perimeter)
 1.0,2.0,10.0
 >ENERGY_TERM4 (x bias)
-0.1
+0.01,0.002
 >t1_transition_critical_distance
 0.01
 >length_rotated_edge
