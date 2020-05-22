@@ -849,14 +849,15 @@ void Tissue::setEdgeTension(int e)
 				pex = 0.0;
 				pmaxan = mint + (maxt - mint) * time_factor;
 				prand = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_random + cells[edges[e].cells[1]].edge_angle_prop_random);
-				punif = 1.0 - pmaxan; //prand only used in the end; this way it is easier to avoid negative proportions
+				punif = abs(1.0 - pmaxan); //prand only used in the end; this way it is easier to avoid negative proportions
 			}
 			else
 			{ //If proportion determined by angle does not vary with time
 				pex = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_external + cells[edges[e].cells[1]].edge_angle_prop_external);
 				pmaxan = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_maxangle + cells[edges[e].cells[1]].edge_angle_prop_maxangle);
-				punif = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_uniform + cells[edges[e].cells[1]].edge_angle_prop_uniform);
+				//punif = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_uniform + cells[edges[e].cells[1]].edge_angle_prop_uniform);
 				prand = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_random + cells[edges[e].cells[1]].edge_angle_prop_random);
+				punif  = abs(1.0 - pmaxan);
 			} //end if time determines influence of angle
 		}
 		else
@@ -875,13 +876,13 @@ void Tissue::setEdgeTension(int e)
 				double maxt = edge_temporal_angle_efect_max[cells[cellvar].type];
 				pex = 0.0;
 				pmaxan = mint + (maxt - mint) * time_factor; //Proportion is determined by exponential function of time
-				punif = 1.0 - pmaxan;
+				punif = abs(1.0 - pmaxan);
 			}
 			else
 			{												   //If proportion determined by angle does not vary with time
 				pex = cells[cellvar].edge_angle_prop_external; //Proportions are determined by cell params directly
 				pmaxan = cells[cellvar].edge_angle_prop_maxangle;
-				punif = (cells[cellvar].edge_angle_prop_uniform);
+				punif = abs(1.0 - pmaxan);//(cells[cellvar].edge_angle_prop_uniform);
 			} //end if time determines influence of angle
 		}	  //End if which cells determine edge variation
 	}		  //End if is border
@@ -892,6 +893,7 @@ void Tissue::setEdgeTension(int e)
 
 	//Now integrate with other factors influencing tension
 	tensionrand = prand > 0 ? mins + (maxs - mins) * ((double)std::rand() / (RAND_MAX)) : 0;
+	//Note: edges[e].tension is used because setEdgeType (which also sets default tension depending on edge type) has been called before. Otherwise it would behave as a sort of momentum
 	edges[e].tension = (punif * edges[e].tension + pmaxan * angle + pex * tensionext + prand * tensionrand) / (punif + pmaxan + pex + prand);
 	//cout << "maxt: " << maxs << ", mint: " << mins <<", tension: " << edges[e].tension << ", angle: " << 180*atan2(vertices[edges[e].vertices[1]].y - vertices[edges[e].vertices[0]].y, vertices[edges[e].vertices[1]].x - vertices[edges[e].vertices[0]].x)/M_PI << ", angle tension: " << angle << ", random: " << tensionrand << ", prand: " << prand << endl;
 }
@@ -1549,8 +1551,9 @@ void Tissue::derivativeVertexPos(const Vertex &v, pointDerivative &pd)
 	pd.y = 0.5 * t1y * energy_term1 + t2y * energy_term2 + t3y * energy_term3;
 	if (max_range_vertex_movement > 0 && (abs(pd.x) > max_range_vertex_movement || abs(pd.y) > max_range_vertex_movement))
 	{
+		float auxpdx = pd.x;
 		pd.x = pd.x / (pd.x + pd.y) * max_range_vertex_movement;
-		pd.y = pd.y / (pd.x + pd.y) * max_range_vertex_movement;
+		pd.y = pd.y / (auxpdx + pd.y) * max_range_vertex_movement;
 	}
 	//Add some noise
 	if(temperature_positive_energy > 0){
@@ -3800,7 +3803,7 @@ void Tissue::restoreVeins(){
 } //End restore veins 
 void Tissue::restoreShape(){
 	restoreHinge();
-	for(int i = 0; i < 3; i++)
+	for(int i = 0; i < RESTORE_VEIN_ITERS; i++)
 		restoreVeins();
 }
 
