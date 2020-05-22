@@ -23,6 +23,7 @@ Tissue::Tissue() : num_cells(0), num_vertices(0), num_edges(0), counter_move_tri
 
 	set_default_simulation_params();
 	setHingeMinAndMaxPositions();
+	setMinAndMaxPositions();
 }
 
 //Constructor that reads vertex positions and cells from two different files, and initializes all variables using constants defined in VertexSystem.h
@@ -97,6 +98,7 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements, int
 	if (REPORT_OUT)
 		cout << "parameters set to cells\n";
 	setHingeMinAndMaxPositions();
+	setMinAndMaxPositions();
 }
 
 Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements, int write_every_N_moves, string simulname) : num_cells(0), num_vertices(0), num_edges(0), counter_move_trials(0), counter_moves_accepted(0), counter_favorable_accepted(0), counter_favorable_rejected(0), counter_unfav_accepted(0), counter_unfav_rejected(0), counter_t1(0), counter_t1_abortions(0), counter_edges_removed(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0)
@@ -197,6 +199,7 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 	if (REPORT_OUT)
 		cout << "parameters set to cells\n";
 	setHingeMinAndMaxPositions();
+	setMinAndMaxPositions();
 }
 
 void Tissue::set_default_simulation_params()
@@ -327,6 +330,7 @@ void Tissue::readNewParameters(std::string filename)
 	initialize_params(filename);
 	set_default_params();
 	setHingeMinAndMaxPositions();
+	setMinAndMaxPositions();
 }
 
 double Tissue::read_real_par(std::vector<std::string>::iterator &it)
@@ -1097,13 +1101,23 @@ void Tissue::setHingeMinAndMaxPositions()
 			if (set)
 			{
 				if (c.centroid_x < min)
+				{
 					min = c.centroid_x;
+					cout << "cent_x menor: " <<c.centroid_x << endl;
+				}
 				else if (c.centroid_x > max)
+				{
 					max = c.centroid_x;
+					cout << "cent_x mayor: " <<c.centroid_x << endl;
+				}
 				if (c.centroid_y < miny)
+				{
 					miny = c.centroid_y;
+				}
 				else if (c.centroid_y > maxy)
+				{
 					maxy = c.centroid_y;
+				}
 			}
 			else
 			{
@@ -1119,8 +1133,52 @@ void Tissue::setHingeMinAndMaxPositions()
 	hinge_max_xpos = max;
 	hinge_min_ypos = miny;
 	hinge_max_ypos = maxy;
-	//cout << "Min hinge position: " << hinge_min_xpos << "; Max hinge position: " << hinge_max_xpos << endl;
+	cout << "Min hinge position: " << hinge_min_xpos << "; Max hinge position: " << hinge_max_xpos << endl;
+}//end set hinge max and min positions
+
+void Tissue::setMinAndMaxPositions()
+{
+	calculateCellCentroid(cells[0]);
+	double min, max, miny, maxy;
+	bool set = false;
+	for (Cell c : cells)
+	{
+		calculateCellCentroid(c);
+		if (set)
+		{
+			if (c.centroid_x < min)
+			{
+				min = c.centroid_x;
+			}
+			else if (c.centroid_x > max)
+			{
+				max = c.centroid_x;
+			}
+			if (c.centroid_y < miny)
+			{
+				miny = c.centroid_y;
+			}
+			else if (c.centroid_y > maxy)
+			{
+				maxy = c.centroid_y;
+			}
+		}
+		else
+		{
+			min = c.centroid_x;
+			max = c.centroid_x;
+			miny = c.centroid_y;
+			maxy = c.centroid_y;
+			set = true;
+		}
+	}
+	min_xpos = min;
+	max_xpos = max;
+	min_ypos = miny;
+	max_ypos = maxy;
+	cout << "Min wing x position: " << min_xpos << "; Max wing xposition: " << max_xpos << endl;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 //Area of a polygon using Shoelace formula
@@ -1337,8 +1395,9 @@ bool Tissue::tryMoveVertex()
 
 double Tissue::calculateTerm4Energy(Vertex &v, double old_x, double old_y)
 {
-	double ycent = 0.5*(hinge_max_ypos - hinge_min_ypos);
+	double ycent = 0.5*(max_ypos - min_ypos);
 	double yval = (1 - abs(ycent - old_y)/ycent)*(1 - difference_flow_rate) + difference_flow_rate;
+	//cout << "ymin " << min_ypos << ", ymax " << max_ypos <<"ycent " << ycent << ", yval " << yval << ", oldx " << old_x << ", vx " << v.x << ", e: " << (old_x - v.x)*energy_term4*yval << endl;
 	return (old_x - v.x)*energy_term4*yval;
 }
 inline double Tissue::expAdvance(double x, float exponent)

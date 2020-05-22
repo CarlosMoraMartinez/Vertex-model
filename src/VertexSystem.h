@@ -211,6 +211,7 @@ class Tissue{
                 spring_type_param read_springtype_par(std::vector<std::string>::iterator& it, std::string::size_type sz);
 		void set_default_simulation_params();
 		void setHingeMinAndMaxPositions();
+		void setMinAndMaxPositions();
 
 		void simulate(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif);
 		void simulateEuler();
@@ -323,7 +324,7 @@ class Tissue{
 		cell_type_param edge_temporal_angle_efect_min;
 
 		float length_rotated_edge; 
-		double hinge_min_xpos, hinge_max_xpos, hinge_min_ypos, hinge_max_ypos;
+		double hinge_min_xpos, hinge_max_xpos, hinge_min_ypos, hinge_max_ypos, max_xpos, max_ypos, min_xpos, min_ypos;
 		//Data structures
 		vertex_v vertices;
 		cell_v cells;
