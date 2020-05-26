@@ -7,7 +7,12 @@ import numpy as np
 
 basename = 'bud2_moved_0'
 e=pd.read_csv(basename + '.edges', sep="\t") #file with edges, pasted from .out file (need to prepare this first)
-p=pd.read_csv(basename + '.points', sep="\t") #file with points (like .points but with header (x	y	ind	movable); need to prepare this first)
+pf=open(basename + '.points', "r")
+p=int(pf.readline()) #discard first line
+p=[[float(j) if '.' in j else int(j) for j in i.split("\t")] for i in pf.read().split("\n") if i != ""]
+p=pd.DataFrame(p,columns=["x", "y", "ind", "movable"])
+
+#p=pd.read_csv(basename + '.points', sep="\t") #file with points (like .points but with header (x	y	ind	movable); need to prepare this first)
 
 colors = ['black', 'green', 'yellow', 'orange', 'blue', 'purple','red', 'peru']
 for i in range(e.shape[0]):
