@@ -43,7 +43,7 @@ const float XCOORD_DECREASE_EXPONENT = 0.5; //Only active if XCOORD_CONTROLS_SIZ
 const float ENERGY_TERM1 = 1;
 const float ENERGY_TERM2 = 1;
 const float ENERGY_TERM3 = 1;
-const float ENERGY_TERM4 = 0;
+//const float ENERGY_TERM4 = 0;
 
 const float LENGTH_ROTATED_EDGE = 0.5*T1_TRANSITION_CRITICAL_DISTANCE*1.2; //after a t1 transition, rotated edge length is multiplied by twice this constant
 
@@ -87,7 +87,7 @@ const int MOVE_TRIALS = 100;  //Times it tries to move a vertex before it quits 
 const bool UPDATE_EDGE_TENSION_EVERY_MOVE = true; //Update edge tension if tension is dependent on edge angle (if true, do it in every iteration, if false do it only in transitions and start)
 const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
-const bool REPORT_OUT = true;//SET THIS TO FALSE IF EVOLUTION IS GOING TO BE USED
+const int REPORT_OUT = 1;//SET THIS TO FALSE IF EVOLUTION IS GOING TO BE USED OR IN CASE OF LONG SIMULATIONS
 
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tcells\tedges\tneighbour_vertices\n";
 const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\tcentroid_x\tcentroid_y\tangle_longest\tangle_signal\tangle_random\tdegrees_signal\tmax_area\tcell_cycle_state\tcell_cycle_limit\tcan_divide\tnum_vertices\tvertices\tedges\tnum_divisions\n";
@@ -288,7 +288,7 @@ class Tissue{
 		bool temperature_means_proportion_of_acceptance;
 		cell_type_param line_tension;
 		cell_type_param line_tension_tissue_boundary;
-		float energy_term1, energy_term2, energy_term3, energy_term4;
+		float energy_term1, energy_term2, energy_term3;//, energy_term4;
 		//float spring_constant;
                 spring_type_param spring_type_constants;
                 spring_type_param spring_type_min_positions;
@@ -306,7 +306,7 @@ class Tissue{
 		cell_type_param cell_cycle_limit, xcoord_size_control_factor;
 		bool autonomous_cell_cycle, start_cell_cycle_at_random, cell_cycle_controls_size, time_controls_size, xcoord_controls_size, keep_area_after_division;
 		float time_decrease_exponent, xcoord_decrease_exponent;
-		float difference_flow_rate;
+		//float difference_flow_rate;
 
 		//Parameters related to edge tension modification
 		cell_type_param vary_line_tension;
@@ -392,7 +392,7 @@ class Tissue{
 		void advanceSizeWithTime(int vertex_moved);
 		void advanceSizeWithXcoordAndTime(int vertex_moved);
 		void advanceSizeWithXcoord(int vertex_moved);
-		double calculateTerm4Energy(Vertex &v, double old_x, double old_y);
+		//double calculateTerm4Energy(Vertex &v, double old_x, double old_y);
 };
 
 //functions of general use

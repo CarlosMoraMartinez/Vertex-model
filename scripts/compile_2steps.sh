@@ -12,8 +12,8 @@ mkdir $1
 cp src/VertexSystem.cpp src/VertexSystem.h src/vertex_2steps.cpp src/plotOps_loop.py 'param_files/'$2'.vp' 'param_files/'$5'.vp' $1
 
 cd $1
-g++ -std=c++11 -c VertexSystem.cpp
-g++ -std=c++11 -c vertex_2steps.cpp
+g++ -O2 -std=c++11 -c VertexSystem.cpp
+g++ -O2 -std=c++11 -c vertex_2steps.cpp
 g++ -o vertex vertex_2steps.o VertexSystem.o
 ./vertex $1 $2 $3 $4 $5 #>$1'.log' 
 #sleep 20

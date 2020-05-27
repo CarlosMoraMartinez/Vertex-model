@@ -38,24 +38,24 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements, int
 	//Read file of vertices (indicates coordinates for each vertex)
 	string vertexfile = starting_tissue_file + VERTEX_FILE_EXTENSION;
 	std::ifstream fin_vertex;
-	if (REPORT_OUT)
+	if (REPORT_OUT > 0)
 		cout << "reading .points file...\n";
 	fin_vertex.open(vertexfile);
 	initialize_vertices(fin_vertex);
 	fin_vertex.close();
-	if (REPORT_OUT)
+	if (REPORT_OUT > 0)
 		cout << ".points file read...\n";
 
 	//Read file of cells (indicates vertices for each cell)
 	try
 	{
 		string cellfile = starting_tissue_file + CELLS_FILE_EXTENSION;
-		if (REPORT_OUT)
+		if (REPORT_OUT > 0)
 			cout << "reading .cells file...\n";
 		ifstream fin_cells(cellfile);
 		initialize_cells(fin_cells);
 		fin_cells.close();
-		if (REPORT_OUT)
+		if (REPORT_OUT > 0)
 			cout << ".cells file read...\n";
 	}
 	catch (const char *msg)
@@ -69,13 +69,13 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements, int
 	try
 	{
 		string springsfile = starting_tissue_file + SPRING_FILE_EXTENSION;
-		if (REPORT_OUT)
+		if (REPORT_OUT > 0)
 			cout << "reading .spr file...\n";
 		ifstream fin_springs(springsfile);
 		if (fin_springs.good())
 		{
 			initialize_springs(fin_springs);
-			if (REPORT_OUT)
+			if (REPORT_OUT > 0)
 				cout << ".spr file read...\n";
 		}
 		else
@@ -87,15 +87,15 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements, int
 	catch (const char *msg)
 	{
 		num_springs = 0;
-		if (REPORT_OUT)
+		if (REPORT_OUT > 0)
 			cout << msg << endl;
-		if (REPORT_OUT)
+		if (REPORT_OUT > 0)
 			cout << "No spring file\n";
 	}
 	//No file with parameters, therefore use constants defined in VertexSystem.h.
 	//Also initializes cell area and vertex energy
 	set_default_params();
-	if (REPORT_OUT)
+	if (REPORT_OUT > 0)
 		cout << "parameters set to cells\n";
 	setHingeMinAndMaxPositions();
 	setMinAndMaxPositions();
@@ -111,10 +111,10 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 
 	try
 	{
-		if (REPORT_OUT)
+		if (REPORT_OUT > 0)
 			cout << "reading .vp file...\n";
 		initialize_params(params_file);
-		if (REPORT_OUT)
+		if (REPORT_OUT > 0)
 			cout << ".vp file read...\n";
 	}
 	catch (const char *msg)
@@ -128,13 +128,13 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 	{
 		string vertexfile = starting_tissue_file + VERTEX_FILE_EXTENSION;
 		std::ifstream fin_vertex(vertexfile);
-		if (REPORT_OUT)
+		if (REPORT_OUT > 0)
 			cout << "reading .points file...\n";
 		//fin_vertex.open(vertexfile);
 		if(! fin_vertex.good()) throw ".points file not present";
 		initialize_vertices(fin_vertex);
 		fin_vertex.close();
-		if (REPORT_OUT)
+		if (REPORT_OUT > 0)
 			cout << ".points file read...\n";
 	}
 	catch (const char *msg)
@@ -147,13 +147,13 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 	try
 	{
 		string cellfile = starting_tissue_file + CELLS_FILE_EXTENSION;
-		if (REPORT_OUT)
+		if (REPORT_OUT > 0)
 			cout << "reading .cells file...\n";
 		ifstream fin_cells(cellfile);
 		if(! fin_cells.good()) throw ".cells file not present";
 		initialize_cells(fin_cells);
 		fin_cells.close();
-		if (REPORT_OUT)
+		if (REPORT_OUT > 0)
 			cout << ".cells file read...\n";
 	}
 	catch (const char *msg)
@@ -163,7 +163,7 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 		exit(1);
 	}
 	//Initialize edges from vertices and cells
-	if (REPORT_OUT)
+	if (REPORT_OUT > 0)
 		cout << "Initializing edges...\n";
 	initialize_edges();
 	try
@@ -172,10 +172,10 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 		ifstream fin_springs(springsfile);
 		if (fin_springs.good())
 		{
-			if (REPORT_OUT)
+			if (REPORT_OUT > 0)
 				cout << "reading .spr file...\n";
 			initialize_springs(fin_springs);
-			if (REPORT_OUT)
+			if (REPORT_OUT > 0)
 				cout << ".spr file read...\n";
 		}
 		else
@@ -188,7 +188,7 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 	catch (const char *msg)
 	{
 		num_springs = 0;
-		if (REPORT_OUT){
+		if (REPORT_OUT > 0){
 			cout << msg << endl;
 			cout << "No spring file\n";
 		}
@@ -196,7 +196,7 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 	//No file with parameters, therefore use constants defined in VertexSystem.h.
 	//Also initializes cell area and vertex energy
 	set_default_params();
-	if (REPORT_OUT)
+	if (REPORT_OUT > 0)
 		cout << "parameters set to cells\n";
 	setHingeMinAndMaxPositions();
 	setMinAndMaxPositions();
@@ -232,8 +232,8 @@ void Tissue::set_default_simulation_params()
 	energy_term1 = ENERGY_TERM1;
 	energy_term2 = ENERGY_TERM2;
 	energy_term3 = ENERGY_TERM3;
-	energy_term4 = ENERGY_TERM4;
-	difference_flow_rate = 0;
+	//energy_term4 = ENERGY_TERM4;
+	//difference_flow_rate = 0;
 
 	line_tension.insert(pair<CellType, double>(CellType::blade, LINE_TENSION_BLADE));
 	line_tension.insert(pair<CellType, double>(CellType::hinge, LINE_TENSION_HINGE));
@@ -430,7 +430,7 @@ void Tissue::initialize_params(std::string params_file)
 	energy_term1 = read_real_par(it);
 	energy_term2 = read_real_par(it);
 	energy_term3 = read_real_par(it);
-	energy_term4 = read_real_par(it);
+	//energy_term4 = read_real_par(it);
 
 	//spring_constant = read_real_par(it);
 	t1_transition_critical_distance = read_real_par(it);
@@ -477,7 +477,7 @@ void Tissue::initialize_params(std::string params_file)
 
 	spring_type_min_positions = read_springtype_par(it, sz);
 	add_static_to_hinge = read_real_par(it);
-	difference_flow_rate = read_real_par(it);
+	//difference_flow_rate = read_real_par(it);
 }
 
 /*
@@ -1322,7 +1322,7 @@ bool Tissue::tryMoveVertex()
 		new_y = old_y + sin(angle) * radius;
 		moveVertex(vertices[vertex_to_move], new_x, new_y);
 		vertices[vertex_to_move].energy = calculateEnergy(vertices[vertex_to_move]);
-		if(energy_term4 > 0) vertices[vertex_to_move].energy += calculateTerm4Energy(vertices[vertex_to_move], old_x, old_y);
+		//if(energy_term4 > 0) vertices[vertex_to_move].energy += calculateTerm4Energy(vertices[vertex_to_move], old_x, old_y);
 
 		if (temperature_means_proportion_of_acceptance)
 		{ //Prob of accepting unfavourable movement ins constant
@@ -1393,13 +1393,13 @@ bool Tissue::tryMoveVertex()
 	}
 }
 
-double Tissue::calculateTerm4Energy(Vertex &v, double old_x, double old_y)
+/*double Tissue::calculateTerm4Energy(Vertex &v, double old_x, double old_y)
 {
 	double ycent = 0.5*(max_ypos - min_ypos);
 	double yval = (1 - abs(ycent - old_y)/ycent)*(1 - difference_flow_rate) + difference_flow_rate;
 	//cout << "ymin " << min_ypos << ", ymax " << max_ypos <<"ycent " << ycent << ", yval " << yval << ", oldx " << old_x << ", vx " << v.x << ", e: " << (old_x - v.x)*energy_term4*yval << endl;
 	return (old_x - v.x)*energy_term4*yval;
-}
+}*/
 inline double Tissue::expAdvance(double x, float exponent)
 {
 	return exponent > 0 ? (1 - exp(-pow(x, exponent))) / EXP_FACTOR : ((1 - exp(-pow(x, exponent))) - EXP_FACTOR) / (1 - EXP_FACTOR);
@@ -1532,7 +1532,7 @@ std:
 		writeSpringsFile(fname);
 	//writeAllData(fname); //THIS IS USEFUL TO DEBUG, BUT THE FORMAT IS NOT READ BY PLOTTING PROGRAM
 	writeCellDataTable(fname);
-	if (REPORT_OUT)
+	if (REPORT_OUT > 0)
 		cout << "\nWritting file: " << int(counter_moves_accepted / write_every_N_moves) << " at move " << counter_moves_accepted << endl;
 		std::cout << getStats() << endl;
 }
@@ -1989,7 +1989,7 @@ void Tissue::make_t1_at_border_inwards(Rearrangement &r)
 
 	this->counter_t1_inwards++;
 
-	if (REPORT_OUT)
+	if (REPORT_OUT > 1)
 		cout << "T1 transition inwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 in: " << counter_t1_inwards << endl;
 
 	if (REPORT_T1)
@@ -2142,7 +2142,7 @@ void Tissue::make_t1_at_border_outwards(Rearrangement &r)
 	edges[edge].type = EdgeType::tissue_boundary;
 	this->counter_t1_outwards++;
 
-	if (REPORT_OUT)
+	if (REPORT_OUT > 1)
 		cout << "T1 transition outwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 out: " << counter_t1_outwards << endl;
 
 	if (REPORT_T1)
@@ -2337,7 +2337,7 @@ void Tissue::make_divide_cell(Rearrangement &r)
 		writeAllData(simname + "_div_2" + to_string(counter_divisions));
 
 	past_divisions.push(DivisionRecord{cell, newcind});
-	if (REPORT_OUT)
+	if (REPORT_OUT > 1)
 		cout << ">DIVISION: moves accepted= " << counter_moves_accepted << "; divi. accepted= " << counter_divisions << "; Cell= " << cell << "; New cell=" << newcind << "; new vertex 1= " << newvind1 << "; new vertex 2=" << newvind2 << "; centroid_x= " << 0.5 * (vertices[newvind1].x + vertices[newvind2].x) << "; centroid_y= " << 0.5 * (vertices[newvind1].y + vertices[newvind2].y) << "; cell_type= " << static_cast<int>(cells[cell].type) << endl;
 
 } // END make_divide_cell
@@ -2428,7 +2428,7 @@ bool Tissue::findEdgesToCut(const int cell, double x1, double x2, double y1, dou
 			}
 		}
 	} //end for find edges that intersect with division edge
-	if (REPORT_OUT && (e1 < 0 || e2 < 0))
+	if (REPORT_OUT > 1 && (e1 < 0 || e2 < 0))
 	{
 		cout << ">> Error: new edge does not cut other cell edges. Cell: " << cell << " ****** " << endl;
 		return false;
@@ -2615,7 +2615,7 @@ void Tissue::make_t1(Rearrangement &r)
 	setEdgeTension(edge); //Tension depends on angle and on values of neighboring cells
 	this->counter_t1++;
 
-	if (REPORT_OUT)
+	if (REPORT_OUT > 1)
 		cout << ">T1 transition: v1=" << v1->ind << "; v2=" << v2->ind << "; mov. accepted=" << this->counter_moves_accepted << "; T1=" << counter_t1 << "; T1 abortions=" << counter_t1_abortions << "; centroid_x=" << 0.5 * (v1->x + v2->x) << "; centroid_y=" << 0.5 * (v1->y + v2->y) << "; edge type=" << static_cast<int>(edges[edge].type) << endl;
 	if (REPORT_T1)
 	{
@@ -2685,7 +2685,7 @@ void Tissue::t1_add_vertices_to_cells(Vertex *v1, Vertex *v2, Cell *sp2, int rem
 			}
 			else
 			{
-				if (REPORT_OUT)
+				if (REPORT_OUT > 1)
 					cout << ">> Error in t1 transition: unable to insert vertex in cell: v1=" << v1->ind << " v2=" << v2->ind << " cell:" << sp2->ind << endl;
 			}
 			break;
@@ -3431,7 +3431,7 @@ void Tissue::make_t2(Rearrangement &r)
 				{
 					if (cells[neicell].num_vertices < 3)
 					{
-						if (REPORT_OUT)
+						if (REPORT_OUT > 1)
 							cout << "  in T2: Killing cell of size 2: " << endl
 								 << cells[neicell] << endl;
 						killCellWith2Vertices(neicell);
@@ -3440,7 +3440,7 @@ void Tissue::make_t2(Rearrangement &r)
 			}
 		}
 	}
-	if (REPORT_OUT)
+	if (REPORT_OUT > 1)
 		cout << ">T2 transition: cell=" << cell << "; survivor vertex =" << v1 << "; v2= " << v2 << "; v3= " << v3 << "; v2nei= " << v2nei << "; v3nei= " << v3nei << "; mov. accepted= " << this->counter_moves_accepted << "; T1= " << counter_t1 << "; T1 abortions=" << counter_t1_abortions << "; T2= " << counter_t2 << "; centroid_x= " << vertices[v1].x << "; centroid_y= " << vertices[v1].y << "; cell_type= " << static_cast<int>(cells[cell].type) << endl;
 	//cout << "K\n";
 } //End make transition T2
@@ -3590,7 +3590,7 @@ void Tissue::killCellWith2Vertices(int cell)
 			killCellWith2Vertices(auxcell2);
 		}
 	}
-	if (REPORT_OUT)
+	if (REPORT_OUT > 1)
 		cout << "    KILLED SIZE 2 CELL: " << cell << endl
 			 << "<<*" << endl;
 	return;
@@ -3886,8 +3886,8 @@ void Tissue::emptyDivisions()
 
 std::string Tissue::getStats()
 {
-	if (!REPORT_OUT)
-		return "-";
+	if (REPORT_OUT == 0)
+		return std::to_string(counter_moves_accepted);
 	std::string s = "";
 	s += "Move trials: " + std::to_string(counter_move_trials) + ", \n";
 	s += "Moves accepted: " + std::to_string(counter_moves_accepted) + ", \n";
