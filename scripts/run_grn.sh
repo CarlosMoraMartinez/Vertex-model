@@ -9,9 +9,9 @@ cp param_files/$3.vp $1
 cd $1
 
 
-g++ -std=c++11 -c VertexSystem.cpp
-g++ -std=c++11 -c basicGRN.cpp
-g++ -std=c++11 -c run_grn.cpp  #test_grn.cpp
+g++ -O2 -std=c++11 -c VertexSystem.cpp
+g++ -O2 -std=c++11 -c basicGRN.cpp
+g++ -O2 -std=c++11 -c run_grn.cpp  #test_grn.cpp
 #g++ -o matrix test_matrix.o GXMatrix.o
 g++ -o grn basicGRN.o run_grn.o VertexSystem.o #test_grn.o
 

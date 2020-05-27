@@ -13,7 +13,7 @@ parfile_end = "allConds.csv"
 pic_format = '.png'
 picsdir_end = "_all_final/"
 
-outfolder = "./combined_plots"
+outfolder_base = "./combined_plots"
 no_plot_cols = ["Unnamed", "name", "Result"]
 
 
@@ -107,7 +107,7 @@ def plotBordersTension(ax, wing, limits):
 #diff_conds: all conditions to plot this time
 #absence: thing to plot instead
 
-def multiplot(c2, diff_conds, ca, cb, current_cond, images, absence, plotFun=plotImage, limits=[-10,80,-10,55], plot=False):
+def multiplot(c2, diff_conds, ca, cb, current_cond, images, absence, plotFun=plotImage, limits=[-10,80,-10,55], plot=False, outfolder=outfolder_base):
     c_thiscond=c2.iloc[ [np.all([c2[j].iloc[i] == diff_conds[j].iloc[current_cond] for j in diff_conds.columns]) for i in range(c2.shape[0])] ]
     nrows = np.unique(c2[ca]).shape[0]
     ncols = np.unique(c2[cb]).shape[0]
@@ -132,7 +132,7 @@ def multiplot(c2, diff_conds, ca, cb, current_cond, images, absence, plotFun=plo
         plt.savefig(out_cond)
     plt.close()
 
-def plotAll(c2, images, absence, plotFun=plotImage,  limits=[-10,80,-10,55]):
+def plotAll(c2, images, absence, plotFun=plotImage,  limits=[-10,80,-10,55], outfolder=outfolder_base):
     for vnum1 in range(c2.columns.shape[0]):
         if(any([i in c2.columns[vnum1] for i in no_plot_cols])):
             continue
@@ -144,40 +144,28 @@ def plotAll(c2, images, absence, plotFun=plotImage,  limits=[-10,80,-10,55]):
             itcols = list(map(lambda x: x != ca and x != cb and not any([i in x for i in no_plot_cols]), c2.columns)) #which parameters must be identical
             diff_conds = c2[c2.columns[itcols]].drop_duplicates() #Unique conditions after removing parameters ca and cb (for each row will perform a different plot)
             for current_cond in range(diff_conds.shape[0]):
-                multiplot(c2, diff_conds, ca, cb, current_cond,  images, absence, plotFun, limits)
+                multiplot(c2, diff_conds, ca, cb, current_cond,  images, absence, plotFun, limits, False, outfolder)
             diff_conds["multiplot_cond"] = list(range(diff_conds.shape[0]))
             out = outfolder + "/" +  ca.split(" ")[0] + ":" + cb.split(" ")[0] + '.csv'
             diff_conds.to_csv(out, sep="\t")
             print("Printed: " + out)
 
 def guessWingName():
+    wings = []
     for f in os.listdir():
         if(f.endswith(picsdir_end.replace("/", ""))):
-            return f.replace(picsdir_end.replace("/", ""), "")
+            wings.append( f.replace(picsdir_end.replace("/", ""), ""))
+    return wings
 
-parser = argparse.ArgumentParser(description='Plot grid arguments.')
-parser.add_argument('-w', '--wingName', metavar='wing', type=str, default = '', 
-                    help='Name of wing (for instance wing2E, budsmall, etc). If not used tries to guess.')
-parser.add_argument('-t', '--plotTension', metavar='plot_tension', type=bool, default = False, 
-                    help='Plot edge intensity according to tension (overriden by plotFromImages)')
-parser.add_argument('-l', '--fixedLimits', metavar='fixed_limits', type=str, default = '-1,100,-1,260', 
-                    help='Use these max and min coordinates in all plots. Use this format: x0,xmax,y0,ymax')
-parser.add_argument('-i', '--plotFromImages', metavar='plot_imgs', type=bool, default = False, 
-                    help='If True, uses .png images to make composites (faster). If False, reads .points and .edges and makes new plots')
-
-def main():
-    args = parser.parse_args()
+def make_grids_wing(wing, mode, plotTension, limits):
+    outfolder = '_'.join([outfolder_base, wing])
     try:
         os.mkdir(outfolder)
     except:
         print("folder %s already exists"%(outfolder))
-    mode = args.plotFromImages
-    plotTension = args.plotTension
-    wing = args.wingName if args.wingName != "" else guessWingName()
-    limits = [float(i) for i in args.fixedLimits.split(",")]
     picsdir = wing + picsdir_end
 
-    print("wing: ", wing)
+    print("wings: ", wing)
     print("limits: ", limits)
     print("plot from images: ", int(mode))
     print("plot tension: ", int(plotTension))
@@ -192,8 +180,28 @@ def main():
             plotFun = plotBordersTension
         else:
             plotFun = plotBorders
+    plotAll(c2, images, absence, plotFun, limits, outfolder) 
 
-    plotAll(c2, images, absence, plotFun, limits) 
+parser = argparse.ArgumentParser(description='Plot grid arguments.')
+parser.add_argument('-w', '--wingName', metavar='wing', type=str, default = '', 
+                    help='Name of wing (for instance wing2E, budsmall, etc). Can provide more than one separated by comma (wing1,wing2). If not provided tries to guess.')
+parser.add_argument('-t', '--plotTension', metavar='plot_tension', type=bool, default = False, 
+                    help='Plot edge intensity according to tension (overriden by plotFromImages)')
+parser.add_argument('-l', '--fixedLimits', metavar='fixed_limits', type=str, default = '-1,100,-1,260', 
+                    help='Use these max and min coordinates in all plots. Use this format: x0,xmax,y0,ymax')
+parser.add_argument('-i', '--plotFromImages', metavar='plot_imgs', type=bool, default = False, 
+                    help='If True, uses .png images to make composites (faster). If False, reads .points and .edges and makes new plots')
+
+def main():
+    args = parser.parse_args()
+
+    mode = args.plotFromImages
+    plotTension = args.plotTension
+    wings = args.wingName.split(',') if args.wingName != "" else guessWingName()
+    limits = [float(i) for i in args.fixedLimits.split(",")]
+
+    for wing in wings:
+        make_grids_wing(wing, mode, plotTension, limits)
 
 if __name__ == '__main__':
     main()
