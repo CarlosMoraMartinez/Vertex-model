@@ -1,7 +1,7 @@
 
 
 cd $1
-wingarray=(wing2E) #(wing2E wing2Edumpy) #(wing2C wing2Cdumpy)bud2
+wingarray=(budsmall) #(wing2E wing2Edumpy) #(wing2C wing2Cdumpy)bud2
 params=$(ls | grep $1)
 
 for wing in ${wingarray[@]}
