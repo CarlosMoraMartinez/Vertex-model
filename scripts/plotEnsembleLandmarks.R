@@ -7,7 +7,7 @@ dx = d_long %>% filter(grepl("x", landmark)) %>% mutate(landmark = gsub("x", "",
 dy = d_long %>% filter(grepl("y", landmark)) %>% mutate(landmark = gsub("y", "", landmark))
 d_long <- merge(dx, dy, by = c("name", "landmark"))
 plot(d_long$value.x, d_long$value.y)
-d_means <- aggregate(cbind(value.x, value.y) ~ landmark, d_long, function(x) c(mean = mean(x), sd = sd(x))) 
+d_means <- aggregate(cbind(value.x, value.y) ~ landmark, d_long, function(x) c(mean = mean(x), sd = sd(x))) #can't be used in geom_point
 d_long <- d_long %>% group_by(landmark) %>% mutate(mean_x = mean(value.x), mean_y = mean(value.y), 
                                                    sd_x = sd(value.x), sd_y = sd(value.y))
 plot(means$mean_x, means$mean_y)
@@ -23,3 +23,4 @@ gg<- ggplot(d_long, aes()) +
   geom_errorbar(aes(ymin=d_long$mean_y - d_long$sd_y,
                     ymax=d_long$mean_y + d_long$sd_y,
                     x=d_long$mean_x), colour="blue", stat = "identity", size=2, width=2)
+gg
