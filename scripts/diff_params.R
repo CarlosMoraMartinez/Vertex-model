@@ -1,6 +1,6 @@
 
 
-
+##Different parameters between simulations in variable "sims"
 ensemble <- "aprilbud2"
 sims <- c(10,11,22,58)
 
