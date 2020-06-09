@@ -25,6 +25,8 @@
 0.0
 >max_range_vertex_movement
 0.01
+>h #When using Euler/Runge-Kutta integration
+0.01
 >temperature_positive_energy
 0.05
 >temperature_negative_energy
