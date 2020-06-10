@@ -2,9 +2,9 @@
 >t1_active
 1
 >t1_inwards_active
-1
+-1
 >t1_outwards_active
-1
+-1
 >division_active
 1
 >t2_active
@@ -57,18 +57,19 @@
 1
 >TIME_CONTROLS_SIZE #(can't be true if CELL_CYCLE_CONTROLS_SIZE is true; is overriden)
 1
->time_decrease_exponent #(at each move, a cell proportion of (final size - starting size) is multiplied by exp(-(x**THIS_PARAM))), where x is current_move/final_moves
-2.5
+>?time_decrease_exponent #(at each move, a cell proportion of (final size - starting size) is multiplied by exp(-(x**THIS_PARAM))), where x is current_move/final_moves
+1.0;3.5
 >xcoord_controls_size
 1
 >xcoord_decrease_exponent
 5
->>line_tension
-0:0.02
-1:0.03
-2:2.0
-3:2.0
+>>?%line_tension
+0:0.02;0.03
+1:0.03;0.45
+2:2.0;3.0
+3:2.0;3.0
 <
+
 
 >>line_tension_border
 0:20.0
@@ -127,10 +128,10 @@
 <
 
 >>?%spring_type_tension
-0:0.05;2.5
-1:1.8;2.2
-2:0.2;1.5
-3:0.5;0.8
+0:0.8;2.5
+1:0.5;1.4
+2:0.5;1.0
+3:0.2;0.6
 <
 
 >>max_cell_area
