@@ -305,13 +305,17 @@ class HexGrid:
         else:
             fig, ax = fig
         ax.set_aspect('equal')
-        col = np.zeros((len(self.cells), 6, 2))
-        for c, cell in enumerate(self.cells):
-            for v, vert in enumerate(cell):
-                col[c, v, :] = (self.vertices[vert][0], self.vertices[vert][1])
-        print(col.shape)
+        try:
+            col = np.zeros((len(self.cells), 6, 2))
+            for c, cell in enumerate(self.cells):
+                for v, vert in enumerate(cell):
+                    col[c, v, :] = (self.vertices[vert][0], self.vertices[vert][1])
+            print(col.shape)
+        except:
+            print("ERROR: not all cells have 6 sides. Using alternative strategy to plot")
+            col = [[[self.vertices[v][0], self.vertices[v][1]] for v in c] for c in self.cells]
         pc = PolyCollection(col, facecolors= [wingcols[self.celltypes[j]] for j in range(len(self.cells))], alpha = alpha)
-        pc.set_edgecolors("black")
+        pc.set_edgecolor("black")
         self.plotcol = ax.add_collection(pc)
         ax.autoscale_view()
         for c in self.springs:
