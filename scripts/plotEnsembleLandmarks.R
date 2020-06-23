@@ -1,7 +1,10 @@
 
 library(tidyverse)
 #Load simulation data
-setwd("/home/carmoma/vertex/Vertex-model/rens2/wing2E_landmarks")
+simdir="/home/carmoma/vertex/Vertex-model/rens7/wing2G_all_final"
+#simdir="/home/carmoma/vertex/Vertex-model/rens2/wing2E_landmarks"
+
+setwd(simdir)
 d <- read.table("landmarks.csv", sep=",", header=T, stringsAsFactors = FALSE)
 d_long <- gather(d, landmark, value, x1:y12, factor_key=FALSE)
 dx = d_long %>% filter(grepl("x", landmark)) %>% mutate(landmark = gsub("x", "", landmark))
@@ -66,7 +69,7 @@ pop <- list.files() %>% subset(grepl(pattern=".csv", .)) %>%
 means <- pop %>% select(matches("^(x|y)", perl=T)) %>%  summarise_all(list(mean=mean, sd=sd))
 target <- matrix(means[,grep("([xy][1234]|[xy]12)_mean", colnames(means))] %>% unlist, ncol=2, byrow=T) 
 # Load simulation data
-setwd("/home/carmoma/vertex/Vertex-model/rens2/wing2E_landmarks")
+setwd(simdir)
 d <- read.table("landmarks.csv", sep=",", header=T, stringsAsFactors = FALSE)
 
 sims_rotated <- doProcrustes(target, d) %>% calc_vector1
@@ -154,11 +157,11 @@ getArrows <- function(data){
 
 mmm <- getArrows(pop_rotated)
 par(mfrow=c(1,2))
-plot(mmm$x0, mmm$y0, xlab = "x", ylab = "y", xlim = c(-0.3, 0.6), ylim=c(-0.3, 0.2))
-arrows(mmm$x0, mmm$y0, mmm$x1, mmm$y1, col = "red")
-for(i in 1:nrow(mmm)) segments(mmm$x0[i], mmm$y0[i], mmm$x0[(i)%%nrow(mmm)+1]  , mmm$y0[(i)%%nrow(mmm)+1]  )
+plot(mmm$x0, mmm$y0, xlab = "x", ylab = "y", xlim = c(-0.3, 0.6), ylim=c(-0.3, 0.2), pch=19,main="Fly population")
+arrows(mmm$x0, mmm$y0, mmm$x1, mmm$y1, col = "red", lwd=2 )
+for(i in 1:nrow(mmm)) segments(mmm$x0[i], mmm$y0[i], mmm$x0[(i)%%nrow(mmm)+1]  , mmm$y0[(i)%%nrow(mmm)+1], lwd=2   )
 mmm <- getArrows(sims_rotated)
-plot(mmm$x0, mmm$y0, xlab = "x", ylab = "y", xlim = c(-0.3, 0.6), ylim=c(-0.3, 0.2))
-arrows(mmm$x0, mmm$y0, mmm$x1, mmm$y1, col = "red")
-for(i in 1:nrow(mmm)) segments(mmm$x0[i], mmm$y0[i], mmm$x0[(i)%%nrow(mmm)+1]  , mmm$y0[(i)%%nrow(mmm)+1]  )
+plot(mmm$x0, mmm$y0, xlab = "x", ylab = "y", xlim = c(-0.3, 0.6), ylim=c(-0.3, 0.2), pch=19, main="Simulations")
+arrows(mmm$x0, mmm$y0, mmm$x1, mmm$y1, col = "red", lwd=2)
+for(i in 1:nrow(mmm)) segments(mmm$x0[i], mmm$y0[i], mmm$x0[(i)%%nrow(mmm)+1]  , mmm$y0[(i)%%nrow(mmm)+1], lwd=2  )
 

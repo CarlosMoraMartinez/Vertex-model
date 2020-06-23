@@ -1,5 +1,5 @@
 import sys
-
+import time
 
 EMPTY= '-999'
 
@@ -36,7 +36,7 @@ def readSprings(name):
         springsfile = open(name + ".spr", "r")
         numsprings = int(springsfile.readline())
         #sprList = [[str(int(j)) for j in springsfile.readline().split('\t')] for i in range(numsprings) ]
-        sprList = [[str(int(j)) for j in line.split('\t')] for line in springsfile ]
+        sprList = [[int(j) for j in line.split('\t')] for line in springsfile ]
         springsfile.close()
     except:
         print("no springs (.spr) file")
@@ -55,10 +55,11 @@ def defrag(points, cells, springs):
                 if(n == p[2]):
                     cells[c][j] = i
                     print("In cell: %d in cell, %d in vert, converted to %d"%(n, p[2], i))
-        for s, spr in springs:
+        for s, spr in enumerate(springs):
             for j, n in enumerate(spr):
                 if(j < 2 and n == p[2]):
-                    spr[s][j] = i #j[2] is likely spring type
+                    springs[s][j] = i #j[2] is likely spring type
+                    print("In spring: %d in spring, %d in vert, converted to %d"%(n, p[2], i))
         p[2] = i
         print("Converted: %d is %d"%(p[2], i))
     return points, cells, springs
@@ -81,16 +82,29 @@ def writeSprings(spr, name):
         f.write('\n'.join( ['\t'.join([str(x) for x in p]) for p in spr] ))  
 
 
-def removePointsInSingleCell(points, cells):
+def removePointsInSingleCell(points, cells, spr):
     pointsd = {i[2]:[j for j, c in enumerate(cells) if i[2] in c] for i in points }
     rmpoints = []
     for p, cinds in pointsd.items():
         if(len(cinds) == 1):
             cells[cinds[0]] = [i for i in cells[cinds[0]] if i != p]
             rmpoints.append(p)
-    print("REMOVING THESE VERTINCES: \n", ', '.join([str(i) for i in rmpoints]))
+    print("REMOVING THESE VERTICES: \n", ', '.join([str(i) for i in rmpoints]))
+    rmspr = []
+    rmpoints2 = []
+    for i, s in enumerate(spr):
+        a, b, t = s
+        if(a in rmpoints):
+            rmpoints2.append(b)
+            rmspr.append(i)
+        elif(b in rmpoints):
+            rmpoints2.append(a)
+            rmspr.append(i)
+    print("REMOVING THESE SPRING VETICES: \n", ', '.join([str(i) for i in rmpoints2]))
+    rmpoints.extend(rmpoints2)
     points = [p for p in points if p[2] not in rmpoints]
-    return points, cells
+    spr = [s for i, s in enumerate(spr) if i not in rmspr]
+    return points, cells, spr
     
 
 def main():
@@ -102,8 +116,9 @@ def main():
     print("  .cells read")
     numsprings, spr = readSprings(name)
     print("  .spr read")
-    points, cells = removePointsInSingleCell(points, cells)
+    points, cells, spr = removePointsInSingleCell(points, cells, spr)
     print("  removed border vertices")
+    time.sleep(2)
     points2, cells2, spr2 = defrag(points, cells, spr)
     print("  defragmented")
     writePoints(points2, name)

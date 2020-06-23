@@ -22,14 +22,14 @@ bud1ensemble10,Bud1ensemble6_2,,,
 bud1ensemble11,Bud1ensemble6_2,,,
 bud1ensemble12,Bud1ensemble6_2,,,
 bud1ensemble13,Bud1ensemble6_2,,"300 million moves,Final area equilibrium: 200 or 300, random tension prop 0,0.005,0.002, min_spatial tension -0.02 or -0.04",
-bud1ensemble14,Bud1ensemble6_2,,"El Ã¡rea de equilibrio 40 da buen resultado, las alas se hinchan menos. Es compatible con un poco de ruido en la tensiÃ³n. TensiÃ³n mÃ­nima de -0.1 da bien resultado","1,3,4"
+bud1ensemble14,Bud1ensemble6_2,,"El área de equilibrio 40 da buen resultado, las alas se hinchan menos. Es compatible con un poco de ruido en la tensión. Tensión mínima de -0.1 da bien resultado","1,3,4"
 bud1ensemble15,,,"0,6,9,15",
 bud1ensemble16,,,,
 bud1ensemble17,,,"2,4,6,8,10",
 bud1ensemble18,,,,
 bud1ensemble19,,,Bad. Wings retract.,
 bud1ensemble20,,,"Exponent of time change and angle influence -2 and -5, Final eq. Area 60 and 30,All simulations are good. The ones with area = 30 are thinner and look better in shape, but elongate less overall. Exponent -2 is better than -5. -2 makes elongation proggressive, but -5 is too static until the end, so in -2 elongation is greater. Next, try lower exponents. However, in sim 2 there are 89000 T1s (exp = -5), versus 57000 in sim 3 (exp = -2)",
-bud1ensemble21,,,"Exponent of time change and angle influence -3.0,-2,-1.5,-1.2,-1,-0.7,-0.4, Final eq. Area 22 and 30,Final area 30â†’all wings very similar to 20_3, with slight changes in shape. Area=22, shorter wings but similar shape.",
+bud1ensemble21,,,"Exponent of time change and angle influence -3.0,-2,-1.5,-1.2,-1,-0.7,-0.4, Final eq. Area 22 and 30,Final area 30?all wings very similar to 20_3, with slight changes in shape. Area=22, shorter wings but similar shape.",
 iso1ensemble1,,,"Final Eq. Area of 80 and 200, different time exponents of angle influence,Final Eq. Area of 80 is fine, final area of 200 makes wings crash a little. All simulations get too rounded towards the end, simulation 0 is the most elongated one. Pick a shape at 80-95% of the simulation time. ",
 bud1ensemble20_april,bud1ensemble20,,,"10,11,22,38,42,55 (10 and 11 probably better)"
 aprilbud2,bud1ensemble20_april,"Added T1_active etc as options, and activated t1_outwards and t1_inwards",,"10,11,22,38,42,55 (10 and 11 probably better)"
@@ -44,8 +44,8 @@ rens3,,,,
 small2,From aprilbud2_10,Tried a smaller bud to test more conditions. max_range_vertex_movement:0.01 0.04 0.20;temperature_positive_energy:0.05 0.10 0.20;ENERGY_TERM3:1  2 10;t1_transition_critical_distance:0.1 0.4;tension_border:0.5 2.0;edge_spatialmax_tension:0.1 0.2;edge_spatialmin_tension:-0.2 -0.5 ,,
 small3,"Identical to small2, except border tension only 0.5",max_range_vertex_movement:0.01 0.04 0.20;temperature_positive_energy:0.05 0.10 0.20;ENERGY_TERM3:1  2 10;t1_transition_critical_distance:0.1 0.4;tension_border:0.5 2.0;edge_spatialmax_tension:0.1 0.2;edge_spatialmin_tension:-0.2 -0.5 ,,
 small4,,Tried bias in X direction (bias is more intense in the center of the wing). This was subsequently removed from the code,"Bias is difficult to control, but when very small gives acceptable results. Term4 value was 0.01 or 0.002 in the ones with good shape; spatialmintension=-0.2,spatialmaxtension=0.1 or 0.2;max_vertex_movement=0.01;temperature=0.05 ",0 2 4 6
-small5,"Like small3, but with vary_edge_tension_with_time","time_exponent=-1 -2;temporal_angle_effect_max=0.2. Besides budsmall, tried strechsmall initial condition, which has more elongated cells in the AP direction. ENERGY_TERM_3 should be 1, not more","Adding time exponent solves an important problem: cells donâ€™t pile up, so the number of rows doesnâ€™t increase that much. The strechsmall condition results in more elongated wings than smallbud (of course). Also, bigger vertex movement leads to less elongated wings. ",
+small5,"Like small3, but with vary_edge_tension_with_time","time_exponent=-1 -2;temporal_angle_effect_max=0.2. Besides budsmall, tried strechsmall initial condition, which has more elongated cells in the AP direction. ENERGY_TERM_3 should be 1, not more","Adding time exponent solves an important problem: cells don’t pile up, so the number of rows doesn’t increase that much. The strechsmall condition results in more elongated wings than smallbud (of course). Also, bigger vertex movement leads to less elongated wings. ",
 small6,"Like small5, but removed extra points from border (_3cpv condition)",,,
-smalll7,,,,
+smalll7,With big bud,,,"15,16,33,34"
 exp1,"Expansion, from small7_16",Without time controls angle influence (tested various: 0.6 0.8 1.0 but fixed along time),,
 exp2,"Expansion, from small7_16",Time controls angle influence. Started from 1 and ended in 0.8 0.6 or 0.4. The other parameter changed was final area.,,
