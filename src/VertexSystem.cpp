@@ -511,6 +511,9 @@ void Tissue::initialize_vertices(std::ifstream &inp)
 		v.ind = stoi(s, &sz);
 		s = s.substr(sz);
 		v.movable = s.empty() ? true : stoi(s);
+		v.movable_x = s.empty() ? true : stoi(s) == 1 || stoi(s) == 2;
+		v.movable_y = s.empty() ? true : stoi(s) == 1 || stoi(s) == 3;
+		//cout << "movable: " << s << ", " << static_cast<int>(v.movable) << static_cast<int>(v.movable_x) << static_cast<int>(v.movable_y) << endl;
 		this->vertices.push_back(v);
 	}
 }
@@ -983,6 +986,8 @@ int Tissue::newVertex()
 		vertices[v].neighbour_vertices[i] = EMPTY_CONNECTION;
 	}
 	vertices[v].movable = true;
+	vertices[v].movable_x = true;
+	vertices[v].movable_y = true;
 	vertices[v].spring = EMPTY_CONNECTION;
 	vertices[v].dead = false;
 	this->num_vertices++;
@@ -1318,8 +1323,8 @@ bool Tissue::tryMoveVertex()
 	{
 		angle = 2 * M_PI * unif(generator);
 		radius = unif(generator) * max_range_vertex_movement;
-		new_x = old_x + cos(angle) * radius;
-		new_y = old_y + sin(angle) * radius;
+		new_x = vertices[vertex_to_move].movable_x ? old_x + cos(angle) * radius : old_x;
+		new_y = vertices[vertex_to_move].movable_y ? old_y + sin(angle) * radius : old_y;
 		moveVertex(vertices[vertex_to_move], new_x, new_y);
 		vertices[vertex_to_move].energy = calculateEnergy(vertices[vertex_to_move]);
 		//if(energy_term4 > 0) vertices[vertex_to_move].energy += calculateTerm4Energy(vertices[vertex_to_move], old_x, old_y);

@@ -110,7 +110,9 @@ struct Vertex{
 	int cells[CELLS_PER_VERTEX];
 	int edges[CELLS_PER_VERTEX];
 	int neighbour_vertices[CELLS_PER_VERTEX];
-	bool movable;
+	bool movable; //>0  in param_file
+	bool movable_x; //== 2 in param_file, == 1 movable both
+	bool movable_y; // == 3  in param_file, == 1 movable both
 	int spring;
 	bool dead;
 };
