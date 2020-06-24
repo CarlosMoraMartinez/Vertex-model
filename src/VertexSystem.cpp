@@ -1994,8 +1994,12 @@ void Tissue::make_t1_at_border_inwards(Rearrangement &r)
 
 	this->counter_t1_inwards++;
 
-	if (REPORT_OUT > 1)
-		cout << "T1 transition inwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 in: " << counter_t1_inwards << endl;
+	if (REPORT_OUT > 1){
+		double cent_x = 0.5*(v1->x + v2->x);
+		double cent_y = 0.5*(v1->y + v2->y);	
+		printLine("T1_inwards", v1->ind, v2->ind, cent_x, cent_y, static_cast<int>(edges[edge].type));	
+	}
+		//cout << "T1 transition inwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 in: " << counter_t1_inwards << endl;
 
 	if (REPORT_T1)
 	{
@@ -2147,8 +2151,12 @@ void Tissue::make_t1_at_border_outwards(Rearrangement &r)
 	edges[edge].type = EdgeType::tissue_boundary;
 	this->counter_t1_outwards++;
 
-	if (REPORT_OUT > 1)
-		cout << "T1 transition outwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 out: " << counter_t1_outwards << endl;
+	if (REPORT_OUT > 1){
+		double cent_x = 0.5*(v1->x + v2->x);
+		double cent_y = 0.5*(v1->y + v2->y);	
+		printLine("T1_outwards", v1->ind, v2->ind, cent_x, cent_y, static_cast<int>(edges[edge].type));	
+	}
+		//cout << "T1 transition outwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 out: " << counter_t1_outwards << endl;
 
 	if (REPORT_T1)
 	{
@@ -2342,8 +2350,12 @@ void Tissue::make_divide_cell(Rearrangement &r)
 		writeAllData(simname + "_div_2" + to_string(counter_divisions));
 
 	past_divisions.push(DivisionRecord{cell, newcind});
-	if (REPORT_OUT > 1)
-		cout << ">DIVISION: moves accepted= " << counter_moves_accepted << "; divi. accepted= " << counter_divisions << "; Cell= " << cell << "; New cell=" << newcind << "; new vertex 1= " << newvind1 << "; new vertex 2=" << newvind2 << "; centroid_x= " << 0.5 * (vertices[newvind1].x + vertices[newvind2].x) << "; centroid_y= " << 0.5 * (vertices[newvind1].y + vertices[newvind2].y) << "; cell_type= " << static_cast<int>(cells[cell].type) << endl;
+	if (REPORT_OUT > 1){
+		double cent_x = 0.5 * (vertices[newvind1].x + vertices[newvind2].x);
+		double cent_y = 0.5 * (vertices[newvind1].y + vertices[newvind2].y);	
+		printLine("DIVISION", cell, newcind, cent_x, cent_y, static_cast<int>(cells[cell].type));	
+	}
+		//cout << ">DIVISION: moves accepted= " << counter_moves_accepted << "; divi. accepted= " << counter_divisions << "; Cell= " << cell << "; New cell=" << newcind << "; new vertex 1= " << newvind1 << "; new vertex 2=" << newvind2 << "; centroid_x= " << 0.5 * (vertices[newvind1].x + vertices[newvind2].x) << "; centroid_y= " << 0.5 * (vertices[newvind1].y + vertices[newvind2].y) << "; cell_type= " << static_cast<int>(cells[cell].type) << endl;
 
 } // END make_divide_cell
 
@@ -2620,8 +2632,12 @@ void Tissue::make_t1(Rearrangement &r)
 	setEdgeTension(edge); //Tension depends on angle and on values of neighboring cells
 	this->counter_t1++;
 
-	if (REPORT_OUT > 1)
-		cout << ">T1 transition: v1=" << v1->ind << "; v2=" << v2->ind << "; mov. accepted=" << this->counter_moves_accepted << "; T1=" << counter_t1 << "; T1 abortions=" << counter_t1_abortions << "; centroid_x=" << 0.5 * (v1->x + v2->x) << "; centroid_y=" << 0.5 * (v1->y + v2->y) << "; edge type=" << static_cast<int>(edges[edge].type) << endl;
+	if (REPORT_OUT > 1){
+		double cent_x = 0.5*(v1->x + v2->x);
+		double cent_y = 0.5*(v1->y + v2->y);	
+		printLine("T1", v1->ind, v2->ind, cent_x, cent_y, static_cast<int>(edges[edge].type));	
+	}
+		//cout << ">T1 transition: v1=" << v1->ind << "; v2=" << v2->ind << "; mov. accepted=" << this->counter_moves_accepted << "; T1=" << counter_t1 << "; T1 abortions=" << counter_t1_abortions << "; centroid_x=" << 0.5 * (v1->x + v2->x) << "; centroid_y=" << 0.5 * (v1->y + v2->y) << "; edge type=" << static_cast<int>(edges[edge].type) << endl;
 	if (REPORT_T1)
 	{
 		ff << "\n\nAFTER\n\n";
@@ -3445,8 +3461,10 @@ void Tissue::make_t2(Rearrangement &r)
 			}
 		}
 	}
-	if (REPORT_OUT > 1)
-		cout << ">T2 transition: cell=" << cell << "; survivor vertex =" << v1 << "; v2= " << v2 << "; v3= " << v3 << "; v2nei= " << v2nei << "; v3nei= " << v3nei << "; mov. accepted= " << this->counter_moves_accepted << "; T1= " << counter_t1 << "; T1 abortions=" << counter_t1_abortions << "; T2= " << counter_t2 << "; centroid_x= " << vertices[v1].x << "; centroid_y= " << vertices[v1].y << "; cell_type= " << static_cast<int>(cells[cell].type) << endl;
+	if (REPORT_OUT > 1){
+		printLine("T2", cell, v1, vertices[v1].x, vertices[v1].y, static_cast<int>(cells[cell].type));	
+	}
+		//cout << ">T2 transition: cell=" << cell << "; survivor vertex =" << v1 << "; v2= " << v2 << "; v3= " << v3 << "; v2nei= " << v2nei << "; v3nei= " << v3nei << "; mov. accepted= " << this->counter_moves_accepted << "; T1= " << counter_t1 << "; T1 abortions=" << counter_t1_abortions << "; T2= " << counter_t2 << "; centroid_x= " << vertices[v1].x << "; centroid_y= " << vertices[v1].y << "; cell_type= " << static_cast<int>(cells[cell].type) << endl;
 	//cout << "K\n";
 } //End make transition T2
 
@@ -3912,6 +3930,17 @@ std::string Tissue::getStats()
 int Tissue::getCounterT1()
 {
 	return this->counter_t1;
+}
+
+void Tissue::printLine(std::string name, int ind1, int ind2, double centroid_x, double centroid_y, int type){
+	//Note: for T1s, ind1 and 2 are vertices. For division, mother and daughter cells. For T2, dead cell and surviving vertex
+	cout << "<class=" << name << "; ind1=" << ind1 << "; ind2=" << ind2 << 
+	"; mov_accepted=" << this->counter_moves_accepted << 
+	"; T1=" << counter_t1 << "; T1 abortions=" << counter_t1_abortions << 
+	"; T1 inwards= " << counter_t1_inwards << "; T1 outwards= " << counter_t1_outwards << 
+	"; Divisions=" << counter_divisions << "; T2=" << counter_t2 <<
+	"; centroid_x=" << centroid_x << "; centroid_y=" << centroid_y << "; element_type="<< type 
+	<< ">" << endl;
 }
 
 void Tissue::writeCellsFile(std::string fname)

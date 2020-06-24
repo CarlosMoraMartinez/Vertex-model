@@ -256,6 +256,7 @@ class Tissue{
 		void writeAllData(std::string fname);
 		void produceOutputs(std::string add_to_name="moved");
 		std::string getStats();
+		void printLine(std::string name, int ind1, int ind2, double centroid_x, double centroid_y, int type);
 		int getCounterT1();
 		void emptyDivisions();
 
