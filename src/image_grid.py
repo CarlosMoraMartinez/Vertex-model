@@ -128,19 +128,21 @@ def multiplot(c2, diff_conds, ca, cb, current_cond, images, absence, plotFun=plo
     if(plot):
         plt.show()
     else:
-        out_cond = outfolder + "/" +  ca.split(" ")[0] + ":" + cb.split(" ")[0] + ":cond" + str(current_cond) + '.png'
-        plt.savefig(out_cond)
+        out_cond = outfolder + "/" +  ca.split(" ")[0] + ":" + cb.split(" ")[0] + ":cond" + str(current_cond) + '.svg'
+        plt.savefig(out_cond, format='svg', dpi=1200)
     plt.close()
 
-def plotAll(c2, images, absence, plotFun=plotImage,  limits=[-10,80,-10,55], outfolder=outfolder_base):
+def plotAll(c2, images, absence, plotFun=plotImage,  limits=[-10,80,-10,55], outfolder=outfolder_base, plotpars=[]):
     for vnum1 in range(c2.columns.shape[0]):
-        if(any([i in c2.columns[vnum1] for i in no_plot_cols])):
-            continue
         ca = c2.columns[vnum1]
+        if(any([i in ca for i in no_plot_cols])):
+            continue
+        if(plotpars and not ca in plotpars):
+            continue
         for vnum2 in range(vnum1 + 1, c2.columns.shape[0]):
-            if(any([i in c2.columns[vnum2] for i in no_plot_cols])):
-                continue
             cb = c2.columns[vnum2]
+            if(any([i in cb for i in no_plot_cols])):
+                continue
             itcols = list(map(lambda x: x != ca and x != cb and not any([i in x for i in no_plot_cols]), c2.columns)) #which parameters must be identical
             diff_conds = c2[c2.columns[itcols]].drop_duplicates() #Unique conditions after removing parameters ca and cb (for each row will perform a different plot)
             for current_cond in range(diff_conds.shape[0]):
@@ -157,7 +159,7 @@ def guessWingName():
             wings.append( f.replace(picsdir_end.replace("/", ""), ""))
     return wings
 
-def make_grids_wing(wing, mode, plotTension, limits):
+def make_grids_wing(wing, mode, plotTension, limits, plotpars):
     outfolder = '_'.join([outfolder_base, wing])
     try:
         os.mkdir(outfolder)
@@ -180,7 +182,7 @@ def make_grids_wing(wing, mode, plotTension, limits):
             plotFun = plotBordersTension
         else:
             plotFun = plotBorders
-    plotAll(c2, images, absence, plotFun, limits, outfolder) 
+    plotAll(c2, images, absence, plotFun, limits, outfolder, plotpars) 
 
 parser = argparse.ArgumentParser(description='Plot grid arguments.')
 parser.add_argument('-w', '--wingName', metavar='wing', type=str, default = '', 
@@ -191,7 +193,8 @@ parser.add_argument('-l', '--fixedLimits', metavar='fixed_limits', type=str, def
                     help='Use these max and min coordinates in all plots. Use this format: x0,xmax,y0,ymax')
 parser.add_argument('-i', '--plotFromImages', metavar='plot_imgs', type=bool, default = False, 
                     help='If True, uses .png images to make composites (faster). If False, reads .points and .edges and makes new plots')
-
+parser.add_argument('-p', '--PlotParams', metavar='plot_params', type=str, default = '', 
+                    help='If present, only plots combinations with these params. Use exact names separated by ,')
 def main():
     args = parser.parse_args()
 
@@ -199,9 +202,11 @@ def main():
     plotTension = args.plotTension
     wings = args.wingName.split(',') if args.wingName != "" else guessWingName()
     limits = [float(i) for i in args.fixedLimits.split(",")]
+    plotpars = args.PlotParams
+    plotpars = plotpars.split(',') if plotpars else ""
 
     for wing in wings:
-        make_grids_wing(wing, mode, plotTension, limits)
+        make_grids_wing(wing, mode, plotTension, limits, plotpars)
 
 if __name__ == '__main__':
     main()
