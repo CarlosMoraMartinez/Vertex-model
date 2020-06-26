@@ -1,0 +1,90 @@
+{
+    "ensemble_name": "small10",
+    "size": 36,
+    "date": "2020-06-26",
+    "purpose": "Try to reduce elongation of cells in distal border during convergent extension",
+    "code_changed": "",
+    "from_condition": "",
+    "wings": [
+        "bud5_3"
+    ],
+    "result": "Worked fine. However, at final time most wings are too elongated and some deform/bend. I use wings of print time 4 and these look better. Also, overall shape tend to be more natural at lower temporal_angle_effect_min (0.6) and higher edge_spatialmax_tension (although at the cellular level, the tip might be collapsed).",
+    "conditions_varied": {
+        "edge_spatialmax_tensio": [
+            "{'0': 0.1, '1': 0.1, '2': 0.1, '3': 0.1}",
+            "{'0': 0.2, '1': 0.1, '2': 0.1, '3': 0.1}",
+            "{'0': 0.5, '1': 0.1, '2': 0.1, '3': 0.1}"
+        ],
+        "edge_temporal_angle_efect_min": [
+            "{'0': 0.6, '1': 1.0, '2': 1.0, '3': 1.0}",
+            "{'0': 0.8, '1': 1.0, '2': 1.0, '3': 1.0}",
+            "{'0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0}"
+        ],
+        "line_tension_borde": [
+            "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}",
+            "{'0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0}"
+        ],
+        "preferred_area_fina": [
+            "{'0': 12.0, '1': 12.0, '2': 12.0, '3': 12.0}",
+            "{'0': 20.0, '1': 12.0, '2': 12.0, '3': 12.0}"
+        ]
+    },
+    "good_simulations": [
+        "small10_2",
+        "small10_5",
+        "small10_11",
+        "small10_14",
+        "small10_20",
+        "small10_28",
+        "small10_29"
+    ],
+    "params_by_result_type": {
+        "collapsed": {
+            "total_with_this_result": 8,
+            "edge_spatialmax_tensio": {
+                "present_values": [
+                    "{'0': 0.5, '1': 0.1, '2': 0.1, '3': 0.1}"
+                ],
+                "absent_values": [
+                    "{'0': 0.1, '1': 0.1, '2': 0.1, '3': 0.1}",
+                    "{'0': 0.2, '1': 0.1, '2': 0.1, '3': 0.1}"
+                ],
+                "count": {
+                    "{'0': 0.5, '1': 0.1, '2': 0.1, '3': 0.1}": 8
+                }
+            }
+        },
+        "ok": {
+            "total_with_this_result": 7,
+            "edge_spatialmax_tensio": {
+                "present_values": [
+                    "{'0': 0.1, '1': 0.1, '2': 0.1, '3': 0.1}",
+                    "{'0': 0.2, '1': 0.1, '2': 0.1, '3': 0.1}"
+                ],
+                "absent_values": [
+                    "{'0': 0.5, '1': 0.1, '2': 0.1, '3': 0.1}"
+                ],
+                "count": {
+                    "{'0': 0.1, '1': 0.1, '2': 0.1, '3': 0.1}": 5,
+                    "{'0': 0.2, '1': 0.1, '2': 0.1, '3': 0.1}": 2
+                }
+            },
+            "edge_temporal_angle_efect_min": {
+                "present_values": [
+                    "{'0': 0.6, '1': 1.0, '2': 1.0, '3': 1.0}",
+                    "{'0': 0.8, '1': 1.0, '2': 1.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0}"
+                ],
+                "count": {
+                    "{'0': 0.6, '1': 1.0, '2': 1.0, '3': 1.0}": 6,
+                    "{'0': 0.8, '1': 1.0, '2': 1.0, '3': 1.0}": 1
+                }
+            }
+        },
+        "tip collapsed": {
+            "total_with_this_result": 21
+        }
+    }
+}

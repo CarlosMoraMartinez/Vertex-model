@@ -1,0 +1,66 @@
+{
+    "ensemble_name": "small11",
+    "size": 36,
+    "date": "2020-06-26",
+    "purpose": "Identical to small10 but allowing static vertices move in the Y axis",
+    "code_changed": "Static vertices move in the Y axis",
+    "from_condition": "small10",
+    "wings": [
+        "bud5_3y"
+    ],
+    "result": "Results looked at time=4, instead of at the end of the simulation. Further efforts should be directed to make an equivalent shorter simulatio, by tuning the curves of angle influence on edge tension. Two types of result (at t=4): in oval wings, the proximal part contracted. In triangle wings, the proximal part did not contract much. Otherwise they look very similar; differences should appear latter.",
+    "conditions_varied": {
+        "edge_spatialmax_tensio": [
+            "{'0': 0.1, '1': 0.1, '2': 0.1, '3': 0.1}",
+            "{'0': 0.2, '1': 0.1, '2': 0.1, '3': 0.1}",
+            "{'0': 0.5, '1': 0.1, '2': 0.1, '3': 0.1}"
+        ],
+        "edge_temporal_angle_efect_min": [
+            "{'0': 0.6, '1': 1.0, '2': 1.0, '3': 1.0}",
+            "{'0': 0.8, '1': 1.0, '2': 1.0, '3': 1.0}",
+            "{'0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0}"
+        ],
+        "line_tension_borde": [
+            "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}",
+            "{'0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0}"
+        ],
+        "preferred_area_fina": [
+            "{'0': 12.0, '1': 12.0, '2': 12.0, '3': 12.0}",
+            "{'0': 20.0, '1': 12.0, '2': 12.0, '3': 12.0}"
+        ]
+    },
+    "good_simulations": [],
+    "params_by_result_type": {
+        "oval": {
+            "total_with_this_result": 24,
+            "edge_spatialmax_tensio": {
+                "present_values": [
+                    "{'0': 0.1, '1': 0.1, '2': 0.1, '3': 0.1}",
+                    "{'0': 0.2, '1': 0.1, '2': 0.1, '3': 0.1}"
+                ],
+                "absent_values": [
+                    "{'0': 0.5, '1': 0.1, '2': 0.1, '3': 0.1}"
+                ],
+                "count": {
+                    "{'0': 0.1, '1': 0.1, '2': 0.1, '3': 0.1}": 12,
+                    "{'0': 0.2, '1': 0.1, '2': 0.1, '3': 0.1}": 12
+                }
+            }
+        },
+        "triangle": {
+            "total_with_this_result": 12,
+            "edge_spatialmax_tensio": {
+                "present_values": [
+                    "{'0': 0.5, '1': 0.1, '2': 0.1, '3': 0.1}"
+                ],
+                "absent_values": [
+                    "{'0': 0.1, '1': 0.1, '2': 0.1, '3': 0.1}",
+                    "{'0': 0.2, '1': 0.1, '2': 0.1, '3': 0.1}"
+                ],
+                "count": {
+                    "{'0': 0.5, '1': 0.1, '2': 0.1, '3': 0.1}": 12
+                }
+            }
+        }
+    }
+}

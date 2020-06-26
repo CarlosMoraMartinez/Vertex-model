@@ -1,0 +1,249 @@
+{
+    "ensemble_name": "small7",
+    "size": "36",
+    "date": "2020-06-26",
+    "purpose": "As small6 but with bigger wing. Removed vertices in the border that only touch one cell. This was made because high border tension reduces elongation, but at low border tension these vertices go outside and form some kind of spickles. Therefore, removing them would allow for a smooth border at lower border tension and thus more elongation",
+    "code_changed": "",
+    "from_condition": "",
+    "wings": [
+        "strechbig1_3cpv"
+    ],
+    "result": "At lower border tension, border gets irregular.",
+    "conditions_varied": {
+        "ENERGY_TERM3 (Perimeter": [
+            1,
+            2
+        ],
+        "edge_spatialmax_tensio": [
+            "{'0': 0.5,'1': 0.1,'2': 0.1,'3': 0.1}",
+            "{'0': 0.2,'1': 0.1,'2': 0.1,'3': 0.1}",
+            "{'0': 0.1,'1': 0.1,'2': 0.1,'3': 0.1}"
+        ],
+        "line_tension_borde": [
+            "{'0': 0.5,'1': 0.5,'2': 0.5,'3': 0.5}",
+            "{'0': 0.02,'1': 0.02,'2': 0.02,'3': 0.02}",
+            "{'0': -0.02,'1': -0.02,'2': -0.02,'3': -0.02}"
+        ],
+        "temperature_positive_energy": [
+            0.05,
+            0.1
+        ]
+    },
+    "good_simulations": [
+        "small7_15",
+        "small7_16",
+        "small7_33",
+        "small7_34"
+    ],
+    "params_by_result_type": {
+        "collapsed border": {
+            "total_with_this_result": 24
+        },
+        "cypress": {
+            "total_with_this_result": 13,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    2
+                ],
+                "absent_values": [
+                    1
+                ],
+                "count": {
+                    "2": 13
+                }
+            }
+        },
+        "semi-regular border": {
+            "total_with_this_result": 12
+        },
+        "stretched cells": {
+            "total_with_this_result": 2,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    2
+                ],
+                "count": {
+                    "1": 2
+                }
+            },
+            "edge_spatialmax_tensio": {
+                "present_values": [
+                    "{'0': 0.5,'1': 0.1,'2': 0.1,'3': 0.1}"
+                ],
+                "absent_values": [
+                    "{'0': 0.2,'1': 0.1,'2': 0.1,'3': 0.1}",
+                    "{'0': 0.1,'1': 0.1,'2': 0.1,'3': 0.1}"
+                ],
+                "count": {
+                    "{'0': 0.5,'1': 0.1,'2': 0.1,'3': 0.1}": 2
+                }
+            },
+            "line_tension_borde": {
+                "present_values": [
+                    "{'0': 0.5,'1': 0.5,'2': 0.5,'3': 0.5}"
+                ],
+                "absent_values": [
+                    "{'0': 0.02,'1': 0.02,'2': 0.02,'3': 0.02}",
+                    "{'0': -0.02,'1': -0.02,'2': -0.02,'3': -0.02}"
+                ],
+                "count": {
+                    "{'0': 0.5,'1': 0.5,'2': 0.5,'3': 0.5}": 2
+                }
+            }
+        },
+        "round border": {
+            "total_with_this_result": 1,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    2
+                ],
+                "count": {
+                    "1": 1
+                }
+            },
+            "edge_spatialmax_tensio": {
+                "present_values": [
+                    "{'0': 0.5,'1': 0.1,'2': 0.1,'3': 0.1}"
+                ],
+                "absent_values": [
+                    "{'0': 0.2,'1': 0.1,'2': 0.1,'3': 0.1}",
+                    "{'0': 0.1,'1': 0.1,'2': 0.1,'3': 0.1}"
+                ],
+                "count": {
+                    "{'0': 0.5,'1': 0.1,'2': 0.1,'3': 0.1}": 1
+                }
+            },
+            "line_tension_borde": {
+                "present_values": [
+                    "{'0': 0.5,'1': 0.5,'2': 0.5,'3': 0.5}"
+                ],
+                "absent_values": [
+                    "{'0': 0.02,'1': 0.02,'2': 0.02,'3': 0.02}",
+                    "{'0': -0.02,'1': -0.02,'2': -0.02,'3': -0.02}"
+                ],
+                "count": {
+                    "{'0': 0.5,'1': 0.5,'2': 0.5,'3': 0.5}": 1
+                }
+            },
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.1
+                ],
+                "absent_values": [
+                    0.05
+                ],
+                "count": {
+                    "0.1": 1
+                }
+            }
+        },
+        "irregular border": {
+            "total_with_this_result": 13,
+            "line_tension_borde": {
+                "present_values": [
+                    "{'0': 0.02,'1': 0.02,'2': 0.02,'3': 0.02}",
+                    "{'0': -0.02,'1': -0.02,'2': -0.02,'3': -0.02}"
+                ],
+                "absent_values": [
+                    "{'0': 0.5,'1': 0.5,'2': 0.5,'3': 0.5}"
+                ],
+                "count": {
+                    "{'0': 0.02,'1': 0.02,'2': 0.02,'3': 0.02}": 5,
+                    "{'0': -0.02,'1': -0.02,'2': -0.02,'3': -0.02}": 8
+                }
+            }
+        },
+        "bullet": {
+            "total_with_this_result": 12,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    2
+                ],
+                "count": {
+                    "1": 12
+                }
+            }
+        },
+        "ok": {
+            "total_with_this_result": 4,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    2
+                ],
+                "absent_values": [
+                    1
+                ],
+                "count": {
+                    "2": 4
+                }
+            },
+            "edge_spatialmax_tensio": {
+                "present_values": [
+                    "{'0': 0.2,'1': 0.1,'2': 0.1,'3': 0.1}",
+                    "{'0': 0.1,'1': 0.1,'2': 0.1,'3': 0.1}"
+                ],
+                "absent_values": [
+                    "{'0': 0.5,'1': 0.1,'2': 0.1,'3': 0.1}"
+                ],
+                "count": {
+                    "{'0': 0.2,'1': 0.1,'2': 0.1,'3': 0.1}": 2,
+                    "{'0': 0.1,'1': 0.1,'2': 0.1,'3': 0.1}": 2
+                }
+            },
+            "line_tension_borde": {
+                "present_values": [
+                    "{'0': 0.5,'1': 0.5,'2': 0.5,'3': 0.5}"
+                ],
+                "absent_values": [
+                    "{'0': 0.02,'1': 0.02,'2': 0.02,'3': 0.02}",
+                    "{'0': -0.02,'1': -0.02,'2': -0.02,'3': -0.02}"
+                ],
+                "count": {
+                    "{'0': 0.5,'1': 0.5,'2': 0.5,'3': 0.5}": 4
+                }
+            }
+        },
+        "triangle": {
+            "total_with_this_result": 8
+        },
+        "regular border": {
+            "total_with_this_result": 7,
+            "line_tension_borde": {
+                "present_values": [
+                    "{'0': 0.5,'1': 0.5,'2': 0.5,'3': 0.5}"
+                ],
+                "absent_values": [
+                    "{'0': 0.02,'1': 0.02,'2': 0.02,'3': 0.02}",
+                    "{'0': -0.02,'1': -0.02,'2': -0.02,'3': -0.02}"
+                ],
+                "count": {
+                    "{'0': 0.5,'1': 0.5,'2': 0.5,'3': 0.5}": 7
+                }
+            }
+        },
+        "collapsed tip": {
+            "total_with_this_result": 6,
+            "line_tension_borde": {
+                "present_values": [
+                    "{'0': 0.5,'1': 0.5,'2': 0.5,'3': 0.5}"
+                ],
+                "absent_values": [
+                    "{'0': 0.02,'1': 0.02,'2': 0.02,'3': 0.02}",
+                    "{'0': -0.02,'1': -0.02,'2': -0.02,'3': -0.02}"
+                ],
+                "count": {
+                    "{'0': 0.5,'1': 0.5,'2': 0.5,'3': 0.5}": 6
+                }
+            }
+        }
+    }
+}

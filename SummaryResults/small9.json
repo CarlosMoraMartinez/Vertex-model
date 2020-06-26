@@ -1,0 +1,68 @@
+{
+    "ensemble_name": "small9",
+    "size": 12,
+    "date": "2020-06-26",
+    "purpose": "",
+    "code_changed": "",
+    "from_condition": "",
+    "wings": [],
+    "result": "Most simulations are good. All simulations have a collapsed tip, but the overall shape is quite good. Results at earlier times have nicely shaped cells and can be used. T1s take place in the second half of the simulation, as AP tension increases, so the shape changes in the first half only depend on cell elongation",
+    "conditions_varied": {
+        "edge_spatialmax_tensio": [
+            "{'0': 0.1, '1': 0.1, '2': 0.1, '3': 0.1}",
+            "{'0': 0.2, '1': 0.1, '2': 0.1, '3': 0.1}",
+            "{'0': 0.5, '1': 0.1, '2': 0.1, '3': 0.1}"
+        ],
+        "line_tension_borde": [
+            "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}",
+            "{'0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0}"
+        ],
+        "preferred_area_fina": [
+            "{'0': 12.0, '1': 12.0, '2': 12.0, '3': 12.0}",
+            "{'0': 20.0, '1': 12.0, '2': 12.0, '3': 12.0}"
+        ]
+    },
+    "good_simulations": [
+        "small9_0",
+        "small9_1",
+        "small9_3",
+        "small9_4",
+        "small9_6",
+        "small9_7",
+        "small9_9",
+        "small9_10"
+    ],
+    "params_by_result_type": {
+        "collapse": {
+            "total_with_this_result": 4,
+            "edge_spatialmax_tensio": {
+                "present_values": [
+                    "{'0': 0.5, '1': 0.1, '2': 0.1, '3': 0.1}"
+                ],
+                "absent_values": [
+                    "{'0': 0.1, '1': 0.1, '2': 0.1, '3': 0.1}",
+                    "{'0': 0.2, '1': 0.1, '2': 0.1, '3': 0.1}"
+                ],
+                "count": {
+                    "{'0': 0.5, '1': 0.1, '2': 0.1, '3': 0.1}": 4
+                }
+            }
+        },
+        "ok": {
+            "total_with_this_result": 8,
+            "edge_spatialmax_tensio": {
+                "present_values": [
+                    "{'0': 0.1, '1': 0.1, '2': 0.1, '3': 0.1}",
+                    "{'0': 0.2, '1': 0.1, '2': 0.1, '3': 0.1}"
+                ],
+                "absent_values": [
+                    "{'0': 0.5, '1': 0.1, '2': 0.1, '3': 0.1}"
+                ],
+                "count": {
+                    "{'0': 0.1, '1': 0.1, '2': 0.1, '3': 0.1}": 4,
+                    "{'0': 0.2, '1': 0.1, '2': 0.1, '3': 0.1}": 4
+                }
+            }
+        }
+    }
+}
