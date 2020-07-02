@@ -718,7 +718,7 @@ void Tissue::set_default_params()
 		cells[c].cell_cycle_limit = cell_cycle_limit[cells[c].type];
 		cells[c].max_area = max_cell_area[cells[c].type];
 
-		cells[c].vary_line_tension = vary_line_tension[cells[c].type];
+		cells[c].vary_line_tension = vary_line_tension[cells[c].type] > 0;
 		cells[c].edge_angle_prop_external = edge_angle_prop_external[cells[c].type];
 		cells[c].edge_angle_prop_uniform = edge_angle_prop_uniform[cells[c].type];
 		cells[c].edge_angle_prop_maxangle = edge_angle_prop_maxangle[cells[c].type];
@@ -822,7 +822,8 @@ void Tissue::setEdgeTension(int e)
 		maxs = cells[cellvar].edge_spatialmax_tension*boundary_factor; //Maximal tension depending on angle
 		maxangle = cells[cellvar].edge_maxangle; //Angle of max tension (in degrees)
 		tensionext = cells[cellvar].edge_tension_external; //Tension set from outside (gene expression etc)
-		prand = cells[cellvar].edge_angle_prop_random;
+		p			cellvar = cells[edges[e].cells[0]].vary_line_tension ? edges[e].cells[0] : edges[e].cells[1]; //find out which cell
+rand = cells[cellvar].edge_angle_prop_random;
 		if(vary_edge_tension_with_time){ //If proportion determined by angle varies with time
 			double time_factor = static_cast<double>(counter_moves_accepted)/max_accepted_movements;
 			time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
@@ -1999,8 +2000,6 @@ void Tissue::make_t1_at_border_inwards(Rearrangement &r)
 		double cent_y = 0.5*(v1->y + v2->y);	
 		printLine("T1_inwards", v1->ind, v2->ind, cent_x, cent_y, static_cast<int>(edges[edge].type));	
 	}
-		//cout << "T1 transition inwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 in: " << counter_t1_inwards << endl;
-
 	if (REPORT_T1)
 	{
 		ff << "\n\nAFTER\n\n";
@@ -2156,8 +2155,6 @@ void Tissue::make_t1_at_border_outwards(Rearrangement &r)
 		double cent_y = 0.5*(v1->y + v2->y);	
 		printLine("T1_outwards", v1->ind, v2->ind, cent_x, cent_y, static_cast<int>(edges[edge].type));	
 	}
-		//cout << "T1 transition outwards: v1=" << v1->ind << ", v2=" << v2->ind << "; mov. accepted: " << this->counter_moves_accepted << "; T1: " << counter_t1 << "; T1 abortions: " << counter_t1_abortions << ", T1 out: " << counter_t1_outwards << endl;
-
 	if (REPORT_T1)
 	{
 		ff << "\n\nAFTER\n\n";
@@ -2355,8 +2352,6 @@ void Tissue::make_divide_cell(Rearrangement &r)
 		double cent_y = 0.5 * (vertices[newvind1].y + vertices[newvind2].y);	
 		printLine("DIVISION", cell, newcind, cent_x, cent_y, static_cast<int>(cells[cell].type));	
 	}
-		//cout << ">DIVISION: moves accepted= " << counter_moves_accepted << "; divi. accepted= " << counter_divisions << "; Cell= " << cell << "; New cell=" << newcind << "; new vertex 1= " << newvind1 << "; new vertex 2=" << newvind2 << "; centroid_x= " << 0.5 * (vertices[newvind1].x + vertices[newvind2].x) << "; centroid_y= " << 0.5 * (vertices[newvind1].y + vertices[newvind2].y) << "; cell_type= " << static_cast<int>(cells[cell].type) << endl;
-
 } // END make_divide_cell
 
 bool Tissue::getDivisionPoints(const int cell, double &x1, double &x2, double &y1, double &y2, int &e1, int &e2)
@@ -2637,7 +2632,6 @@ void Tissue::make_t1(Rearrangement &r)
 		double cent_y = 0.5*(v1->y + v2->y);	
 		printLine("T1", v1->ind, v2->ind, cent_x, cent_y, static_cast<int>(edges[edge].type));	
 	}
-		//cout << ">T1 transition: v1=" << v1->ind << "; v2=" << v2->ind << "; mov. accepted=" << this->counter_moves_accepted << "; T1=" << counter_t1 << "; T1 abortions=" << counter_t1_abortions << "; centroid_x=" << 0.5 * (v1->x + v2->x) << "; centroid_y=" << 0.5 * (v1->y + v2->y) << "; edge type=" << static_cast<int>(edges[edge].type) << endl;
 	if (REPORT_T1)
 	{
 		ff << "\n\nAFTER\n\n";
@@ -3464,8 +3458,6 @@ void Tissue::make_t2(Rearrangement &r)
 	if (REPORT_OUT > 1){
 		printLine("T2", cell, v1, vertices[v1].x, vertices[v1].y, static_cast<int>(cells[cell].type));	
 	}
-		//cout << ">T2 transition: cell=" << cell << "; survivor vertex =" << v1 << "; v2= " << v2 << "; v3= " << v3 << "; v2nei= " << v2nei << "; v3nei= " << v3nei << "; mov. accepted= " << this->counter_moves_accepted << "; T1= " << counter_t1 << "; T1 abortions=" << counter_t1_abortions << "; T2= " << counter_t2 << "; centroid_x= " << vertices[v1].x << "; centroid_y= " << vertices[v1].y << "; cell_type= " << static_cast<int>(cells[cell].type) << endl;
-	//cout << "K\n";
 } //End make transition T2
 
 void Tissue::killCellWith2Vertices(int cell)
@@ -3740,7 +3732,8 @@ inline bool Tissue::lines_cross(StraightLine &a, StraightLine &b)
 			x_intersect = (b.intercept - a.intercept) / (a.slope - b.slope);
 		}
 	}
-	return ((x_intersect <= a.x1 && x_intersect >= a.x2) || (x_intersect <= a.x2 && x_intersect >= a.x1)) && ((x_intersect <= b.x1 && x_intersect >= b.x2) || (x_intersect <= b.x2 && x_intersect >= b.x1));
+	return ((x_intersect <= a.x1 && x_intersect >= a.x2) || (x_intersect <= a.x2 && x_intersect >= a.x1)) &&
+	 ((x_intersect <= b.x1 && x_intersect >= b.x2) || (x_intersect <= b.x2 && x_intersect >= b.x1));
 }
 
 std::vector<int> Tissue::getNeighbourCells(int cell)
@@ -3930,17 +3923,6 @@ std::string Tissue::getStats()
 int Tissue::getCounterT1()
 {
 	return this->counter_t1;
-}
-
-void Tissue::printLine(std::string name, int ind1, int ind2, double centroid_x, double centroid_y, int type){
-	//Note: for T1s, ind1 and 2 are vertices. For division, mother and daughter cells. For T2, dead cell and surviving vertex
-	cout << "<class=" << name << "; ind1=" << ind1 << "; ind2=" << ind2 << 
-	"; mov_accepted=" << this->counter_moves_accepted << 
-	"; T1=" << counter_t1 << "; T1 abortions=" << counter_t1_abortions << 
-	"; T1 inwards= " << counter_t1_inwards << "; T1 outwards= " << counter_t1_outwards << 
-	"; Divisions=" << counter_divisions << "; T2=" << counter_t2 <<
-	"; centroid_x=" << centroid_x << "; centroid_y=" << centroid_y << "; element_type="<< type 
-	<< ">" << endl;
 }
 
 void Tissue::writeCellsFile(std::string fname)
