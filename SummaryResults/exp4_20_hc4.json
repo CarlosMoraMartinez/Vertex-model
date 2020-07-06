@@ -1,0 +1,1250 @@
+{
+    "ensemble_name": "exp4_20_hc4",
+    "size": "300",
+    "date": "2020-07-06",
+    "purpose": "Hinge contraction from conv-extension and expansion in exp4_20",
+    "code_changed": "",
+    "from_condition": "ensemble27 (the hinge contraction that worked with the old wing), but changed many things",
+    "wings": [
+        "s10-3-4e4-20dfct2"
+    ],
+    "result": "Most simulations are not very good; many crashed. Vein cells do not divide, weird shapes can form in the hinge; division does not start proximally but in the distal part of the blade.Time decrease exponent should be 0.25 or 0.5; x_coord_decrease_exponent should be 2 or 5.",
+    "conditions_varied": {
+        "ENERGY_TERM3 (Perimeter": [
+            1,
+            3
+        ],
+        "preferred_area_fina": [
+            "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}",
+            "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}",
+            "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}"
+        ],
+        "temperature_positive_energy": [
+            0.05,
+            0.1
+        ],
+        "time_decrease_exponent": [
+            0.25,
+            0.5,
+            2.0,
+            1.0,
+            5.0
+        ],
+        "xcoord_decrease_exponen": [
+            0.25,
+            0.5,
+            2.0,
+            1.0,
+            5.0
+        ]
+    },
+    "good_simulations": [
+        "exp4_20_hc4_160",
+        "exp4_20_hc4_252"
+    ],
+    "params_by_result_type": {
+        "crashed": {
+            "total_with_this_result": 16,
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 16
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    0.5,
+                    1.0,
+                    2.0,
+                    5.0
+                ],
+                "absent_values": [
+                    0.25
+                ],
+                "count": {
+                    "0.5": 1,
+                    "1.0": 1,
+                    "2.0": 3,
+                    "5.0": 11
+                }
+            }
+        },
+        "cell movement in hinge but not in blade": {
+            "total_with_this_result": 2,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    3
+                ],
+                "count": {
+                    "1": 2
+                }
+            },
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}",
+                    "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}": 1,
+                    "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}": 1
+                }
+            },
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 2
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.5
+                ],
+                "absent_values": [
+                    0.25,
+                    2.0,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "0.5": 2
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    1.0,
+                    2.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5,
+                    5.0
+                ],
+                "count": {
+                    "1.0": 1,
+                    "2.0": 1
+                }
+            }
+        },
+        "pr": {
+            "total_with_this_result": 1,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    3
+                ],
+                "count": {
+                    "1": 1
+                }
+            },
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}",
+                    "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}": 1
+                }
+            },
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 1
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    2.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "2.0": 1
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    0.5
+                ],
+                "absent_values": [
+                    0.25,
+                    2.0,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "0.5": 1
+                }
+            }
+        },
+        "somehow more cell movement in blade": {
+            "total_with_this_result": 2,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    3
+                ],
+                "count": {
+                    "1": 2
+                }
+            },
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}",
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}": 1,
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}": 1
+                }
+            },
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 2
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25
+                ],
+                "absent_values": [
+                    0.5,
+                    2.0,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "0.25": 2
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    5.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5,
+                    2.0,
+                    1.0
+                ],
+                "count": {
+                    "5.0": 2
+                }
+            }
+        },
+        "low overall cell movement": {
+            "total_with_this_result": 3,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    3
+                ],
+                "count": {
+                    "1": 3
+                }
+            },
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 3
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25
+                ],
+                "absent_values": [
+                    0.5,
+                    2.0,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "0.25": 3
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    2.0,
+                    5.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5,
+                    1.0
+                ],
+                "count": {
+                    "2.0": 2,
+                    "5.0": 1
+                }
+            }
+        },
+        "good contraction": {
+            "total_with_this_result": 28,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25,
+                    0.5,
+                    1.0
+                ],
+                "absent_values": [
+                    2.0,
+                    5.0
+                ],
+                "count": {
+                    "0.25": 18,
+                    "0.5": 7,
+                    "1.0": 3
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    1.0,
+                    2.0,
+                    5.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5
+                ],
+                "count": {
+                    "1.0": 2,
+                    "2.0": 10,
+                    "5.0": 16
+                }
+            }
+        },
+        "veins don\u2019t divide": {
+            "total_with_this_result": 10,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    3
+                ],
+                "count": {
+                    "1": 10
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25,
+                    0.5
+                ],
+                "absent_values": [
+                    2.0,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "0.25": 6,
+                    "0.5": 4
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    1.0,
+                    2.0,
+                    5.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5
+                ],
+                "count": {
+                    "1.0": 3,
+                    "2.0": 3,
+                    "5.0": 4
+                }
+            }
+        },
+        "second division round starting proximal": {
+            "total_with_this_result": 2,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    3
+                ],
+                "count": {
+                    "1": 2
+                }
+            },
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}",
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}": 1,
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}": 1
+                }
+            },
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 2
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25
+                ],
+                "absent_values": [
+                    0.5,
+                    2.0,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "0.25": 2
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    5.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5,
+                    2.0,
+                    1.0
+                ],
+                "count": {
+                    "5.0": 2
+                }
+            }
+        },
+        "hinge aspect similar to real": {
+            "total_with_this_result": 3,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    3
+                ],
+                "count": {
+                    "1": 3
+                }
+            },
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 3
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25
+                ],
+                "absent_values": [
+                    0.5,
+                    2.0,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "0.25": 3
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    2.0,
+                    5.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5,
+                    1.0
+                ],
+                "count": {
+                    "2.0": 2,
+                    "5.0": 1
+                }
+            }
+        },
+        "extra contraction": {
+            "total_with_this_result": 2,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    3
+                ],
+                "absent_values": [
+                    1
+                ],
+                "count": {
+                    "3": 2
+                }
+            },
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}",
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}": 2
+                }
+            },
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 2
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25,
+                    0.5
+                ],
+                "absent_values": [
+                    2.0,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "0.25": 1,
+                    "0.5": 1
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    5.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5,
+                    2.0,
+                    1.0
+                ],
+                "count": {
+                    "5.0": 2
+                }
+            }
+        },
+        "mid contraction": {
+            "total_with_this_result": 25,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25,
+                    0.5,
+                    2.0,
+                    1.0
+                ],
+                "absent_values": [
+                    5.0
+                ],
+                "count": {
+                    "0.25": 3,
+                    "0.5": 7,
+                    "2.0": 3,
+                    "1.0": 12
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    1.0,
+                    2.0,
+                    5.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5
+                ],
+                "count": {
+                    "1.0": 5,
+                    "2.0": 10,
+                    "5.0": 10
+                }
+            }
+        },
+        "less division and AP stretching": {
+            "total_with_this_result": 4,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    3
+                ],
+                "count": {
+                    "1": 4
+                }
+            },
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}",
+                    "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}": 2,
+                    "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}": 2
+                }
+            },
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 4
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    1.0,
+                    2.0,
+                    5.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5
+                ],
+                "count": {
+                    "1.0": 1,
+                    "2.0": 2,
+                    "5.0": 1
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    0.5,
+                    1.0
+                ],
+                "absent_values": [
+                    0.25,
+                    2.0,
+                    5.0
+                ],
+                "count": {
+                    "0.5": 3,
+                    "1.0": 1
+                }
+            }
+        },
+        "cell shape irregular in the end": {
+            "total_with_this_result": 1,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    3
+                ],
+                "count": {
+                    "1": 1
+                }
+            },
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}",
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}": 1
+                }
+            },
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 1
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25
+                ],
+                "absent_values": [
+                    0.5,
+                    2.0,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "0.25": 1
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    2.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "2.0": 1
+                }
+            }
+        },
+        "ok": {
+            "total_with_this_result": 2,
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}",
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}": 1,
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}": 1
+                }
+            },
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.1
+                ],
+                "absent_values": [
+                    0.05
+                ],
+                "count": {
+                    "0.1": 2
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25,
+                    0.5
+                ],
+                "absent_values": [
+                    2.0,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "0.25": 1,
+                    "0.5": 1
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    2.0,
+                    5.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5,
+                    1.0
+                ],
+                "count": {
+                    "2.0": 1,
+                    "5.0": 1
+                }
+            }
+        },
+        "proximal veins collapse": {
+            "total_with_this_result": 7,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    3
+                ],
+                "count": {
+                    "1": 7
+                }
+            },
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 7
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25,
+                    0.5
+                ],
+                "absent_values": [
+                    2.0,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "0.25": 2,
+                    "0.5": 5
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    0.25,
+                    0.5
+                ],
+                "absent_values": [
+                    2.0,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "0.25": 4,
+                    "0.5": 3
+                }
+            }
+        },
+        "somewhat irregular shape": {
+            "total_with_this_result": 3,
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}",
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}": 1,
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}": 2
+                }
+            },
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 3
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.5,
+                    1.0
+                ],
+                "absent_values": [
+                    0.25,
+                    2.0,
+                    5.0
+                ],
+                "count": {
+                    "0.5": 2,
+                    "1.0": 1
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    5.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5,
+                    2.0,
+                    1.0
+                ],
+                "count": {
+                    "5.0": 3
+                }
+            }
+        },
+        "division start at tip": {
+            "total_with_this_result": 83
+        },
+        "second division round": {
+            "total_with_this_result": 9,
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}",
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}": 5,
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}": 4
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.5,
+                    0.25
+                ],
+                "absent_values": [
+                    2.0,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "0.5": 5,
+                    "0.25": 4
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    5.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5,
+                    2.0,
+                    1.0
+                ],
+                "count": {
+                    "5.0": 9
+                }
+            }
+        },
+        "division homogeneous": {
+            "total_with_this_result": 11,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    3
+                ],
+                "count": {
+                    "1": 11
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25,
+                    0.5
+                ],
+                "absent_values": [
+                    2.0,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "0.25": 9,
+                    "0.5": 2
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    2.0,
+                    5.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5,
+                    1.0
+                ],
+                "count": {
+                    "2.0": 5,
+                    "5.0": 6
+                }
+            }
+        },
+        "cell movement in hinge by not in blade": {
+            "total_with_this_result": 1,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    3
+                ],
+                "count": {
+                    "1": 1
+                }
+            },
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}",
+                    "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}": 1
+                }
+            },
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 1
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.5
+                ],
+                "absent_values": [
+                    0.25,
+                    2.0,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "0.5": 1
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    2.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "2.0": 1
+                }
+            }
+        },
+        "low contraction": {
+            "total_with_this_result": 78
+        },
+        "only posterior contraction": {
+            "total_with_this_result": 71
+        },
+        "somewhat weird shape": {
+            "total_with_this_result": 5,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    3
+                ],
+                "count": {
+                    "1": 5
+                }
+            },
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}",
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}": 4,
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}": 1
+                }
+            },
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.1
+                ],
+                "absent_values": [
+                    0.05
+                ],
+                "count": {
+                    "0.1": 5
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25,
+                    0.5
+                ],
+                "absent_values": [
+                    2.0,
+                    1.0,
+                    5.0
+                ],
+                "count": {
+                    "0.25": 3,
+                    "0.5": 2
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    2.0,
+                    5.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5,
+                    1.0
+                ],
+                "count": {
+                    "2.0": 2,
+                    "5.0": 3
+                }
+            }
+        },
+        "blade seems to contract": {
+            "total_with_this_result": 79,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.5,
+                    1.0,
+                    2.0,
+                    5.0
+                ],
+                "absent_values": [
+                    0.25
+                ],
+                "count": {
+                    "0.5": 7,
+                    "1.0": 24,
+                    "2.0": 20,
+                    "5.0": 28
+                }
+            }
+        },
+        "fast contraction at the end and irregular shape": {
+            "total_with_this_result": 1,
+            "ENERGY_TERM3": {
+                "present_values": [
+                    3
+                ],
+                "absent_values": [
+                    1
+                ],
+                "count": {
+                    "3": 1
+                }
+            },
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 5.0, '2': 20.0, '3': 5.0}",
+                    "{'0': 30.0, '1': 1.0, '2': 20.0, '3': 1.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 0.1, '2': 20.0, '3': 0.1}": 1
+                }
+            },
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 1
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    5.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5,
+                    2.0,
+                    1.0
+                ],
+                "count": {
+                    "5.0": 1
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    5.0
+                ],
+                "absent_values": [
+                    0.25,
+                    0.5,
+                    2.0,
+                    1.0
+                ],
+                "count": {
+                    "5.0": 1
+                }
+            }
+        }
+    }
+}
