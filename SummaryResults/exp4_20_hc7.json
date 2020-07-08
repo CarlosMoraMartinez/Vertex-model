@@ -1,0 +1,230 @@
+{
+    "ensemble_name": "exp4_20_hc7",
+    "size": "48",
+    "date": "2020-07-07",
+    "purpose": "Optimize hinge contraction, starting from the result of previous conv. extension and expansion. ",
+    "code_changed": "",
+    "from_condition": "exp4_20_hc4, simulation 160",
+    "wings": [
+        "s10-3-4e4-20dfct2"
+    ],
+    "result": "Some simulations are more or less good, but division starts at the tip, veins don't divide, hinge sometimes doesn't divide. Otherwise I would say that the overall shape is good. Tried check_if_edges_cross_op; it biased vertex movements and resulted in contractions that were too much in the PD direction and not in the AP direction. Results are similar to the previous ensemble, so didn't reach any particular conclusion.",
+    "conditions_varied": {
+        "cell_cycle_limi": [
+            "{'0': 40000, '1': 40000, '2': 40000, '3': 40000}",
+            "{'0': 20000, '1': 20000, '2': 20000, '3': 20000}"
+        ],
+        "check_if_edges_cross_op": [
+            0,
+            1
+        ],
+        "line_tensio": [
+            "{'0': -0.02, '1': -0.02, '2': 2.0, '3': 2.0}",
+            "{'0': -0.02, '1': 0.03, '2': 2.0, '3': 2.0}"
+        ],
+        "perimeter_contrac": [
+            "{'0': 0.03, '1': 0.6, '2': 0.03, '3': 0.6}",
+            "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}"
+        ],
+        "xcoord_decrease_exponen": [
+            3.0,
+            2.0,
+            2.5
+        ]
+    },
+    "good_simulations": [
+        "exp4_20_hc7_0",
+        "exp4_20_hc7_1",
+        "exp4_20_hc7_5"
+    ],
+    "params_by_result_type": {
+        "second division round": {
+            "total_with_this_result": 33
+        },
+        "contraction almost good": {
+            "total_with_this_result": 6,
+            "check_if_edges_cross_op": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    0
+                ],
+                "count": {
+                    "1": 6
+                }
+            },
+            "perimeter_contrac": {
+                "present_values": [
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}"
+                ],
+                "absent_values": [
+                    "{'0': 0.03, '1': 0.6, '2': 0.03, '3': 0.6}"
+                ],
+                "count": {
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}": 6
+                }
+            }
+        },
+        "hinge disappears": {
+            "total_with_this_result": 23
+        },
+        "contraction good": {
+            "total_with_this_result": 9,
+            "perimeter_contrac": {
+                "present_values": [
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}"
+                ],
+                "absent_values": [
+                    "{'0': 0.03, '1': 0.6, '2': 0.03, '3': 0.6}"
+                ],
+                "count": {
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}": 9
+                }
+            }
+        },
+        "homogeneous division": {
+            "total_with_this_result": 2,
+            "check_if_edges_cross_op": {
+                "present_values": [
+                    0
+                ],
+                "absent_values": [
+                    1
+                ],
+                "count": {
+                    "0": 2
+                }
+            },
+            "perimeter_contrac": {
+                "present_values": [
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}"
+                ],
+                "absent_values": [
+                    "{'0': 0.03, '1': 0.6, '2': 0.03, '3': 0.6}"
+                ],
+                "count": {
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}": 2
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    2.0
+                ],
+                "absent_values": [
+                    3.0,
+                    2.5
+                ],
+                "count": {
+                    "2.0": 2
+                }
+            }
+        },
+        "ok": {
+            "total_with_this_result": 3,
+            "check_if_edges_cross_op": {
+                "present_values": [
+                    0
+                ],
+                "absent_values": [
+                    1
+                ],
+                "count": {
+                    "0": 3
+                }
+            },
+            "perimeter_contrac": {
+                "present_values": [
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}"
+                ],
+                "absent_values": [
+                    "{'0': 0.03, '1': 0.6, '2': 0.03, '3': 0.6}"
+                ],
+                "count": {
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}": 3
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    2.0
+                ],
+                "absent_values": [
+                    3.0,
+                    2.5
+                ],
+                "count": {
+                    "2.0": 3
+                }
+            }
+        },
+        "veins don\u2019t divide": {
+            "total_with_this_result": 14,
+            "perimeter_contrac": {
+                "present_values": [
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}"
+                ],
+                "absent_values": [
+                    "{'0': 0.03, '1': 0.6, '2': 0.03, '3': 0.6}"
+                ],
+                "count": {
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}": 14
+                }
+            }
+        },
+        "Contraction only P-D": {
+            "total_with_this_result": 3,
+            "line_tensio": {
+                "present_values": [
+                    "{'0': -0.02, '1': 0.03, '2': 2.0, '3': 2.0}"
+                ],
+                "absent_values": [
+                    "{'0': -0.02, '1': -0.02, '2': 2.0, '3': 2.0}"
+                ],
+                "count": {
+                    "{'0': -0.02, '1': 0.03, '2': 2.0, '3': 2.0}": 3
+                }
+            },
+            "xcoord_decrease_exponen": {
+                "present_values": [
+                    2.0,
+                    3.0
+                ],
+                "absent_values": [
+                    2.5
+                ],
+                "count": {
+                    "2.0": 2,
+                    "3.0": 1
+                }
+            }
+        },
+        "crashed": {
+            "total_with_this_result": 5,
+            "check_if_edges_cross_op": {
+                "present_values": [
+                    0
+                ],
+                "absent_values": [
+                    1
+                ],
+                "count": {
+                    "0": 5
+                }
+            }
+        },
+        "weird cell shapes": {
+            "total_with_this_result": 6,
+            "perimeter_contrac": {
+                "present_values": [
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}"
+                ],
+                "absent_values": [
+                    "{'0': 0.03, '1': 0.6, '2': 0.03, '3': 0.6}"
+                ],
+                "count": {
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}": 6
+                }
+            }
+        }
+    }
+}
