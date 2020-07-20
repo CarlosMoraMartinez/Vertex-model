@@ -18,6 +18,7 @@ Tissue::Tissue() : num_cells(0), num_vertices(0), num_edges(0), counter_move_tri
 
 	simname = "";
 	max_accepted_movements = 0;
+	upper_bound_movements = 0;
 	write_every_N_moves = 0;
 	step_mode = false;
 
@@ -32,6 +33,7 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements, int
 
 	this->simname = simulname == "" ? starting_tissue_file : simulname;
 	this->max_accepted_movements = max_accepted_movements;
+	this->upper_bound_movements = max_accepted_movements;
 	this->write_every_N_moves = write_every_N_moves;
 	step_mode = false;
 
@@ -106,6 +108,7 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 	cout << "Initializing Tissue object...\n";
 	this->simname = simulname == "" ? starting_tissue_file : simulname;
 	this->max_accepted_movements = 0; //max_accepted_movements; //Will be overwritten by Parameter File unless value in file is 0!! (only conserved for compatibility with elder scripts)
+	this->upper_bound_movements = max_accepted_movements; //Will be overwritten
 	this->write_every_N_moves = 0; //write_every_N_moves; //Will be overwritten by Parameter File unless value in file is 0!!
 	step_mode = false;
 
@@ -419,6 +422,9 @@ void Tissue::initialize_params(std::string params_file)
 	int temp_write_freq = static_cast<int>(read_real_par(it));
 	if(temp_write_freq > 0)
 		write_every_N_moves = temp_write_freq;
+	int temp_bound = static_cast<int>(read_real_par(it));
+	if(temp_bound > 0)
+		upper_bound_movements = temp_bound;
 	integration_mode = static_cast<int>(read_real_par(it));
 	min_range_vertex_movement = read_real_par(it);
 	max_range_vertex_movement = read_real_par(it);
@@ -854,7 +860,7 @@ rand = cells[cellvar].edge_angle_prop_random;
 
 			if (vary_edge_tension_with_time)
 			{ //If proportion determined by angle varies with time
-				double time_factor = static_cast<double>(counter_moves_accepted) / max_accepted_movements;
+				double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
 				time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
 				double mint = (edge_temporal_angle_efect_min[cells[edges[e].cells[0]].type] + edge_temporal_angle_efect_min[cells[edges[e].cells[1]].type]) * 0.5;
 				double maxt = (edge_temporal_angle_efect_max[cells[edges[e].cells[0]].type] + edge_temporal_angle_efect_max[cells[edges[e].cells[1]].type]) * 0.5;
@@ -882,7 +888,7 @@ rand = cells[cellvar].edge_angle_prop_random;
 			prand = cells[cellvar].edge_angle_prop_random;
 			if (vary_edge_tension_with_time)
 			{ //If proportion determined by angle varies with time
-				double time_factor = static_cast<double>(counter_moves_accepted) / max_accepted_movements;
+				double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
 				time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
 				double mint = edge_temporal_angle_efect_min[cells[cellvar].type];
 				double maxt = edge_temporal_angle_efect_max[cells[cellvar].type];
@@ -1415,7 +1421,7 @@ void Tissue::advanceSizeWithXcoordAndTime(int vertex_moved)
 {
 	int caux;
 	//double auxprint;
-	double time_factor = static_cast<double>(counter_moves_accepted) / max_accepted_movements;
+	double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
 	time_factor = expAdvance(time_factor, time_decrease_exponent); //(1 - exp(-pow(time_factor, time_decrease_exponent)))/EXP_FACTOR;
 	float pos_factor = 0, aux_area;
 
@@ -1510,7 +1516,7 @@ void Tissue::advanceCellCycle(int vertex_moved)
 void Tissue::advanceSizeWithTime(int vertex_moved)
 {
 	int caux;
-	double time_factor = static_cast<double>(counter_moves_accepted) / max_accepted_movements;
+	double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
 	time_factor = expAdvance(time_factor, time_decrease_exponent); //(1 - exp(-pow(time_factor, time_decrease_exponent)))/EXP_FACTOR;
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
@@ -3899,6 +3905,11 @@ void Tissue::emptyDivisions()
 	divisionrecord_q aux;
 	std::swap(aux, this->past_divisions);
 }
+
+void Tissue::printLine(std::string name, int ind1, int ind2, double centroid_x, double centroid_y, int type){
+	cout << ">name:" << name <<";v1:"<<ind1<<";v2:"<<ind2<<";centroid_x:"<<centroid_x<<";centroid_y:"<<centroid_y<<";type:"<<type<<endl;
+}
+
 
 std::string Tissue::getStats()
 {

@@ -87,7 +87,7 @@ const int MOVE_TRIALS = 100;  //Times it tries to move a vertex before it quits 
 const bool UPDATE_EDGE_TENSION_EVERY_MOVE = true; //Update edge tension if tension is dependent on edge angle (if true, do it in every iteration, if false do it only in transitions and start)
 const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
-const int REPORT_OUT = 0;//SET THIS TO 0 IF EVOLUTION IS GOING TO BE USED OR IN CASE OF LONG SIMULATIONS
+const int REPORT_OUT = 2;//SET THIS TO 0 IF EVOLUTION IS GOING TO BE USED OR IN CASE OF LONG SIMULATIONS
 
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tcells\tedges\tneighbour_vertices\n";
 const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\tcentroid_x\tcentroid_y\tangle_longest\tangle_signal\tangle_random\tdegrees_signal\tmax_area\tcell_cycle_state\tcell_cycle_limit\tcan_divide\tnum_vertices\tvertices\tedges\tnum_divisions\n";
@@ -340,7 +340,7 @@ class Tissue{
 		divisionrecord_q past_divisions;
 		//counters
 		int counter_move_trials, counter_moves_accepted, counter_favorable_accepted, counter_favorable_rejected, counter_unfav_accepted, counter_unfav_rejected, counter_edges_removed, counter_t1, counter_t1_abortions, counter_divisions, counter_t2, counter_t1_outwards, counter_t1_inwards;
-		int max_accepted_movements, write_every_N_moves;
+		int max_accepted_movements, write_every_N_moves, upper_bound_movements;
 		std::default_random_engine generator;
 		std::uniform_real_distribution<double> unif;
 		//Methods used by constructors
