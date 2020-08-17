@@ -5,7 +5,6 @@ import argparse
 
 import numpy as np
 import scipy.spatial as spatial
-from scipy.spatial import Voronoi, voronoi_plot_2d
 import matplotlib.pyplot as plt 
 from matplotlib.widgets import Slider, Button, Lasso, LassoSelector, TextBox, PolygonSelector
 import shapely
@@ -22,6 +21,8 @@ bladetype = 0
 hingetype = 1
 veintype = 2
 veinhinge = 3
+BORDER_TYPE = 4
+
 wingcols = ['blue', 'green', 'black', 'gray']
 springcols = ['red', 'yellow', 'purple', 'pink', 'brown']
 
@@ -35,10 +36,12 @@ class wing:
         self.plot_cell_types = True
         self.numVerticesCell = []
         self.polygonList = []
+        self.cellvertList = []
         self.celltypes = []
         self.numsprings = 0
         self.sprList = []
         self.celltab = None
+        self.edgetab = None
         self.fig = None
         self.ax = None
         try:
@@ -46,12 +49,22 @@ class wing:
         except:
             print("Unable to read data for wing %s"%(self.name))
     def readData(self):
-        self.readPointsFile()
-        self.readCellsFile()
+        try:
+            self.readPointsFile()
+        except:
+            print("Error reading .points file")
+        try:
+            self.readCellsFile()
+        except:
+            print("Error reading .cells file")
         try:
             self.readCellsTabFile()
         except:
             print("No .celltab file")
+        try:
+            self.readEdgeTabFile()
+        except:
+            print("No .edges file")
         self.readSprings()
     def setAx(self, fig, ax, lim=[]):  
         self.fig=fig
@@ -91,16 +104,20 @@ class wing:
         cellsFile = open(self.name + ".cells", "r")
         self.numCells, numVerticesCell = [int(each) for each in cellsFile.readline().split()]
         polygonList = []
+        cellvertList = []
         celltypes = []
         for row in cellsFile:
             polygonIndex = [indPoint for indPoint in row.split() if int(indPoint) >= 0]
             celltypes.append(int(polygonIndex.pop())) #CAREFUL: if cells file does not have type, will produce error
             polygonCoords = [[self.pointsList[coord][0], self.pointsList[coord][1]] for coord in polygonIndex]
-            polygonList.append(polygonCoords)
+            polygonList.append(polygonCoords) #Useful for plots
+            cellvertList.append(polygonIndex) #Useful for graphs etc
         cellsFile.close()
-        self.polygonList, self.celltypes = (polygonList, celltypes)
+        self.polygonList, self.cellvertList, self.celltypes = (polygonList, cellvertList, celltypes)
+    def readEdgeTabFile(self):
+        self.edgetab = pd.read_csv(self.name + ".edges", sep="\t")
     def readSprings(self):
-        sprList = [] #just in case
+        self.sprList = [] #just in case
         try:
             springsfile = open(self.name + ".spr", "r")
             self.numsprings = int(springsfile.readline())
@@ -132,7 +149,98 @@ class wing:
         ymax += 0.1*ry
         #print(xmin, ymin, xmax, ymax)
         return (xmin, ymin, xmax, ymax)
-
+    def getBorder(self):
+        eborder = self.edgetab[self.edgetab['type'] == BORDER_TYPE]
+        edgev = [[int(i) for i in x.split(',') if i] for x in eborder['vertices']]
+        edgel = eborder.ind.tolist()
+        border = []
+        border_e = []
+        start = edgev.pop()
+        border.append(start[0])
+        border.append(start[1])   
+        border_e.append(edgel.pop())
+        current = start[1]
+        while(edgev):
+            for i in range(len(edgev)):
+                if(current == edgev[i][0]): 
+                    e = edgev.pop(i)
+                    el = edgel.pop(i)
+                    border.append(e[1]) 
+                    border_e.append(el)
+                    current = e[1]                 
+                    break
+                elif(current == edgev[i][1]): 
+                    e = edgev.pop(i)
+                    el = edgel.pop(i)
+                    border.append(e[0]) 
+                    border_e.append(el)
+                    current = e[0]                 
+                    break
+            else:
+                print("Error: border not continuous")
+                return []
+        return (border, border_e)
+    def getMarkPoints(self, points_x, points_y):
+        xmin, ymin, xmax, ymax = self.getLimits()
+        coord_x = [] 
+        for p in points_x:
+            coord_x.append(xmin + (xmax - xmin)*p)
+        coord_y = []
+        for p in points_y:
+            coord_y.append(ymin + (ymax - ymin)*p)  
+        return (coord_x, coord_y)
+    def getClosestCell(self, coord, points, edges, ind=0):
+        edgepos = [0.5*(self.pointsList[str(points[i-1])][ind] + self.pointsList[str(points[i])][ind]) for i in range(1, len(points))]
+        edgedist = [abs(x - coord) for x in edgepos]
+        sorted_edges = [edges[i] for i in np.argsort(edgedist)]
+        getcell = lambda x: [d for d in [c for c in self.edgetab.loc[self.edgetab.ind == x].cells.values[0].split(',') if c] if int(d) >= 0][0]
+        return list(map(getcell, sorted_edges))
+        #closest_edge = edges[np.argmin(edgedist)] 
+        #edge_cells = [c for c in self.edgetab.loc[self.edgetab.ind == closest_edge].cells.values[0].split(',') if c]
+        #edge_cells = [int(c) for c in edge_cells if int(c) >= 0]
+        #return edge_cells[0]
+    def getPathExtremesCells(self, points_y=[0.2, 0.05,0.4,0.4,0.6,0.6,0.7,0.8], points_x=[0.1, 0.6, 0.6], thickness = 2):
+        px, py = self.getMarkPoints(points_x, points_y)
+        py = [(py[i], py[i + 1]) for i in range(0, len(py), 2)]
+        border, border_e = self.getBorder()
+        proximal_border = [i for i in range(len(border)) if self.pointsList[str(border[i])][0] < px[0]] #px[0] contains x coord at the limit of the "proximal part" (which is arbitrary)
+        distal_border = [i for i in range(len(border)) if self.pointsList[str(border[i])][0] > px[1]] #px[1] contains x coord at the limit of the "distal part" (which is arbitrary)
+        proximal_points = [border[i] for i in proximal_border]
+        proximal_border.pop()
+        proximal_edges = [border_e[i] for i in proximal_border]
+        distal_points = [border[i] for i in distal_border]
+        distal_border.pop()
+        distal_edges = [border_e[i] for i in distal_border]     
+        cell_pairs = []   
+        for vein1, vein2 in py:
+            cell_prox = self.getClosestCell(vein1, proximal_points, proximal_edges, 1)
+            cell_dist = self.getClosestCell(vein2, distal_points, distal_edges, 1)   
+            for layer in range(thickness):       
+                cell_pairs.append((cell_prox[layer], cell_dist[layer]))
+        import networkx as nx
+        elist = [(i, j) for i in range(self.numCells - 1) for j in range(i, self.numCells) if len(set(self.cellvertList[i]) & set(self.cellvertList[j])) == 2]
+        G = nx.Graph()
+        G.add_edges_from(elist)
+        paths = [nx.dijkstra_path(G, int(a), int(b)) for a, b in cell_pairs]
+        self.setAsVeins(paths)
+        """         
+        pairs_merged = [i for p in cell_pairs for i in p] #to avoid removing these from Graph
+        for layer in range(thickness):
+            paths = [nx.dijkstra_path(G, a, b) for a, b in cell_pairs]
+            self.setAsVeins(paths)
+            paths_merged = [j for i in paths for j in i if j not in pairs_merged]
+            G.remove_nodes_from(paths_merged) """
+    def setAsVeins(self, paths):
+        for p in paths: 
+            for c in p:
+                if(self.celltypes[c] < 2):
+                    self.celltypes[c] += 2
+    def getCellGraph(self):
+        import networkx as nx
+        elist = [(i, j) for i in range(self.numCells - 1) for j in range(i, self.numCells) if len(set(self.cellvertList[i]) & set(self.cellvertList[j])) == 2]
+        G = nx.Graph()
+        G.add_edges_from(elist)
+        return G
 
 
 def types_of_a_to_b(aname="", bname="", dead_in_a=[2131, 2132]):
@@ -163,6 +271,43 @@ def rewrite_cells_file(b):
     f.write(s)
     f.close()     
 
+""" def setGraphPaths(w, cell1, cell2):
+    import networkx as nx
+    elist = [(i, j) for i in range(w.numCells - 1) for j in range(i, w.numCells) if len(set(w.cellvertList[i]) & set(w.cellvertList[j])) == 2]
+    G = nx.Graph()
+    G.add_edges_from(elist)
+    path = nx.dijkstra_path(G,cell1,cell2) """
+
+def make_veins_thinner(aname, iters=1):
+    a = wing(aname)
+    G = a.getCellGraph()
+    for i in range(iters):
+        newtypes = dict()
+        for c in range(a.numCells):
+            if(a.celltypes[c] != veintype and a.celltypes[c] != veinhinge):
+                continue
+            for nei in G.neighbors(c):
+                if(a.celltypes[nei] != veintype and a.celltypes[nei] != veinhinge):
+                    newtypes.setdefault(c, a.celltypes[nei])
+                    break
+        for c, t in newtypes.items():
+            a.celltypes[c] = t
+    rewrite_cells_file(a)
+    return a
+
+parser = argparse.ArgumentParser(description='Plot grid arguments.')
+parser.add_argument('-i', '--Inputname', metavar='inputname', type=str, default = "", 
+                    help='Identifier of wing to set cell types.')
+parser.add_argument('-i2', '--Input2', metavar='input2', type=str, default = "", 
+                    help='Identifier of wing from which to copy cell types (only applies if mode="copy")')
+parser.add_argument('-d', '--DeadInInput', metavar='start', type=str, default = 0, 
+                    help='Indices of cells that are present in PUT_CELLTYPES but are dead in CELLTYPES_FROM (only applies if mode="copy"). Format X,X,X...')
+parser.add_argument('-m', '--Mode', metavar='mode', type=str, default = 'copy', 
+                    help='Mode: One of copy, rect, graph, make_thin')
+parser.add_argument('-n', '--Hinge', metavar='mode', type=str, default = 'copy', 
+                    help='Mode: One of copy, rect, graph, make_thin')
+parser.add_argument('-v', '--Veins', metavar='mode', type=str, default = 'copy', 
+                    help='Mode: One of copy, rect, graph, make_thin')
 
 def main():
     #a is the one with cell types. It is a later developmental stage
@@ -171,16 +316,33 @@ def main():
     #However, T2 must be taken into account. Cells that have died in the process from b to a must be known and passed as argument as "X,X,X"
     #Type must be assigned manually later to new cells and cells that died.
     #Therefore it is recommended to use this script in an interactive way, instead of just executing it
-    aname = sys.argv[1]
-    bname = sys.argv[2]
-    dead_in_a = [int(i) for i in sys.argv[3].split(',')]  
-    a, b = types_of_a_to_b(aname, bname, dead_in_a)
-    a.plot()
-    plt.show()
-    b.plot()
-    plt.show()
+    args = parser.parse_args()
+    aname = args.Input2
+    bname = args.Inputname
+    mode = args.Mode
+    if(mode == "copy"):
+        dead_in_a = [int(i) for i in sys.argv[3].split(',')]  
+        a, b = types_of_a_to_b(aname, bname, dead_in_a)
+        a.plot()
+        plt.show()
+        b.plot()
+        plt.show()
+    elif(mode == "graph"):
+        a = wing(aname)
+        a.getPathExtremesCells()
+        a.plot()
+        plt.show()
+        b = a
+    elif(mode == "rect"):
+        pass
+    elif(mode == "make_thin"):
+        b = make_veins_thinner(aname, iters=1)
+        b.plot()
+        plt.show()
     # Example of what should be done manually after plotting wing b:
     # b.celltypes[dead_in_a[0] ] = 1
     rewrite_cells_file(b)
 
+if __name__ == "__main__":
+    main()
 
