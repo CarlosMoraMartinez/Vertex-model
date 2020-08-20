@@ -264,6 +264,7 @@ class Tissue{
 		void setStaticVertex(int v);
 		bool AddSpringToVertex(int v, float minx, float maxx);
 		void readNewParameters(std::string filename);
+		void makeVeinsThinner(int iters=1);
 		void restoreHinge();
 		void restoreVeins();
 		void restoreShape();
@@ -341,6 +342,7 @@ class Tissue{
 		//counters
 		int counter_move_trials, counter_moves_accepted, counter_favorable_accepted, counter_favorable_rejected, counter_unfav_accepted, counter_unfav_rejected, counter_edges_removed, counter_t1, counter_t1_abortions, counter_divisions, counter_t2, counter_t1_outwards, counter_t1_inwards;
 		int max_accepted_movements, write_every_N_moves, upper_bound_movements;
+		int written_files;
 		std::default_random_engine generator;
 		std::uniform_real_distribution<double> unif;
 		//Methods used by constructors

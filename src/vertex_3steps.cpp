@@ -45,7 +45,7 @@ int main(int argc, char *argv[]){
 		if(third_paramfile != ""){
 			if(REPORT_OUT) cout << "**** Adding springs and Restoring shape ****"<<endl;
 			t.addSpringsAutomatically();
-			t.restoreShape();
+			t.makeVeinsThinner(1);
 			t.produceOutputs("movedspr");
 			if(REPORT_OUT) cout << "**** Reading Third parameter file ****"<<endl;
 			//t.addAcceptedMovements(moves);

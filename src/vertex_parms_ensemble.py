@@ -1,6 +1,7 @@
 import sys
 import os
 import argparse
+import json
 
 import numpy as np
 import pandas as pd
@@ -19,6 +20,7 @@ RANDOM_VALUE = '?'
 OUTPUT_CELLTYPE_BEGIN = '>>'
 OUTPUT_CELLTYPE_END = '<'
 OUTPUT_PAR_BEGIN = '>'
+INPUT_EXTENSION = '.vp'
 OUTPUT_EXTENSION = '.vp'
 
 def getNum(string):
@@ -346,6 +348,78 @@ class cellTypeParam(param):
         return s
 
 
+class varyOneByOne:
+    """
+    Instead of reading an ensemble file with .vp format and performing all-by-all combinations, this reads a .json file which indicates which parameters to vary. 
+    In the .json file, in the [param][values] field, two values are indicated: proportion of total variation (a) and proportion of variation between simulations (b).
+    Therefore, all parameter files with values X - a*x and X + a*X will be constructed in intervals of b*X.
+    Instead of taking the all-by-all approach, only one parameter will be varied each time, and the rest will remain as in the default files (which must be specified 
+    in the .json file).
+    This class can act on several param files, if specified in the .json file. 
+    """
+    def __init__(self, iterdef):
+        import json
+        self.outname = iterdef
+        self.tovary = json.load(open(iterdef + '.json', 'r'))
+        print(list(self.tovary.keys()))
+        self.paramfiles = {i:self.readParamFile(i) for i in list(self.tovary.keys())}
+        print("\nParam files read")
+    def readParamFile(self, fname):
+        return paramContainer(fname + INPUT_EXTENSION, '')
+    def produceOutputs(self):
+        for part, params in self.tovary.items(): #iter over different files
+            for pname, p in params.items(): # Iter over parameters that must be changed in each file
+                param_num = [i for i, prm in enumerate(self.paramfiles[part].params) if prm.name[0:prm.name.find('#')].rstrip() == pname]
+                if(not param_num):
+                    print("ERROR: Parameter not found. In Vary file: %s"%(pname))
+                    continue
+                param_num  = param_num.pop()
+                default_value = self.paramfiles[part].params[param_num].value
+                newvalues = self.GetParamValues(default_value, p)
+                for k, nwv in enumerate(newvalues): #Iter over values of parameter pname
+                    self.paramfiles[part].params[param_num].value = nwv
+                    fname = '-'.join([part, pname, str(k)])
+                    self.writeFile(self.paramfiles[part], fname)
+                self.paramfiles[part].params[param_num].value = default_value
+    def GetParamValues(self, default, mode):
+        if(mode["type"] == "regular"):
+            values = np.linspace(default - abs(default)*mode["values"][0], default + abs(default)*mode["values"][0], int(2 / mode["values"][1] + 1))
+            if(mode["absol"] == "yes"):
+                values = values[values >= 0]
+        else:
+            this_val = []
+            for k,v in default.items():
+                v = v[0]
+                this_val.append(np.linspace(v - abs(v)*mode["values"][k][0], v + abs(v)*mode["values"][k][0], int(2 / mode["values"][k][1] + 1)))
+            if(mode["together"] == "all"):
+                values = [{k:l for k, l in zip(default.keys(), vals)} for vals in zip(*this_val)]
+            else:   
+                values = []       
+                for k,vals in zip(default.keys(), this_val):
+                    for v in vals:
+                        values.append({k2:v2[0] if k2 != k else v for k2, v2 in default.items()})          
+        return values      
+    def writeFile(self, pcontainer, fname):
+        s = '# ' + fname + '\n'       
+        for p in pcontainer.params:
+            v = p.value
+            if(type(v) is dict):
+                s += OUTPUT_CELLTYPE_BEGIN + p.name + '\n' 
+                for k2, v2 in zip(v.keys(), v.values()): 
+                    if(type(v2) is list and v2):
+                        v2 = v2[0] 
+                    s += k2 + CELLTYPE_SEP + str(v2) + '\n'            
+                s += OUTPUT_CELLTYPE_END + '\n\n' 
+            else:
+                s += OUTPUT_PAR_BEGIN + p.name + '\n' + str(v) + '\n'
+        if not os.path.exists(self.outname):
+            os.makedirs(self.outname)
+        outfile = self.outname + '/' + fname
+        f = open(outfile + OUTPUT_EXTENSION,"w+")
+        f.write(s)
+        f.close()       
+
+
 parser = argparse.ArgumentParser(description='Generate folder with ensemble of parameter files for VertexSystem. The input file is the standard .vp, except that ranges can be specified with start;end;size, and specific values can be specified with n0,n1,n2, etc. Additionally, for CellType parameters, the symbol % in the name indicates that all combinations of values will be used for this parameter (if ommitted, vectors of values for each cell type should be of equal size or size 1).')
 parser.add_argument('-o', '--Outname', metavar='outname', type=str, default = "hexgrid", 
                                         help='Identifier. Used as prefix of all output files. ')
@@ -353,13 +427,18 @@ parser.add_argument('-i', '--Inputname', metavar='inputname', type=str, default 
                                         help='Identifier. Used as prefix to read files. ')
 parser.add_argument('-r', '--Random', metavar='randompars', type=int, default = 0, 
                                         help='Random set of parameters (1) or specified combinations (0). 0 is default. Only parameters with a ? symbol in their name will be randomly set.')
+parser.add_argument('-s', '--Serial', metavar='serialpars', type=str, default = '', 
+                                        help='.json file (without format) specifying which param files and parameters vary serially. Overwrites everything else')
 
 def main():
     args = parser.parse_args()
     iname = args.Inputname
     oname = args.Outname
     ran = args.Random
-    if(ran == 0):
+    serial = args.Serial
+    if(serial):
+        p = varyOneByOne(serial)
+    elif(ran == 0):
         p = paramContainer(iname, oname)
     else:
         p = paramRandomContainer(iname, oname, ran)

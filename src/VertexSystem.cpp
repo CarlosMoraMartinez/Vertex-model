@@ -13,7 +13,7 @@
 using namespace std;
 
 //Default constructor
-Tissue::Tissue() : num_cells(0), num_vertices(0), num_edges(0), counter_move_trials(0), counter_moves_accepted(0), counter_favorable_accepted(0), counter_favorable_rejected(0), counter_unfav_accepted(0), counter_unfav_rejected(0), counter_t1(0), counter_t1_abortions(0), counter_edges_removed(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0)
+Tissue::Tissue() : num_cells(0), num_vertices(0), num_edges(0), counter_move_trials(0), written_files(0), counter_moves_accepted(0), counter_favorable_accepted(0), counter_favorable_rejected(0), counter_unfav_accepted(0), counter_unfav_rejected(0), counter_t1(0), counter_t1_abortions(0), counter_edges_removed(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0)
 {
 
 	simname = "";
@@ -103,7 +103,7 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements, int
 	setMinAndMaxPositions();
 }
 
-Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements, int write_every_N_moves, string simulname) : num_cells(0), num_vertices(0), num_edges(0), counter_move_trials(0), counter_moves_accepted(0), counter_favorable_accepted(0), counter_favorable_rejected(0), counter_unfav_accepted(0), counter_unfav_rejected(0), counter_t1(0), counter_t1_abortions(0), counter_edges_removed(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0)
+Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements, int write_every_N_moves, string simulname) : num_cells(0), num_vertices(0), num_edges(0), counter_move_trials(0), written_files(0), counter_moves_accepted(0), counter_favorable_accepted(0), counter_favorable_rejected(0), counter_unfav_accepted(0), counter_unfav_rejected(0), counter_t1(0), counter_t1_abortions(0), counter_edges_removed(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0)
 {
 	cout << "Initializing Tissue object...\n";
 	this->simname = simulname == "" ? starting_tissue_file : simulname;
@@ -417,6 +417,7 @@ void Tissue::initialize_params(std::string params_file)
 	control_cells_2sides = static_cast<bool>(read_real_par(it));
 	check_if_edges_cross_opt = static_cast<bool>(read_real_par(it));
 	int temp_num_moves = static_cast<int>(read_real_par(it));
+	upper_bound_movements = max_accepted_movements;
 	if(temp_num_moves > 0)
 		max_accepted_movements += temp_num_moves;
 	int temp_write_freq = static_cast<int>(read_real_par(it));
@@ -424,7 +425,7 @@ void Tissue::initialize_params(std::string params_file)
 		write_every_N_moves = temp_write_freq;
 	int temp_bound = static_cast<int>(read_real_par(it));
 	if(temp_bound > 0)
-		upper_bound_movements = temp_bound;
+		upper_bound_movements += temp_bound;
 	integration_mode = static_cast<int>(read_real_par(it));
 	min_range_vertex_movement = read_real_par(it);
 	max_range_vertex_movement = read_real_par(it);
@@ -1115,12 +1116,12 @@ void Tissue::setHingeMinAndMaxPositions()
 				if (c.centroid_x < min)
 				{
 					min = c.centroid_x;
-					cout << "cent_x menor: " <<c.centroid_x << endl;
+					//cout << "cent_x menor: " <<c.centroid_x << endl;
 				}
 				else if (c.centroid_x > max)
 				{
 					max = c.centroid_x;
-					cout << "cent_x mayor: " <<c.centroid_x << endl;
+					//cout << "cent_x mayor: " <<c.centroid_x << endl;
 				}
 				if (c.centroid_y < miny)
 				{
@@ -1535,8 +1536,7 @@ void Tissue::advanceSizeWithTime(int vertex_moved)
 void Tissue::produceOutputs(std::string add_to_name)
 {
 
-std:
-	string fname = simname + "_" + add_to_name + "_" + std::to_string(int(counter_moves_accepted / write_every_N_moves));
+	std:string fname = simname + "_" + add_to_name + "_" + std::to_string(written_files);
 	writeCellsFile(fname);
 	writePointsFile(fname);
 	writeEdgeDataTable(fname);
@@ -1547,6 +1547,7 @@ std:
 	if (REPORT_OUT > 0)
 		cout << "\nWritting file: " << int(counter_moves_accepted / write_every_N_moves) << " at move " << counter_moves_accepted << endl;
 		std::cout << getStats() << endl;
+	written_files++;
 }
 
 void Tissue::derivativeVertexPos(const Vertex &v, pointDerivative &pd)
@@ -3898,7 +3899,32 @@ void Tissue::restoreShape(){
 	for(int i = 0; i < RESTORE_VEIN_ITERS; i++)
 		restoreVeins();
 }
-
+void Tissue::makeVeinsThinner(int iters){
+    std::vector<CellType> newtypes(num_cells, CellType::vein_blade);
+	int nei;
+	for(int i = 0; i < iters; i++){
+		for(Cell c: cells){
+			if(c.dead || c.type == CellType::blade || c.type == CellType::hinge)
+				continue;
+			for(int e = 0; e < c.num_vertices; e++){
+				nei = edges[c.edges[e]].cells[0] == c.ind ? edges[c.edges[e]].cells[1] : edges[c.edges[e]].cells[0];
+				if(nei == EMPTY_CONNECTION)
+					continue;
+				if(cells[nei].type == CellType::vein_blade || cells[nei].type == CellType::vein_hinge){
+					continue;
+				}else{
+					newtypes[c.ind] = cells[nei].type;
+					break;
+				}
+			}
+		}
+		for(Cell&  c: cells){
+			if(newtypes[c.ind] != CellType::vein_blade){
+				c.type = newtypes[c.ind];
+			}
+		}	
+	}
+}
 
 void Tissue::emptyDivisions()
 {
