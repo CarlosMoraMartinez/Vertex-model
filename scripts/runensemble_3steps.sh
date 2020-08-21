@@ -71,7 +71,7 @@ do
     mkdir $NAME
     mkdir $NAME/src
     mkdir $NAME/param_files
-    cp src/VertexSystem.cpp src/VertexSystem.h src/vertex_cmm.cpp src/plotOps_loop.py src/compile.sh $NAME/src
+    cp src/VertexSystem.cpp src/VertexSystem.h src/vertex_3steps.cpp src/plotOps_loop.py src/compile_3steps.sh $NAME/src
     cd $NAME
 
     cp '../param_files/'$NAME'.vp' '../param_files/'$2'.vp' '../param_files/'$4'.vp' param_files
@@ -109,7 +109,7 @@ do
     mkdir $NAME
     mkdir $NAME/src
     mkdir $NAME/param_files
-    cp src/VertexSystem.cpp src/VertexSystem.h src/vertex_cmm.cpp src/plotOps_loop.py src/compile.sh $NAME/src
+    cp src/VertexSystem.cpp src/VertexSystem.h src/vertex_3steps.cpp src/plotOps_loop.py src/compile_3steps.sh $NAME/src
     cd $NAME
 
     cp '../param_files/'$NAME'.vp' '../param_files/'$2'.vp' '../param_files/'$3'.vp' param_files
