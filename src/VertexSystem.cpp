@@ -1319,7 +1319,6 @@ bool Tissue::tryMoveVertex()
 	{
 		vertex_to_move = std::rand() % static_cast<int>(vertices.size());
 	} while (vertices[vertex_to_move].dead || !vertices[vertex_to_move].movable); //(!vertices[vertex_to_move].movable && STATIC_PRESENT || vertices[vertex_to_move].cells[0] == EMPTY_CONNECTION)); // A or static dead vertex cannot be selected
-
 	double old_x = vertices[vertex_to_move].x;
 	double old_y = vertices[vertex_to_move].y;
 	double old_energy = calculateEnergy(vertices[vertex_to_move]); //Calculate again because it is not updated every time a cell area changes etc
@@ -3799,7 +3798,10 @@ void Tissue::setStaticVertex(int v)
 {
 	float xprop = (vertices[v].x - hinge_min_xpos) / (hinge_max_xpos - hinge_min_xpos);
 	float yprop = (vertices[v].y - hinge_min_ypos) / (hinge_max_ypos - hinge_min_ypos);
-	vertices[v].movable = !(yprop > 0.5 && xprop < add_static_to_hinge); //Assumes that blade is always to the right of hinge
+	vertices[v].movable = (yprop > 0.5 && xprop < add_static_to_hinge) ? 0 : 1; //Assumes that blade is always to the right of hinge
+	vertices[v].movable_x = vertices[v].movable_y = vertices[v].movable;
+	
+	//cout << "Setting vertex " << v << " as " << vertices[v].movable << ". xprop: " << xprop << ", yprop: " << yprop << ", hinge pos x: (" << hinge_min_xpos <<", "<< hinge_max_xpos<<") hinge pos y: ("<<hinge_min_ypos<<", "<<hinge_max_ypos <<")" << endl;
 }
 
 bool Tissue::AddSpringToVertex(int v, float minx, float maxx)

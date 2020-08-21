@@ -375,6 +375,7 @@ class varyOneByOne:
                     continue
                 param_num  = param_num.pop()
                 default_value = self.paramfiles[part].params[param_num].value
+                print(pname, default_value)
                 newvalues = self.GetParamValues(default_value, p)
                 for k, nwv in enumerate(newvalues): #Iter over values of parameter pname
                     self.paramfiles[part].params[param_num].value = nwv

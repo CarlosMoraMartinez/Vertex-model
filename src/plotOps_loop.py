@@ -124,12 +124,12 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     for s in sprList:
         spcolor = springcols[int(s[2])] if len(s) > 2 else RED
         ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color = spcolor)
-    #for p in pointsList.keys():
-    #    if(pointsList[p][2] == 0):
-    #        ax.scatter(pointsList[p][0], pointsList[p][1], color = RED)       
+    for p in pointsList.keys():
+        if(pointsList[p][2] == 0):
+            ax.scatter(pointsList[p][0], pointsList[p][1], color = RED, s = 2)       
     if(add_vnums):
         for i in pointsList.keys():
-            ax.annotate(i, pointsList[i][0:2], size=0.1)
+            ax.annotate(i, pointsList[i][0:2], size=1)
 
     plt.savefig(name + '.png')
     if(printsvg):
@@ -211,7 +211,7 @@ def getLimits(pointsList):
     xmax += 0.1*rx
     ymin -= 0.1*ry
     ymax += 0.1*ry
-    print(xmin, ymin, xmax, ymax)
+    print("SETTING LIMITS: xmin=%2f, ymin=%2f, xmax=%2f, ymax=%2f"%( xmin, ymin, xmax, ymax))
     return (xmin, ymin, xmax, ymax)
 ########################################################################################################################
 # Generating the multipolygon object
@@ -254,7 +254,7 @@ def main():
         else:
             name = args.Inputname
         if(not os.path.isfile(name + ".points") or not os.path.isfile(name + ".cells")):
-            break;
+            continue;
         numPoints, pointsList = readPointsFile(name)
         numCells, polygonList, celltypes = readCellsFile(name, plot_cell_types, pointsList)
         numsprings, sprList = readSprings(name)
