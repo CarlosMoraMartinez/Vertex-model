@@ -42,7 +42,8 @@ def guessWingName():
 
 def getValuesByResultType(c2, chgconds):
     if(not "Result" in c2.columns):
-        print("No Result column")
+        print("No Result column", c2.columns)
+        print(c2)
         return []    
     res = {}
     vnames = [v for v in c2.columns if not any([i in v for i in no_plot_cols])]

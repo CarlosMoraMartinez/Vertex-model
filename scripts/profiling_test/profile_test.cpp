@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <string>
 #include <cstdlib>
 #include <random>
@@ -11,32 +12,41 @@
 using namespace std::chrono; 
 
 const int RANDOM_SEED = 1234;
-const int N_ITERS =10000000;
+const int N_ITERS =1000000;
 const int SHORT_LEN = 6;
 const int LONG_LEN = 1000;
 const int SHORT_REPS = 10;
 typedef std::map<int, double> mapa;
+typedef std::unordered_map<int, double> mapa2;
+
 
 double sumArray(double *shortarr, int len){
-	double a = 0;
-	for(int i = 0; i<len; i++) a+= pow(shortarr[i], 2) - shortarr[i] + pow(shortarr[i], 3);
+	double a = 0.5;
+	int prev = len - 1;
+	for(int i = 0; i<len; i++){
+		 a+= shortarr[i]*shortarr[prev] - shortarr[prev]*shortarr[i];
+		 prev = i;
+	}
 	return a;
 }
 
 inline double sumArrayInline(double *shortarr, int len){
-	double a = 0;
-	for(int i = 0; i<len; i++) a+= pow(shortarr[i], 2) - shortarr[i] + pow(shortarr[i], 3);
-	return a;
+	double a = 0.5;
+	int prev = len - 1;
+	for(int i = 0; i<len; i++){
+		 a+= shortarr[i]*shortarr[prev] - shortarr[prev]*shortarr[i];
+		 prev = i;
+	}	return a;
 }
 
 double sumArraySimple(double *shortarr, int len){
-	double a = 0;
+	double a = 0.5;
 	for(int i = 0; i<len; i++) a+= shortarr[i];
 	return a;
 }
 
 inline double sumArraySimpleInline(double *shortarr, int len){
-	double a = 0;
+	double a = 0.5;
 	for(int i = 0; i<len; i++) a+= shortarr[i];
 	return a;
 }
@@ -85,7 +95,7 @@ int main(int argc, char *argv[]){
 	double a;
 	int d;
 	double x1 = 0.3245, x2 = 543.55, y1= 55442, y2 = -0.4325;
-	double shortarr[6]= { 16, 2, 77, 40, 12071, 435 };
+	double shortarr[6]= { 16, -2, 77, 40, 12071, 435 };
 	std::vector<double> vec{ 16, 2, 77, 40, 12071, 435 };
 	mapa res;
 	res.insert(std::pair<int, double >(0, 16));
@@ -94,6 +104,13 @@ int main(int argc, char *argv[]){
 	res.insert(std::pair<int, double >(3, 40));
 	res.insert(std::pair<int, double >(4, 12071));
 	res.insert(std::pair<int, double >(5, 435));	
+	mapa2 res2;
+	res2.insert(std::pair<int, double >(0, 16));
+	res2.insert(std::pair<int, double >(1, 2));
+	res2.insert(std::pair<int, double >(2, 77));
+	res2.insert(std::pair<int, double >(3, 40));
+	res2.insert(std::pair<int, double >(4, 12071));
+	res2.insert(std::pair<int, double >(5, 435));	
 	
 
 	//Test random generators
@@ -122,12 +139,16 @@ int main(int argc, char *argv[]){
 	//Test array sum
 	start = high_resolution_clock::now(); 
 	for(int i = 0; i < N_ITERS; i++){
-		a = 0;
-		for(int j = 0; j<SHORT_LEN; j++) a+= pow(vec[j], 2) - vec[j] + pow(vec[j], 3);
+		double a = 0.5;
+		int prev = SHORT_LEN - 1;
+		for(int i = 0; i<SHORT_LEN; i++){
+			a+= vec[i]*vec[prev] - vec[prev]*vec[i];
+			prev = i;
+		}
 	}
 	stop = high_resolution_clock::now();
 	auto duration3 = duration_cast<microseconds>(stop - start); 
-	std::cout << "Result: " << a << std::endl;
+	std::cout << "Result 3: " << a << std::endl;
 
 
 
@@ -135,26 +156,48 @@ int main(int argc, char *argv[]){
 	//Test array sum
 	start = high_resolution_clock::now();
 	for(int i = 0; i < N_ITERS; i++){
-		a = 0;
-		for(int j = 0; j<SHORT_LEN; j++) a+= pow(shortarr[j], 2) - shortarr[j] + pow(shortarr[j], 3);
+		double a = 0;
+		int prev = SHORT_LEN - 1;
+		for(int i = 0; i<SHORT_LEN; i++){
+			a+= shortarr[i]*shortarr[prev] - shortarr[prev]*shortarr[i];
+			prev = i;
+		}
 	}
 	stop = high_resolution_clock::now();
 	auto duration4 = duration_cast<microseconds>(stop - start); 
-	std::cout << "Result: " << a << std::endl;
+	std::cout << "Result 4: " << a << std::endl;
 
 
 
 	std::cout << "Testing sum in map" << std::endl;
 	//Test map sum
 	start = high_resolution_clock::now(); 
-	for(int i = 0; i < N_ITERS; i++){
-		a = 0;
-		for(int j = 0; j<SHORT_LEN; j++) a+= pow(res[j], 2) - res[j] + pow(res[j], 3);
-	}
+/* 	for(int i = 0; i < N_ITERS; i++){
+		double a = 0.5;
+		int prev = SHORT_LEN - 1;
+		for(int i = 0; i<SHORT_LEN; i++){
+			a+= res[i]*res[prev] - res[prev]*res[i];
+			prev = i;
+		}
+	} */
 	stop = high_resolution_clock::now();
 	auto duration5 = duration_cast<microseconds>(stop - start); 
 	std::cout << "Result: " << a << std::endl;
 
+	std::cout << "Testing sum in unordered_map" << std::endl;
+	//Test unordered map sum
+	start = high_resolution_clock::now(); 
+/* 	for(int i = 0; i < N_ITERS; i++){
+		double a = 0.5;
+		int prev = SHORT_LEN - 1;
+		for(int i = 0; i<SHORT_LEN; i++){
+			a+= res2[i]*res2[prev] - res2[prev]*res2[i];
+			prev = i;
+		}
+	} */
+	stop = high_resolution_clock::now();
+	auto duration5b = duration_cast<microseconds>(stop - start); 
+	std::cout << "Result 5b: " << a << std::endl;
 
 
 	std::cout << "Testing sum in array - function" << std::endl;	
@@ -165,7 +208,7 @@ int main(int argc, char *argv[]){
 	}
 	stop = high_resolution_clock::now();
 	auto duration6 = duration_cast<microseconds>(stop - start); 
-	std::cout << "Result: " << a << std::endl;
+	std::cout << "Result 6: " << a << std::endl;
 
 
 	std::cout << "Testing sum in array - inline function" << std::endl;	
@@ -241,7 +284,7 @@ int main(int argc, char *argv[]){
 	//Test array sum
 	start = high_resolution_clock::now(); 
 	for(int i = 0; i < N_ITERS; i++){
-		a = 0;
+		a = 0.5;
 		for(int j = 0; j<SHORT_LEN; j++) a+= vec[j];
 	}
 	stop = high_resolution_clock::now();
@@ -254,7 +297,7 @@ int main(int argc, char *argv[]){
 	//Test array sum
 	start = high_resolution_clock::now();
 	for(int i = 0; i < N_ITERS; i++){
-		a = 0;
+		a = 0.5;
 		for(int j = 0; j<SHORT_LEN; j++) a+= shortarr[j];
 	}
 	stop = high_resolution_clock::now();
@@ -267,13 +310,23 @@ int main(int argc, char *argv[]){
 	//Test map sum
 	start = high_resolution_clock::now(); 
 	for(int i = 0; i < N_ITERS; i++){
-		a = 0;
+		a = 0.5;
 		for(int j = 0; j<SHORT_LEN; j++) a+= res[j];
 	}
 	stop = high_resolution_clock::now();
 	auto duration15 = duration_cast<microseconds>(stop - start); 
 	std::cout << "Result: " << a << std::endl;
 
+	std::cout << "Testing sum in unordered_map" << std::endl;
+	//Test unordered map sum
+	start = high_resolution_clock::now(); 
+	for(int i = 0; i < N_ITERS; i++){
+		a = 0.5;
+		for(int j = 0; j<SHORT_LEN; j++) a+= res2[j];
+	}
+	stop = high_resolution_clock::now();
+	auto duration15b = duration_cast<microseconds>(stop - start); 
+	std::cout << "Result: " << a << std::endl;
 
 
 	std::cout << "Testing sum in array - function" << std::endl;	
@@ -304,26 +357,28 @@ int main(int argc, char *argv[]){
 
 
 	std::cout << "Finished" << std::endl << "***" << std::endl;
-	std::cout << "gen unif():" << duration1.count()/static_cast<double>(N_ITERS) << std::endl;
-	std::cout << "gen rand():" << duration2.count()/static_cast<double>(N_ITERS) << std::endl;
-	std::cout << "sum Vector '+=x² - x + x³':" << duration3.count()/static_cast<double>(N_ITERS) << std::endl;
-	std::cout << "sum Array '+=x² - x + x³':" << duration4.count()/static_cast<double>(N_ITERS) << std::endl;
-	std::cout << "sum Map() '+=x² - x + x³':" << duration5.count()/static_cast<double>(N_ITERS) << std::endl;
-	std::cout << "sum Array func() '+=x² - x + x³':" << duration6.count()/static_cast<double>(N_ITERS) << std::endl;
-	std::cout << "sum Array inline() '+=x² - x + x³':" << duration7.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "1) gen unif(): " << duration1.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "2) gen rand(): " << duration2.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "3) sum Vector '+=x² - x + x³': " << duration3.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "4) sum Array '+=x² - x + x³': " << duration4.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "5) sum Map() '+=x² - x + x³':" << duration5.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "5b) sum UnorderedMap() '+=x² - x + x³':" << duration5b.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "6) sum Array func() '+=x² - x + x³':" << duration6.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "7) sum Array inline() '+=x² - x + x³':" << duration7.count()/static_cast<double>(N_ITERS) << std::endl;
 
-	std::cout << "sum Vector '+=x'" << duration13.count()/static_cast<double>(N_ITERS) << std::endl;
-	std::cout << "sum Array '+=x':" << duration14.count()/static_cast<double>(N_ITERS) << std::endl;
-	std::cout << "sum Map() '+=x':" << duration15.count()/static_cast<double>(N_ITERS) << std::endl;
-	std::cout << "sum Array func() '+=x':" << duration16.count()/static_cast<double>(N_ITERS) << std::endl;
-	std::cout << "sum Array inline() '+=x':" << duration17.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "13) sum Vector '+=x'" << duration13.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "14) sum Array '+=x':" << duration14.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "15) sum Map() '+=x':" << duration15.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "15b) sum UnorderedMap() '+=x':" << duration15b.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "16) sum Array func() '+=x':" << duration16.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "17) sum Array inline() '+=x':" << duration17.count()/static_cast<double>(N_ITERS) << std::endl;
 
 
-	std::cout << "alloc Vector():" << duration8.count()/static_cast<double>(SHORT_REPS) << std::endl;
-	std::cout << "alloc Array():" << duration9.count()/static_cast<double>(SHORT_REPS) << std::endl;
-	std::cout << "distance main:" << duration10.count()/static_cast<double>(N_ITERS) << std::endl;
-	std::cout << "distance func:" << duration11.count()/static_cast<double>(N_ITERS) << std::endl;
-	std::cout << "distance func inline:" << duration12.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "8) alloc Vector():" << duration8.count()/static_cast<double>(SHORT_REPS) << std::endl;
+	std::cout << "9) alloc Array():" << duration9.count()/static_cast<double>(SHORT_REPS) << std::endl;
+	std::cout << "10) distance main:" << duration10.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "11) distance func:" << duration11.count()/static_cast<double>(N_ITERS) << std::endl;
+	std::cout << "12) distance func inline:" << duration12.count()/static_cast<double>(N_ITERS) << std::endl;
 	std::cout << "***" << std::endl;
 
 	exit(0);

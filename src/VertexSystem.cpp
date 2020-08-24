@@ -9,6 +9,7 @@
 #include <random>
 #include <limits>
 #include "VertexSystem.h"
+//#include <chrono> 
 
 using namespace std;
 
@@ -1197,6 +1198,7 @@ void Tissue::setMinAndMaxPositions()
 //Area of a polygon using Shoelace formula
 double Tissue::calculateCellArea(const Cell &c)
 {
+	/* auto start = chrono::high_resolution_clock::now();  */
 	double area = 0.0;
 	int previous = c.num_vertices - 1;
 	for (int i = 0; i < c.num_vertices; i++)
@@ -1204,6 +1206,9 @@ double Tissue::calculateCellArea(const Cell &c)
 		area += (vertices[c.vertices[previous]].x * vertices[c.vertices[i]].y - vertices[c.vertices[previous]].y * vertices[c.vertices[i]].x);
 		previous = i;
 	}
+/* 	auto stop = chrono::high_resolution_clock::now();
+	auto duration1 = chrono::duration_cast<chrono::nanoseconds>(stop - start); 
+	cout << duration1.count() << "\t"; */
 	return abs(0.5 * area);
 }
 
@@ -1288,7 +1293,7 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 		if (v.edges[i] != EMPTY_CONNECTION)
 		{
 			this->edges[v.edges[i]].length = distance(this->edges[v.edges[i]].vertices[0], this->edges[v.edges[i]].vertices[1]);
-			if (UPDATE_EDGE_TENSION_EVERY_MOVE)
+			if (UPDATE_EDGE_TENSION_EVERY_MOVE && counter_moves_accepted % 3 == 0)
 			{
 				setEdgeType(v.edges[i]);
 				setEdgeTension(v.edges[i]);
@@ -1304,7 +1309,12 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 	{ // re-calculate cell areas
 		if (v.cells[i] != EMPTY_CONNECTION)
 		{
+			cout << "x\t";
+			//auto start = chrono::high_resolution_clock::now(); 
 			this->cells[v.cells[i]].area = calculateCellArea(this->cells[v.cells[i]]);
+			//auto stop = chrono::high_resolution_clock::now();
+			//auto duration1 = chrono::duration_cast<chrono::nanoseconds>(stop - start); 
+			//cout << duration1.count() << endl;
 			this->cells[v.cells[i]].perimeter = calculateCellPerimeter(this->cells[v.cells[i]]);
 		}
 	}
@@ -1653,7 +1663,7 @@ void Tissue::simulateMonteCarlo()
 	{
 		produceOutputs();
 	}
-	//MAIN SIMULATION LOOP
+	//MAIN SIMULATION LOOPSimulate
 	do
 	{
 		if (tryMoveVertex())

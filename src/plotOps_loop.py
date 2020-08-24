@@ -265,11 +265,13 @@ def main():
         if(not args.FixedLimits or not limsSet):
             limits = getLimits(pointsList)
             limsSet = True
-
-        fig = plot_grid2(111, polygonList, pointsList, sprList, add_vnums, celltypes, [] ,name, limits, printsvg=args.PlotSVG)  
-        if(len(color_expr) > 0 and args.Input_expr != ""):
-            xprList = readExpr(args.Input_expr + str(fnum))
-            plot_expr(111, polygonList, pointsList, sprList, add_vnums, celltypes, xprList, name, color_expr)
+        try:
+            fig = plot_grid2(111, polygonList, pointsList, sprList, add_vnums, celltypes, [] ,name, limits, printsvg=args.PlotSVG)  
+            if(len(color_expr) > 0 and args.Input_expr != ""):
+                xprList = readExpr(args.Input_expr + str(fnum))
+                plot_expr(111, polygonList, pointsList, sprList, add_vnums, celltypes, xprList, name, color_expr)
+        except:
+            print("Error while plotting")
         print("%d printed"%fnum)
 
 

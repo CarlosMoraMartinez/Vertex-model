@@ -6,6 +6,7 @@
 #include <string>
 #include <cstdlib>
 #include <random>
+#include <chrono> 
 
 using namespace std;
 
@@ -31,7 +32,11 @@ int main(int argc, char *argv[]){
 	std::uniform_real_distribution<double> unif;
 
 	try{
+		auto start = chrono::high_resolution_clock::now(); 
 		t.simulate(generator, unif);
+		auto stop = chrono::high_resolution_clock::now(); 
+		auto duration = chrono::duration_cast<chrono::seconds>(stop - start);
+		cout << "Step 1 lasted " << duration.count() << " seconds." << endl;
 		if(REPORT_OUT) cout << t.getStats() << endl; 
 		if(second_paramfile != ""){
 			if(REPORT_OUT) cout << "**** Reading Second parameter file ****"<<endl;
@@ -39,7 +44,11 @@ int main(int argc, char *argv[]){
 			//t.produceOutputs("movedspr");
 			//t.addAcceptedMovements(moves);
 			t.readNewParameters(second_paramfile);
+			auto start2 = chrono::high_resolution_clock::now(); 
 			t.simulate(generator, unif);
+			auto stop2 = chrono::high_resolution_clock::now(); 
+			auto duration2 = chrono::duration_cast<chrono::seconds>(stop2 - start2);
+			cout << "Step 2 lasted " << duration2.count() << " seconds." << endl;
 			if(REPORT_OUT) cout << t.getStats() << endl; 
 		}
 		if(third_paramfile != ""){
@@ -50,7 +59,11 @@ int main(int argc, char *argv[]){
 			if(REPORT_OUT) cout << "**** Reading Third parameter file ****"<<endl;
 			//t.addAcceptedMovements(moves);
 			t.readNewParameters(third_paramfile);
+			auto start3 = chrono::high_resolution_clock::now(); 
 			t.simulate(generator, unif);
+			auto stop3 = chrono::high_resolution_clock::now(); 
+			auto duration3 = chrono::duration_cast<chrono::seconds>(stop3 - start3);
+			cout << "Step 3 lasted " << duration3.count() << " seconds." << endl;
 			if(REPORT_OUT) cout << t.getStats() << endl; 
 		}
 	}catch(const char* msg){
@@ -58,7 +71,6 @@ int main(int argc, char *argv[]){
 		cout << msg << endl;
 		exit(1);
 	}
-
 	if(REPORT_OUT) cout << t.getStats() << endl;
 	exit(0);
 	
