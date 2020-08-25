@@ -1226,6 +1226,34 @@ inline double Tissue::calculateEnergy(Vertex &v)
 	return 0.5 * term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3;
 }
 //
+void Tissue::moveVertexBack(Vertex &v)
+{
+	v.x = bufferMovement.x;
+	v.y = bufferMovement.y;
+	v.energy = bufferMovement.energy;
+	for (int i = 0; i < CELLS_PER_VERTEX; i++)
+	{
+		if (v.edges[i] != EMPTY_CONNECTION)
+		{
+			 edges[v.edges[i]].length = bufferMovement.edge_lengths[i];
+			if (UPDATE_EDGE_TENSION_EVERY_MOVE)
+			{
+				 edges[v.edges[i]].tension = bufferMovement.edge_tensions[i];
+			}
+		}
+	}
+	if (v.spring != EMPTY_CONNECTION){
+		springs[v.spring].length = bufferMovement.spring_length;
+	}
+	for (int i = 0; i < CELLS_PER_VERTEX; i++)
+	{ // re-calculate cell areas
+		if (v.cells[i] != EMPTY_CONNECTION)
+		{ 
+			cells[v.cells[i]].area = bufferMovement.cell_areas[i];
+			cells[v.cells[i]].perimeter = bufferMovement.cell_perimeters[i];
+		}
+	}
+}//moveVertexBack
 void Tissue::moveVertex(Vertex &v, float x, float y)
 {
 	v.x = x;
@@ -1235,21 +1263,27 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 		if (v.edges[i] != EMPTY_CONNECTION)
 		{
 			edges[v.edges[i]].length = distance(edges[v.edges[i]].vertices[0], edges[v.edges[i]].vertices[1]);
+			bufferMovement.edge_lengths[i] = edges[v.edges[i]].length;
 			if (UPDATE_EDGE_TENSION_EVERY_MOVE)
 			{
 				setEdgeType(v.edges[i]);
 				setEdgeTension(v.edges[i]);
+				bufferMovement.edge_tensions[i] = edges[v.edges[i]].tension;
 			}
 		}
 	}
-	if (v.spring != EMPTY_CONNECTION)
+	if (v.spring != EMPTY_CONNECTION){
 		springs[v.spring].length = distance(springs[v.spring].vertices[0], springs[v.spring].vertices[1]);
+		bufferMovement.spring_length = springs[v.spring].length;
+	}
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{ // re-calculate cell areas
 		if (v.cells[i] != EMPTY_CONNECTION)
 		{ 
 			cells[v.cells[i]].area = calculateCellArea(this->cells[v.cells[i]]);
 			cells[v.cells[i]].perimeter = calculateCellPerimeter(this->cells[v.cells[i]]);
+			bufferMovement.cell_areas[i] = cells[v.cells[i]].area;
+			bufferMovement.cell_perimeters[i] = cells[v.cells[i]].perimeter;
 		}
 	}
 }
@@ -1262,9 +1296,9 @@ bool Tissue::tryMoveVertex()
 	{
 		vertex_to_move = std::rand() % static_cast<int>(vertices.size());
 	} while (vertices[vertex_to_move].dead || !vertices[vertex_to_move].movable); //(!vertices[vertex_to_move].movable && STATIC_PRESENT || vertices[vertex_to_move].cells[0] == EMPTY_CONNECTION)); // A or static dead vertex cannot be selected
-	double old_x = vertices[vertex_to_move].x;
-	double old_y = vertices[vertex_to_move].y;
-	double old_energy = calculateEnergy(vertices[vertex_to_move]); //Calculate again because it is not updated every time a cell area changes etc
+	bufferMovement.x = vertices[vertex_to_move].x;
+	bufferMovement.y = vertices[vertex_to_move].y;
+	bufferMovement.energy = calculateEnergy(vertices[vertex_to_move]); //Calculate again because it is not updated every time a cell area changes etc
 	double angle, radius, new_x, new_y;
 	double move_prob;
 	bool cell_borders_cross = false;
@@ -1273,32 +1307,31 @@ bool Tissue::tryMoveVertex()
 	{
 		angle = 2 * M_PI * unif(generator);
 		radius = unif(generator) * max_range_vertex_movement;
-		new_x = vertices[vertex_to_move].movable_x ? old_x + cos(angle) * radius : old_x;
-		new_y = vertices[vertex_to_move].movable_y ? old_y + sin(angle) * radius : old_y;
+		new_x = vertices[vertex_to_move].movable_x ? bufferMovement.x + cos(angle) * radius : bufferMovement.x;
+		new_y = vertices[vertex_to_move].movable_y ? bufferMovement.y + sin(angle) * radius : bufferMovement.y;
 		moveVertex(vertices[vertex_to_move], new_x, new_y);
 		vertices[vertex_to_move].energy = calculateEnergy(vertices[vertex_to_move]);
 		//if(energy_term4 > 0) vertices[vertex_to_move].energy += calculateTerm4Energy(vertices[vertex_to_move], old_x, old_y);
 
 		if (temperature_means_proportion_of_acceptance)
 		{ //Prob of accepting unfavourable movement ins constant
-			move_prob = vertices[vertex_to_move].energy <= old_energy ? temperature_negative_energy : temperature_positive_energy;
+			move_prob = vertices[vertex_to_move].energy <= bufferMovement.energy ? temperature_negative_energy : temperature_positive_energy;
 		}
 		else
 		{ //Prob of accepting unfavourable movement depends on how much unfavourable the movement is
-			move_prob = vertices[vertex_to_move].energy <= old_energy ? exp((vertices[vertex_to_move].energy - old_energy) / temperature_negative_energy) : exp(-(vertices[vertex_to_move].energy - old_energy) / temperature_positive_energy);
+			move_prob = vertices[vertex_to_move].energy <= bufferMovement.energy ? exp((vertices[vertex_to_move].energy - bufferMovement.energy) / temperature_negative_energy) : exp(-(vertices[vertex_to_move].energy - bufferMovement.energy) / temperature_positive_energy);
 		}
 		if (check_if_edges_cross_opt)
 		{
 			cell_borders_cross = check_if_edges_cross(vertex_to_move);
 			if (cell_borders_cross)
 			{
-				moveVertex(vertices[vertex_to_move], old_x, old_y);
-				vertices[vertex_to_move].energy = old_energy;
+				moveVertexBack(vertices[vertex_to_move]);
 			}
 			cross_trials++;
 			if (cross_trials > MOVE_TRIALS)
 				return false;
-		}
+		}//check_if_edges_cross_opt
 	} while (cell_borders_cross);
 	double move = unif(generator);
 
@@ -1322,7 +1355,7 @@ bool Tissue::tryMoveVertex()
 			advanceSizeWithXcoord(vertex_to_move);
 		}
 		//Counters
-		if (vertices[vertex_to_move].energy <= old_energy)
+		if (vertices[vertex_to_move].energy <= bufferMovement.energy)
 		{
 			counter_favorable_accepted++;
 		}
@@ -1335,7 +1368,7 @@ bool Tissue::tryMoveVertex()
 	else
 	{
 		//Counters
-		if (vertices[vertex_to_move].energy <= old_energy)
+		if (vertices[vertex_to_move].energy <= bufferMovement.energy)
 		{
 			counter_favorable_rejected++;
 		}
@@ -1343,7 +1376,7 @@ bool Tissue::tryMoveVertex()
 		{
 			counter_unfav_rejected++;
 		} //Counters
-		moveVertex(vertices[vertex_to_move], old_x, old_y);
+		moveVertexBack(vertices[vertex_to_move]);
 		return false;
 	}
 }
