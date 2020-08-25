@@ -191,9 +191,29 @@ typedef std::vector<Edge> edge_v;
 typedef std::queue<Rearrangement> rearrangement_q;
 typedef std::queue<DivisionRecord> divisionrecord_q;
 
-typedef std::map<CellType, double> cell_type_param;
-typedef std::map<int, double> spring_type_param;
+//typedef std::map<CellType, double> cell_type_param;
+//typedef std::map<int, double> spring_type_param;
 
+const int NUM_CELL_TYPES = 4;
+const int NUM_SPRING_TYPES = 4;
+struct cell_type_param{
+	int val[NUM_CELL_TYPES];
+};
+struct spring_type_param{
+	int val[NUM_SPRING_TYPES];
+};
+
+struct bufferRejectMovement{
+	double edge_lengths[CELLS_PER_VERTEX];
+	double edge_tensions[CELLS_PER_VERTEX];
+	double cell_areas[CELLS_PER_VERTEX];
+	double cell_perimeters[CELLS_PER_VERTEX];
+	double spring_length;
+	double x;
+	double y;
+	double energy;
+
+};
 struct pointDerivative{
 	double x;
 	double y;
@@ -210,7 +230,7 @@ class Tissue{
 		void initialize_params(std::string params_file="");
 		double read_real_par(std::vector<std::string>::iterator& it);
 		cell_type_param read_celltype_par(std::vector<std::string>::iterator& it, std::string::size_type sz);
-                spring_type_param read_springtype_par(std::vector<std::string>::iterator& it, std::string::size_type sz);
+        spring_type_param read_springtype_par(std::vector<std::string>::iterator& it, std::string::size_type sz);
 		void set_default_simulation_params();
 		void setHingeMinAndMaxPositions();
 		void setMinAndMaxPositions();
@@ -225,6 +245,7 @@ class Tissue{
 		double calculateEnergy(Vertex& v);
 		void derivativeVertexPos(const Vertex &v, pointDerivative & pd);
 		void moveVertex(Vertex& v, float x, float y);
+		void moveVertexBack(Vertex& v);
 		bool tryMoveVertex();
 		void detectChangesAfterMove(int vertex_moved);
 		void performRearrangements();
@@ -283,7 +304,7 @@ class Tissue{
 		bool step_mode; //If the simulation is controlled by an external source, set this to true in order to avoid excessive printing of outputs
 		//parameters
 		bool t1_active , t1_inwards_active, t1_outwards_active, division_active, t2_active, join_edges_active, control_cells_2sides, check_if_edges_cross_opt;
-
+		bufferRejectMovement bufferMovement;
 		float min_range_vertex_movement; 
 		float max_range_vertex_movement; //In case of Monte Carlo integration
 		float h; //In case of Euler/Runge-Kutta integration
@@ -294,8 +315,8 @@ class Tissue{
 		cell_type_param line_tension_tissue_boundary;
 		float energy_term1, energy_term2, energy_term3;//, energy_term4;
 		//float spring_constant;
-                spring_type_param spring_type_constants;
-                spring_type_param spring_type_min_positions;
+        spring_type_param spring_type_constants;
+        spring_type_param spring_type_min_positions;
 		float add_static_to_hinge;
 		cell_type_param perimeter_contract;
 
