@@ -306,13 +306,16 @@ cell_type_param Tissue::read_celltype_par(std::vector<std::string>::iterator &it
 	while (it->at(0) != '<')
 	{
 		s = *it;
+		//cout << "s: " << s <<", ";
 		celltype = stoi(s, &sz);
 		s = s.substr(sz);
 		s.erase(0, 1);
 		auxd = stod(s, &sz);
+		//cout << "celltype: " << celltype << ", val: " << auxd << endl;
 		res.val[celltype] =auxd;
 		it++;
 	}
+	//cout << "Inside: " << res.val[0] << " "<< res.val[1] << " "<< res.val[2] << " "<< res.val[3] << " \n";
 	return res;
 }
 
@@ -404,9 +407,9 @@ void Tissue::initialize_params(std::string params_file)
 	xcoord_decrease_exponent = read_real_par(it);
 
 	line_tension = read_celltype_par(it, sz);
-	line_tension_tissue_boundary = read_celltype_par(it, sz);
+	line_tension_tissue_boundary = read_celltype_par(it, sz);	
 	perimeter_contract = read_celltype_par(it, sz);
-	preferred_area_initial = read_celltype_par(it, sz);
+	preferred_area_initial = read_celltype_par(it, sz);	
 	preferred_area_final = read_celltype_par(it, sz);
 	division_angle_random_noise = read_celltype_par(it, sz);
 	division_angle_longest_axis = read_celltype_par(it, sz);
@@ -1268,6 +1271,7 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 			{
 				setEdgeType(v.edges[i]);
 				setEdgeTension(v.edges[i]);
+				//cout <<edges[v.edges[i]].tension<<endl;
 				bufferMovement.edge_tensions[i] = edges[v.edges[i]].tension;
 			}
 		}

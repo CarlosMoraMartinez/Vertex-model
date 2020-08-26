@@ -197,10 +197,10 @@ typedef std::queue<DivisionRecord> divisionrecord_q;
 const int NUM_CELL_TYPES = 4;
 const int NUM_SPRING_TYPES = 4;
 struct cell_type_param{
-	int val[NUM_CELL_TYPES];
+	double val[NUM_CELL_TYPES];
 };
 struct spring_type_param{
-	int val[NUM_SPRING_TYPES];
+	double val[NUM_SPRING_TYPES];
 };
 
 struct bufferRejectMovement{
