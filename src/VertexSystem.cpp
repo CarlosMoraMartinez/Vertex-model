@@ -1238,11 +1238,8 @@ void Tissue::moveVertexBack(Vertex &v)
 	{
 		if (v.edges[i] != EMPTY_CONNECTION)
 		{
-			 edges[v.edges[i]].length = bufferMovement.edge_lengths[i];
-			if (UPDATE_EDGE_TENSION_EVERY_MOVE)
-			{
-				 edges[v.edges[i]].tension = bufferMovement.edge_tensions[i];
-			}
+			edges[v.edges[i]].length = bufferMovement.edge_lengths[i];
+			edges[v.edges[i]].tension = bufferMovement.edge_tensions[i];
 		}
 	}
 	if (v.spring != EMPTY_CONNECTION){
@@ -1265,20 +1262,20 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 	{
 		if (v.edges[i] != EMPTY_CONNECTION)
 		{
-			edges[v.edges[i]].length = distance(edges[v.edges[i]].vertices[0], edges[v.edges[i]].vertices[1]);
+			bufferMovement.edge_tensions[i] = edges[v.edges[i]].tension;
 			bufferMovement.edge_lengths[i] = edges[v.edges[i]].length;
+			edges[v.edges[i]].length = distance(edges[v.edges[i]].vertices[0], edges[v.edges[i]].vertices[1]);
 			if (UPDATE_EDGE_TENSION_EVERY_MOVE)
 			{
 				setEdgeType(v.edges[i]);
 				setEdgeTension(v.edges[i]);
 				//cout <<edges[v.edges[i]].tension<<endl;
-				bufferMovement.edge_tensions[i] = edges[v.edges[i]].tension;
 			}
 		}
 	}
 	if (v.spring != EMPTY_CONNECTION){
-		springs[v.spring].length = distance(springs[v.spring].vertices[0], springs[v.spring].vertices[1]);
 		bufferMovement.spring_length = springs[v.spring].length;
+		springs[v.spring].length = distance(springs[v.spring].vertices[0], springs[v.spring].vertices[1]);
 	}
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{ // re-calculate cell areas
@@ -1381,6 +1378,7 @@ bool Tissue::tryMoveVertex()
 			counter_unfav_rejected++;
 		} //Counters
 		moveVertexBack(vertices[vertex_to_move]);
+		//moveVertex(vertices[vertex_to_move], bufferMovement.x, bufferMovement.y);
 		return false;
 	}
 }
@@ -3781,7 +3779,7 @@ void Tissue::setStaticVertex(int v)
 bool Tissue::AddSpringToVertex(int v, float minx, float maxx)
 {
 	float pos = (vertices[v].x - minx) / (maxx - minx);
-	for (int minpos = 0; minpos < NUM_SPRING_TYPES; minpos++)
+	for (int minpos = NUM_SPRING_TYPES - 1; minpos >= 0; minpos--)
 	{
 		if (pos > spring_type_min_positions.val[minpos])
 		{
