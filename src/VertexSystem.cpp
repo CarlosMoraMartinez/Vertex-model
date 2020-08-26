@@ -764,6 +764,7 @@ void Tissue::setEdgeType(int e)
 		edges[e].tension = 0.5 * (line_tension.val[static_cast<int>(CellType::hinge)] + line_tension.val[static_cast<int>(CellType::blade)]); //vein_hinge and vein_blade are only for vein border
 		edges[e].can_transition = false;
 	}
+	edges[e].base_tension = edges[e].tension; //whereas tension can change, base_tension can't
 }
 
 void Tissue::setEdgeTension(int e)
@@ -864,7 +865,7 @@ rand = cells[cellvar].edge_angle_prop_random;
 	//Now integrate with other factors influencing tension
 	tensionrand = prand > 0 ? mins + (maxs - mins) * ((double)std::rand() / (RAND_MAX)) : 0;
 	//Note: edges[e].tension is used because setEdgeType (which also sets default tension depending on edge type) has been called before. Otherwise it would behave as a sort of momentum
-	edges[e].tension = (punif * edges[e].tension + pmaxan * angle + pex * tensionext + prand * tensionrand) / (punif + pmaxan + pex + prand);
+	edges[e].tension = (punif * edges[e].base_tension + pmaxan * angle + pex * tensionext + prand * tensionrand) / (punif + pmaxan + pex + prand);
 	//cout << "maxt: " << maxs << ", mint: " << mins <<", tension: " << edges[e].tension << ", angle: " << 180*atan2(vertices[edges[e].vertices[1]].y - vertices[edges[e].vertices[0]].y, vertices[edges[e].vertices[1]].x - vertices[edges[e].vertices[0]].x)/M_PI << ", angle tension: " << angle << ", random: " << tensionrand << ", prand: " << prand << endl;
 }
 
@@ -1267,7 +1268,7 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 			edges[v.edges[i]].length = distance(edges[v.edges[i]].vertices[0], edges[v.edges[i]].vertices[1]);
 			if (UPDATE_EDGE_TENSION_EVERY_MOVE)
 			{
-				setEdgeType(v.edges[i]);
+				//setEdgeType(v.edges[i]); not needed since there is base_tension
 				setEdgeTension(v.edges[i]);
 				//cout <<edges[v.edges[i]].tension<<endl;
 			}

@@ -156,6 +156,7 @@ struct Edge{
 	int ind;
 	EdgeType type;
 	double tension;
+	float base_tension;
 	double length;
 	int vertices[VERTEX_PER_EDGE];
 	int cells[VERTEX_PER_EDGE];
