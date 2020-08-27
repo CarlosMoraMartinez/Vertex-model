@@ -1196,7 +1196,7 @@ inline double Tissue::distance(int v1, int v2)
 inline double Tissue::calculateEnergy(Vertex &v)
 {
 	double term1 = 0, term2 = 0, term3 = 0;
-
+	double pref_area;
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
 		if (v.cells[i] != EMPTY_CONNECTION)
@@ -1206,26 +1206,30 @@ inline double Tissue::calculateEnergy(Vertex &v)
 	//Most of the time both cells will be of the same type, but sometimes one will be hinge and the other will be blade
 	//Therefore, I take the mean between the preferred areas of both cells,
 	//except for Edges in the border (obviously)
-	double pref_area;
+
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
+
 		if (v.edges[i] != EMPTY_CONNECTION)
 		{
+			if(isnan( edges[v.edges[i]].tension)){
+				cout << "Moving vertex: " << v.ind << " found edge " << v.edges[i] << " to be nan.";
+				produceOutputs();
+				exit(1);
+			}
 			pref_area = edges[v.edges[i]].type == EdgeType::tissue_boundary ? edges[v.edges[i]].cells[0] == EMPTY_CONNECTION ? cells[edges[v.edges[i]].cells[1]].preferred_area
 																															 : cells[edges[v.edges[i]].cells[0]].preferred_area
 																			: (cells[edges[v.edges[i]].cells[0]].preferred_area + cells[edges[v.edges[i]].cells[1]].preferred_area) * 0.5;
 			term2 += edges[v.edges[i]].tension * edges[v.edges[i]].length / sqrt(pref_area);
 		}
 	}
-
-	if (v.spring != EMPTY_CONNECTION)
-		term2 += springs[v.spring].tension * springs[v.spring].length / sqrt(pref_area);
-
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
 		if (v.cells[i] != EMPTY_CONNECTION)
 			term3 += 0.5 * cells[v.cells[i]].perimeter_contractility * pow(cells[v.cells[i]].perimeter, 2) / cells[v.cells[i]].preferred_area;
 	}
+	if (v.spring != EMPTY_CONNECTION)
+		term2 += springs[v.spring].tension * springs[v.spring].length / sqrt(pref_area);
 
 	return 0.5 * term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3;
 }
@@ -1281,11 +1285,11 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{ // re-calculate cell areas
 		if (v.cells[i] != EMPTY_CONNECTION)
-		{ 
+		{
+			bufferMovement.cell_areas[i] = cells[v.cells[i]].area;
+			bufferMovement.cell_perimeters[i] = cells[v.cells[i]].perimeter; 
 			cells[v.cells[i]].area = calculateCellArea(this->cells[v.cells[i]]);
 			cells[v.cells[i]].perimeter = calculateCellPerimeter(this->cells[v.cells[i]]);
-			bufferMovement.cell_areas[i] = cells[v.cells[i]].area;
-			bufferMovement.cell_perimeters[i] = cells[v.cells[i]].perimeter;
 		}
 	}
 }
@@ -1321,8 +1325,11 @@ bool Tissue::tryMoveVertex()
 		}
 		else
 		{ //Prob of accepting unfavourable movement depends on how much unfavourable the movement is
-			move_prob = vertices[vertex_to_move].energy <= bufferMovement.energy ? exp((vertices[vertex_to_move].energy - bufferMovement.energy) / temperature_negative_energy) : exp(-(vertices[vertex_to_move].energy - bufferMovement.energy) / temperature_positive_energy);
+			move_prob = vertices[vertex_to_move].energy <= bufferMovement.energy ? 
+			exp((vertices[vertex_to_move].energy - bufferMovement.energy) / temperature_negative_energy) : 
+			exp(-(vertices[vertex_to_move].energy - bufferMovement.energy) / temperature_positive_energy);
 		}
+
 		if (check_if_edges_cross_opt)
 		{
 			cell_borders_cross = check_if_edges_cross(vertex_to_move);
@@ -1335,8 +1342,8 @@ bool Tissue::tryMoveVertex()
 				return false;
 		}//check_if_edges_cross_opt
 	} while (cell_borders_cross);
-	double move = unif(generator);
 
+	double move = unif(generator);
 	if (move < move_prob)
 	{
 		detectChangesAfterMove(vertex_to_move);
@@ -1523,7 +1530,7 @@ void Tissue::produceOutputs(std::string add_to_name)
 	//writeAllData(fname); //THIS IS USEFUL TO DEBUG, BUT THE FORMAT IS NOT READ BY PLOTTING PROGRAM
 	writeCellDataTable(fname);
 	if (REPORT_OUT > 0)
-		cout << "\nWritting file: " << int(counter_moves_accepted / write_every_N_moves) << " at move " << counter_moves_accepted << endl;
+		cout << "\nWritting file: " << written_files << " at move " << counter_moves_accepted << endl;
 		std::cout << getStats() << endl;
 	written_files++;
 }
@@ -2331,6 +2338,8 @@ void Tissue::make_divide_cell(Rearrangement &r)
 		double cent_y = 0.5 * (vertices[newvind1].y + vertices[newvind2].y);	
 		printLine("DIVISION", cell, newcind, cent_x, cent_y, static_cast<int>(cells[cell].type));	
 	}
+	//cout << "!!!!!written: "<< written_files << endl;
+	//produceOutputs();
 } // END make_divide_cell
 
 bool Tissue::getDivisionPoints(const int cell, double &x1, double &x2, double &y1, double &y2, int &e1, int &e2)
@@ -2463,6 +2472,7 @@ void Tissue::splitEdgeWithVertex(int e, int cell, int v)
 	edges[e2ind].cells[1] = edges[e].cells[1];
 	edges[e2ind].tension = edges[e].tension; //This holds true because both edges will have the same angle
 	edges[e2ind].type = edges[e].type;
+	edges[e2ind].base_tension = edges[e].base_tension;
 	edges[e].length = distance(v, n1);
 	edges[e2ind].length = distance(v, n2);
 	edges[e2ind].can_transition = edges[e].can_transition;
@@ -3749,7 +3759,6 @@ void Tissue::addSpringsAutomatically()
 		maxx = vertices[i].x > maxx ? vertices[i].x : maxx;
 	}							  //min and max of the whole wing
 	setHingeMinAndMaxPositions(); //min and max of hinge
-
 	Edge e;
 	for (int i = 0; i < num_edges; i++)
 	{
@@ -3875,7 +3884,7 @@ void Tissue::restoreShape(){
 		restoreVeins();
 }
 void Tissue::makeVeinsThinner(int iters){
-    std::vector<CellType> newtypes(num_cells, CellType::vein_blade);
+    std::vector<CellType> newtypes(cells.size(), CellType::vein_blade);
 	int nei;
 	for(int i = 0; i < iters; i++){
 		for(Cell c: cells){
@@ -4037,8 +4046,14 @@ void Tissue::writeEdgeDataTable(std::string fname)
 	of.close();
 }
 
+void Tissue::printCelltypeParam(cell_type_param par, std::string name){
+	cout << name << ": ";
+	for(int i = 0; i < NUM_CELL_TYPES; i++) cout << i << "=" << par.val[i] << ",\t";
+	cout << endl;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
-//What follows is only useful to print easily, not part of the model
+//What follows is only useful to print easily
 //
 //Overloading of << operator for VERTICES. Useful to print
 std::ostream &operator<<(std::ostream &out, const Vertex &v)
@@ -4086,13 +4101,23 @@ std::ostream &operator<<(std::ostream &out, const Cell &c)
 		out << c.edges[i] << ",";
 	}
 	out << "\t" << c.num_divisions;
+	out << "\t" <<  static_cast<int>(c.vary_line_tension);
+	out << "\t" <<  c.edge_angle_prop_external;
+	out << "\t" << c.edge_angle_prop_uniform;
+	out << "\t" << c.edge_angle_prop_maxangle;
+	out << "\t" << c.edge_angle_prop_random;
+	out << "\t" << c.edge_tension_external;
+	out << "\t" << c.edge_maxangle;
+	out << "\t" << c.edge_spatialmax_tension;
+	out << "\t" << c.edge_spatialmin_tension;
+
 	return out;
 }
 
 //Overloading of << operator for EDGES. Useful to print
 std::ostream &operator<<(std::ostream &out, const Edge &e)
 {
-	out << e.ind << "\t" << int(e.type) << "\t" << e.length << "\t" << e.tension << "\t";
+	out << e.ind << "\t" << int(e.type) << "\t" << e.length << "\t" << e.tension << "\t" << e.base_tension<< "\t";
 	for (int i = 0; i < sizeof(e.vertices) / sizeof(e.vertices[0]); i++)
 	{ //print vertices touching edge separated by ','
 		out << e.vertices[i] << ",";

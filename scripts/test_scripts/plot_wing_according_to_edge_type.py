@@ -1,11 +1,21 @@
 
-
+import sys
 
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-basename = 'bud2_moved_0'
+"""
+This script accepts the name of a single simulation for which .edges, .points files exist in the working directory
+and plots:
+1) Wing with edges colored according to type
+2) Wing with edges shadowed according to tension
+3) Angle of edge vs tension
+
+It doesn't save the plots. 
+"""
+
+basename = sys.argv[1] #'bud2_moved_0'
 e=pd.read_csv(basename + '.edges', sep="\t") #file with edges, pasted from .out file (need to prepare this first)
 pf=open(basename + '.points', "r")
 p=int(pf.readline()) #discard first line
@@ -37,3 +47,19 @@ for i in range(e.shape[0]):
     fig=plt.plot(paux['x'], paux['y'], color = 'black', alpha = normt[i] )
 
 plt.show()
+
+angles=[]
+colorsthis = []
+for i in range(e.shape[0]):
+    ind = e["vertices"][i].split(',')
+    paux = p[(p['ind'] == int(ind[0])) | (p['ind'] == int(ind[1]))]
+    angles.append(abs(np.arctan2(paux.y.iloc[0] - paux.y.iloc[1], paux.x.iloc[0] - paux.x.iloc[1])*180/np.pi))
+    colorsthis.append(colors[e["type"][i]] if(e["type"][i] < len(colors)) else colors[-1])
+
+
+plt.scatter(angles, e["tension"], color=colorsthis)
+plt.axvline(x=90)
+plt.xlabel("Edge angle in degrees")
+plt.ylabel("Edge tension (raw value)")
+plt.show()
+

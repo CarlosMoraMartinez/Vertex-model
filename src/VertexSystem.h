@@ -87,11 +87,17 @@ const int MOVE_TRIALS = 100;  //Times it tries to move a vertex before it quits 
 const bool UPDATE_EDGE_TENSION_EVERY_MOVE = true; //Update edge tension if tension is dependent on edge angle (if true, do it in every iteration, if false do it only in transitions and start)
 const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
-const int REPORT_OUT = 0;//SET THIS TO 0 IF EVOLUTION IS GOING TO BE USED OR IN CASE OF LONG SIMULATIONS
+const int REPORT_OUT = 2;//SET THIS TO 0 IF EVOLUTION IS GOING TO BE USED OR IN CASE OF LONG SIMULATIONS
 
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tcells\tedges\tneighbour_vertices\n";
-const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\tcentroid_x\tcentroid_y\tangle_longest\tangle_signal\tangle_random\tdegrees_signal\tmax_area\tcell_cycle_state\tcell_cycle_limit\tcan_divide\tnum_vertices\tvertices\tedges\tnum_divisions\n";
-const std::string EDGE_HEADER = "ind\ttype\tlength\ttension\tvertices\tcells\n";
+const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\t" +
+	std::string("centroid_x\tcentroid_y\tangle_longest\tangle_signal\t")+
+	std::string("angle_random\tdegrees_signal\tmax_area\tcell_cycle_state\tcell_cycle_limit\tcan_divide\tnum_vertices\t")+
+	std::string("vertices\tedges\tnum_divisions\t")+
+	std::string("vary_line_tension\tedge_angle_prop_external\tedge_angle_prop_uniform\tedge_angle_prop_maxangl\t")+
+	std::string("edge_angle_prop_random\tedge_tension_external\t")+
+	std::string("edge_maxangle\tedge_spatialmax_tension\tedge_spatialmin_tension\n");
+const std::string EDGE_HEADER = "ind\ttype\tlength\ttension\tbase_tension\tvertices\tcells\n";
 
 //Enum class to define types of cells 
 enum class CellType{blade = 0, hinge = 1, vein_blade = 2, vein_hinge = 3};
@@ -269,7 +275,8 @@ class Tissue{
 		void addAcceptedMovements(int add);
 		void setAcceptedMovements(int mv);
 		void setStepMode(bool mode, int steps);
-
+		void emptyDivisions();
+		//Methods for printing results
 		void writeCellsFile(std::string fname);
 		void writeCellDataTable(std::string fname);
 		void writeEdgeDataTable(std::string fname);
@@ -280,8 +287,8 @@ class Tissue{
 		std::string getStats();
 		void printLine(std::string name, int ind1, int ind2, double centroid_x, double centroid_y, int type);
 		int getCounterT1();
-		void emptyDivisions();
-
+		void printCelltypeParam(cell_type_param par, std::string name);
+	 	//Methods to transition from expansion to hinge contraction (adding springs etc)
 		void addSpringsAutomatically();
 		void setStaticVertex(int v);
 		bool AddSpringToVertex(int v, float minx, float maxx);
