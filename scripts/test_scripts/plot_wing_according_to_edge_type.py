@@ -10,7 +10,7 @@ This script accepts the name of a single simulation for which .edges, .points fi
 and plots:
 1) Wing with edges colored according to type
 2) Wing with edges shadowed according to tension
-3) Angle of edge vs tension
+3) Angle of edge vs tension, colors according to edge type (Note: tension of border edges is set to max tension of non-border edges)
 
 It doesn't save the plots. 
 """

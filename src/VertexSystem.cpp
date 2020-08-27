@@ -772,34 +772,7 @@ void Tissue::setEdgeTension(int e)
 	float mins, maxs, maxangle, angle, pex, pmaxan, punif, prand, tensionext, tensionrand;
 	int cellvar;
 	if (edges[e].type == EdgeType::tissue_boundary)
-	{
-		/*cellvar = edges[e].cells[0] == EMPTY_CONNECTION ? edges[e].cells[1] : edges[e].cells[0];//find out which cell
-		if(! cells[cellvar].vary_line_tension) return;
-		float boundary_factor = edges[e].tension/(0.5*(cells[cellvar].edge_spatialmin_tension + cells[cellvar].edge_spatialmax_tension));
-
-		mins = cells[cellvar].edge_spatialmin_tension*boundary_factor; //Minimal tension depending on angle
-		maxs = cells[cellvar].edge_spatialmax_tension*boundary_factor; //Maximal tension depending on angle
-		maxangle = cells[cellvar].edge_maxangle; //Angle of max tension (in degrees)
-		tensionext = cells[cellvar].edge_tension_external; //Tension set from outside (gene expression etc)
-		p			cellvar = cells[edges[e].cells[0]].vary_line_tension ? edges[e].cells[0] : edges[e].cells[1]; //find out which cell
-rand = cells[cellvar].edge_angle_prop_random;
-		if(vary_edge_tension_with_time){ //If proportion determined by angle varies with time
-			double time_factor = static_cast<double>(counter_moves_accepted)/max_accepted_movements;
-			time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
-			double mint = edge_temporal_angle_efect_min[cells[cellvar].type];
-			double maxt = edge_temporal_angle_efect_max[cells[cellvar].type];
-			pex = 0.0;
-			pmaxan = mint + (maxt - mint)*time_factor; //Proportion is determined by exponential function of time
-			punif = 1.0 - pmaxan;
-
-		}else{ //If proportion determined by angle does not vary with time
-			pex = cells[cellvar].edge_angle_prop_external; //Proportions are determined by cell params directly
-			pmaxan = cells[cellvar].edge_angle_prop_maxangle;
-			punif = (cells[cellvar].edge_angle_prop_uniform);
-		}//end if time determines influence of angle
-	*/
 		return;
-	}
 	else
 	{ //not border
 		if (!cells[edges[e].cells[0]].vary_line_tension && !cells[edges[e].cells[1]].vary_line_tension)
@@ -832,15 +805,17 @@ rand = cells[cellvar].edge_angle_prop_random;
 			} //end if time determines influence of angle
 		}
 		else
-		{																								  //If only one cell makes edge tension vary
+		{																						  //If only one cell makes edge tension vary
 			cellvar = cells[edges[e].cells[0]].vary_line_tension ? edges[e].cells[0] : edges[e].cells[1]; //find out which cell
-			mins = cells[cellvar].edge_spatialmin_tension;												  //Minimal tension depending on angle
+			mins = cells[cellvar].edge_spatialmin_tension;	
+			mins = -0.02;											  //Minimal tension depending on angle
 			maxs = cells[cellvar].edge_spatialmax_tension;												  //Maximal tension depending on angle
 			maxangle = cells[cellvar].edge_maxangle;													  //Angle of max tension (in degrees)
 			tensionext = cells[cellvar].edge_tension_external;											  //Tension set from outside (gene expression etc)
 			prand = cells[cellvar].edge_angle_prop_random;
 			if (vary_edge_tension_with_time)
 			{ //If proportion determined by angle varies with time
+
 				double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
 				time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
 				double mint = edge_temporal_angle_efect_min.val[static_cast<int>(cells[cellvar].type)];
@@ -850,7 +825,7 @@ rand = cells[cellvar].edge_angle_prop_random;
 				punif = abs(1.0 - pmaxan);
 			}
 			else
-			{												   //If proportion determined by angle does not vary with time
+			{//If proportion determined by angle does not vary with time
 				pex = cells[cellvar].edge_angle_prop_external; //Proportions are determined by cell params directly
 				pmaxan = cells[cellvar].edge_angle_prop_maxangle;
 				punif = abs(1.0 - pmaxan);//(cells[cellvar].edge_angle_prop_uniform);
@@ -859,14 +834,16 @@ rand = cells[cellvar].edge_angle_prop_random;
 	}		  //End if is border
 	maxangle *= M_PI / 180;
 	angle = atan2(vertices[edges[e].vertices[1]].y - vertices[edges[e].vertices[0]].y, vertices[edges[e].vertices[1]].x - vertices[edges[e].vertices[0]].x); //angle of edge
-	angle = abs(sin(0.5 * M_PI + abs(angle - maxangle)));																									 //Point of sin wave (from 0 to 1)
+	angle = abs(sin(0.5 * M_PI + abs(angle - maxangle)));																								 //Point of sin wave (from 0 to 1)
 	angle = mins + angle * (maxs - mins);																													 //Value of tension at this point of sin wave
-
 	//Now integrate with other factors influencing tension
 	tensionrand = prand > 0 ? mins + (maxs - mins) * ((double)std::rand() / (RAND_MAX)) : 0;
 	//Note: edges[e].tension is used because setEdgeType (which also sets default tension depending on edge type) has been called before. Otherwise it would behave as a sort of momentum
 	edges[e].tension = (punif * edges[e].base_tension + pmaxan * angle + pex * tensionext + prand * tensionrand) / (punif + pmaxan + pex + prand);
 	//cout << "maxt: " << maxs << ", mint: " << mins <<", tension: " << edges[e].tension << ", angle: " << 180*atan2(vertices[edges[e].vertices[1]].y - vertices[edges[e].vertices[0]].y, vertices[edges[e].vertices[1]].x - vertices[edges[e].vertices[0]].x)/M_PI << ", angle tension: " << angle << ", random: " << tensionrand << ", prand: " << prand << endl;
+/* 		if(isnan(edges[e].tension) || isnan(edges[e].base_tension)) {
+		cout << " TENSION IS NA AFTER DIVISION: " << edges[e].tension << " " << edges[e].base_tension << endl;
+		exit(1);} */
 }
 
 /*
@@ -2178,6 +2155,21 @@ void Tissue::make_divide_cell(Rearrangement &r)
 	int newvind2 = newVertex(x2, y2); //create new vertices that are going to be positioned at (x1, y1) and (x2, y2) insideedges e1 and e2
 	int newcind = newCell();
 	cells[newcind].type = cells[cell].type;
+
+	cells[newcind].division_angle_random_noise = cells[cell].division_angle_random_noise;
+	cells[newcind].division_angle_longest = cells[cell].division_angle_longest;
+	cells[newcind].division_angle_external = cells[cell].division_angle_external;
+	cells[newcind].division_angle_external_degrees = cells[cell].division_angle_external_degrees;
+
+	cells[newcind].vary_line_tension = cells[cell].vary_line_tension;
+	cells[newcind].edge_angle_prop_external = cells[cell].edge_angle_prop_external;
+	cells[newcind].edge_angle_prop_uniform = cells[cell].edge_angle_prop_uniform;
+	cells[newcind].edge_angle_prop_maxangle = cells[cell].edge_angle_prop_maxangle;
+	cells[newcind].edge_tension_external = cells[cell].edge_tension_external;
+	cells[newcind].edge_maxangle = cells[cell].edge_maxangle;
+	cells[newcind].edge_spatialmax_tension = cells[cell].edge_spatialmax_tension;
+	cells[newcind].edge_spatialmin_tension = cells[cell].edge_spatialmin_tension;
+
 	int newe = newEdge();
 
 	splitEdgeWithVertex(e1, cell, newvind1); //Changes old cell but does nothing to new (only splits edges, not cell)
@@ -2191,7 +2183,7 @@ void Tissue::make_divide_cell(Rearrangement &r)
 	edges[newe].length = distance(newvind1, newvind2);
 	//edges[newe].tension = edges[e1].type == EdgeType::tissue_boundary? edges[e2].tension : edges[e1].tension;//make this more sophisticated to take into account veins etc.
 	//edges[newe].type = edges[e1].type == EdgeType::tissue_boundary? edges[e2].type : edges[e1].type; //make this more sophisticated to take into account veins etc.
-	setEdgeType(newe);
+	setEdgeType(newe); 
 	setEdgeTension(newe);
 
 	cells[cell].edges[which(EMPTY_CONNECTION, cells[cell].edges, MAX_SIDES_PER_CELL)] = newe;
@@ -2278,20 +2270,6 @@ void Tissue::make_divide_cell(Rearrangement &r)
 		//cells[newcind].can_divide = 0; //Already done in newCell()
 		cells[cell].can_divide = false;
 	}
-
-	cells[newcind].division_angle_random_noise = cells[cell].division_angle_random_noise;
-	cells[newcind].division_angle_longest = cells[cell].division_angle_longest;
-	cells[newcind].division_angle_external = cells[cell].division_angle_external;
-	cells[newcind].division_angle_external_degrees = cells[cell].division_angle_external_degrees;
-
-	cells[newcind].vary_line_tension = cells[cell].vary_line_tension;
-	cells[newcind].edge_angle_prop_external = cells[cell].edge_angle_prop_external;
-	cells[newcind].edge_angle_prop_uniform = cells[cell].edge_angle_prop_uniform;
-	cells[newcind].edge_angle_prop_maxangle = cells[cell].edge_angle_prop_maxangle;
-	cells[newcind].edge_tension_external = cells[cell].edge_tension_external;
-	cells[newcind].edge_maxangle = cells[cell].edge_maxangle;
-	cells[newcind].edge_spatialmax_tension = cells[cell].edge_spatialmax_tension;
-	cells[newcind].edge_spatialmin_tension = cells[cell].edge_spatialmin_tension;
 
 	cells[newcind].area = calculateCellArea(cells[newcind]);
 	cells[newcind].perimeter = calculateCellPerimeter(cells[newcind]);
