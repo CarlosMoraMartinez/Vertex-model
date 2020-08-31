@@ -36,7 +36,7 @@ int main(int argc, char *argv[]){
 		t.simulate(generator, unif);
 		auto stop = chrono::high_resolution_clock::now(); 
 		auto duration = chrono::duration_cast<chrono::seconds>(stop - start);
-		cout << "Step 1 lasted " << duration.count() << " seconds." << endl;
+		cout << ">>Step 1 lasted " << duration.count() << " seconds." << endl;
 		if(REPORT_OUT) cout << t.getStats() << endl; 
 		if(second_paramfile != ""){
 			if(REPORT_OUT) cout << "**** Reading Second parameter file ****"<<endl;
@@ -48,22 +48,25 @@ int main(int argc, char *argv[]){
 			t.simulate(generator, unif);
 			auto stop2 = chrono::high_resolution_clock::now(); 
 			auto duration2 = chrono::duration_cast<chrono::seconds>(stop2 - start2);
-			cout << "Step 2 lasted " << duration2.count() << " seconds." << endl;
+			cout << ">>Step 2 lasted " << duration2.count() << " seconds." << endl;
 			if(REPORT_OUT) cout << t.getStats() << endl; 
 		}
 		if(third_paramfile != ""){
 			if(REPORT_OUT) cout << "**** Adding springs and Restoring shape ****"<<endl;
 			t.addSpringsAutomatically();
+			if(REPORT_OUT) cout << "Added springs"<<endl;
 			t.makeVeinsThinner(1);
-			t.produceOutputs("movedspr");
+			if(REPORT_OUT) cout << "Veins made thinner"<< endl;
+			//t.produceOutputs("movedspr");
 			if(REPORT_OUT) cout << "**** Reading Third parameter file ****"<<endl;
 			//t.addAcceptedMovements(moves);
 			t.readNewParameters(third_paramfile);
+			cout << "New Parameters read"<<endl;
 			auto start3 = chrono::high_resolution_clock::now(); 
 			t.simulate(generator, unif);
 			auto stop3 = chrono::high_resolution_clock::now(); 
 			auto duration3 = chrono::duration_cast<chrono::seconds>(stop3 - start3);
-			cout << "Step 3 lasted " << duration3.count() << " seconds." << endl;
+			cout << ">>Step 3 lasted " << duration3.count() << " seconds." << endl;
 			if(REPORT_OUT) cout << t.getStats() << endl; 
 		}
 	}catch(const char* msg){

@@ -773,65 +773,32 @@ void Tissue::setEdgeTension(int e)
 	int cellvar;
 	if (edges[e].type == EdgeType::tissue_boundary)
 		return;
+	if (!(cells[edges[e].cells[0]].vary_line_tension && cells[edges[e].cells[1]].vary_line_tension))
+		return;
+	mins = 0.5 * (cells[edges[e].cells[0]].edge_spatialmin_tension + cells[edges[e].cells[1]].edge_spatialmin_tension);
+	maxs = 0.5 * (cells[edges[e].cells[0]].edge_spatialmax_tension + cells[edges[e].cells[1]].edge_spatialmax_tension);
+	maxangle = 0.5 * (cells[edges[e].cells[0]].edge_maxangle + cells[edges[e].cells[1]].edge_maxangle);
+	tensionext = 0.5 * (cells[edges[e].cells[0]].edge_tension_external + cells[edges[e].cells[1]].edge_tension_external); //This is not an angle! is tension value set from gene Expression directly
+
+	if (vary_edge_tension_with_time)
+	{ //If proportion determined by angle varies with time
+		double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
+		time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
+		double mint = (edge_temporal_angle_efect_min.val[static_cast<int>(cells[edges[e].cells[0]].type)] + edge_temporal_angle_efect_min.val[static_cast<int>(cells[edges[e].cells[1]].type)]) * 0.5;
+		double maxt = (edge_temporal_angle_efect_max.val[static_cast<int>(cells[edges[e].cells[0]].type)] + edge_temporal_angle_efect_max.val[static_cast<int>(cells[edges[e].cells[1]].type)]) * 0.5;
+		pex = 0.0;
+		pmaxan = mint + (maxt - mint) * time_factor;
+		prand = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_random + cells[edges[e].cells[1]].edge_angle_prop_random);
+		punif = abs(1.0 - pmaxan); //prand only used in the end; this way it is easier to avoid negative proportions
+	}
 	else
-	{ //not border
-		if (!cells[edges[e].cells[0]].vary_line_tension && !cells[edges[e].cells[1]].vary_line_tension)
-			return;
-		if (cells[edges[e].cells[0]].vary_line_tension && cells[edges[e].cells[1]].vary_line_tension)
-		{ //If both cells make edge tension vary
-			mins = 0.5 * (cells[edges[e].cells[0]].edge_spatialmin_tension + cells[edges[e].cells[1]].edge_spatialmin_tension);
-			maxs = 0.5 * (cells[edges[e].cells[0]].edge_spatialmax_tension + cells[edges[e].cells[1]].edge_spatialmax_tension);
-			maxangle = 0.5 * (cells[edges[e].cells[0]].edge_maxangle + cells[edges[e].cells[1]].edge_maxangle);
-			tensionext = 0.5 * (cells[edges[e].cells[0]].edge_tension_external + cells[edges[e].cells[1]].edge_tension_external); //This is not an angle! is tension value set from gene Expression directly
+	{ //If proportion determined by angle does not vary with time
+		pex = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_external + cells[edges[e].cells[1]].edge_angle_prop_external);
+		pmaxan = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_maxangle + cells[edges[e].cells[1]].edge_angle_prop_maxangle);
+		prand = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_random + cells[edges[e].cells[1]].edge_angle_prop_random);
+		punif = abs(1.0 - pmaxan);
+	} //end if time determines influence of angle
 
-			if (vary_edge_tension_with_time)
-			{ //If proportion determined by angle varies with time
-				double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
-				time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
-				double mint = (edge_temporal_angle_efect_min.val[static_cast<int>(cells[edges[e].cells[0]].type)] + edge_temporal_angle_efect_min.val[static_cast<int>(cells[edges[e].cells[1]].type)]) * 0.5;
-				double maxt = (edge_temporal_angle_efect_max.val[static_cast<int>(cells[edges[e].cells[0]].type)] + edge_temporal_angle_efect_max.val[static_cast<int>(cells[edges[e].cells[1]].type)]) * 0.5;
-				pex = 0.0;
-				pmaxan = mint + (maxt - mint) * time_factor;
-				prand = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_random + cells[edges[e].cells[1]].edge_angle_prop_random);
-				punif = abs(1.0 - pmaxan); //prand only used in the end; this way it is easier to avoid negative proportions
-			}
-			else
-			{ //If proportion determined by angle does not vary with time
-				pex = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_external + cells[edges[e].cells[1]].edge_angle_prop_external);
-				pmaxan = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_maxangle + cells[edges[e].cells[1]].edge_angle_prop_maxangle);
-				//punif = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_uniform + cells[edges[e].cells[1]].edge_angle_prop_uniform);
-				prand = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_random + cells[edges[e].cells[1]].edge_angle_prop_random);
-				punif  = abs(1.0 - pmaxan);
-			} //end if time determines influence of angle
-		}
-		else
-		{																						  //If only one cell makes edge tension vary
-			cellvar = cells[edges[e].cells[0]].vary_line_tension ? edges[e].cells[0] : edges[e].cells[1]; //find out which cell
-			mins = cells[cellvar].edge_spatialmin_tension;	
-			mins = -0.02;											  //Minimal tension depending on angle
-			maxs = cells[cellvar].edge_spatialmax_tension;												  //Maximal tension depending on angle
-			maxangle = cells[cellvar].edge_maxangle;													  //Angle of max tension (in degrees)
-			tensionext = cells[cellvar].edge_tension_external;											  //Tension set from outside (gene expression etc)
-			prand = cells[cellvar].edge_angle_prop_random;
-			if (vary_edge_tension_with_time)
-			{ //If proportion determined by angle varies with time
-
-				double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
-				time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
-				double mint = edge_temporal_angle_efect_min.val[static_cast<int>(cells[cellvar].type)];
-				double maxt = edge_temporal_angle_efect_max.val[static_cast<int>(cells[cellvar].type)];
-				pex = 0.0;
-				pmaxan = mint + (maxt - mint) * time_factor; //Proportion is determined by exponential function of time
-				punif = abs(1.0 - pmaxan);
-			}
-			else
-			{//If proportion determined by angle does not vary with time
-				pex = cells[cellvar].edge_angle_prop_external; //Proportions are determined by cell params directly
-				pmaxan = cells[cellvar].edge_angle_prop_maxangle;
-				punif = abs(1.0 - pmaxan);//(cells[cellvar].edge_angle_prop_uniform);
-			} //end if time determines influence of angle
-		}	  //End if which cells determine edge variation
-	}		  //End if is border
 	maxangle *= M_PI / 180;
 	angle = atan2(vertices[edges[e].vertices[1]].y - vertices[edges[e].vertices[0]].y, vertices[edges[e].vertices[1]].x - vertices[edges[e].vertices[0]].x); //angle of edge
 	angle = abs(sin(0.5 * M_PI + abs(angle - maxangle)));																								 //Point of sin wave (from 0 to 1)
@@ -1189,11 +1156,6 @@ inline double Tissue::calculateEnergy(Vertex &v)
 
 		if (v.edges[i] != EMPTY_CONNECTION)
 		{
-			if(isnan( edges[v.edges[i]].tension)){
-				cout << "Moving vertex: " << v.ind << " found edge " << v.edges[i] << " to be nan.";
-				produceOutputs();
-				exit(1);
-			}
 			pref_area = edges[v.edges[i]].type == EdgeType::tissue_boundary ? edges[v.edges[i]].cells[0] == EMPTY_CONNECTION ? cells[edges[v.edges[i]].cells[1]].preferred_area
 																															 : cells[edges[v.edges[i]].cells[0]].preferred_area
 																			: (cells[edges[v.edges[i]].cells[0]].preferred_area + cells[edges[v.edges[i]].cells[1]].preferred_area) * 0.5;
@@ -1293,11 +1255,14 @@ bool Tissue::tryMoveVertex()
 	vertices[vertex_to_move].energy = calculateEnergy(vertices[vertex_to_move]);
 	//Prob of accepting unfavourable movement ins constant
 	move_prob = vertices[vertex_to_move].energy <= bufferMovement.energy ? temperature_negative_energy : temperature_positive_energy;
-
-
 	double move = unif(generator);
 	if (move < move_prob)
 	{
+/* 		for(int i = 0; i < CELLS_PER_VERTEX; i++){
+			if(vertices[vertex_to_move].edges[i] != EMPTY_CONNECTION){
+				setEdgeTension(vertices[vertex_to_move].edges[i]);
+			}
+		} */
 		detectChangesAfterMove(vertex_to_move);
 		if (autonomous_cell_cycle)
 		{ //NOTE: Maybe make this before detecting changes so the effect is immediate? Otherwise cells have to wait until next round
@@ -2004,47 +1969,14 @@ void Tissue::make_t1_at_border_outwards(Rearrangement &r)
 	//cout << "D" << endl;
 	//Determine which cell goes with which point. Compare new point locations of v1 and v2 with all the neighbours of v1 and v2.
 
-	double dist1 = t1_get_dist_sum(v1, v2, cc1, cc2, sp1, sp1); //Not very efficient: to check for edge collisions will examine twice sp1
-	double dist2 = t1_get_dist_sum(v1, v2, cc2, cc1, sp1, sp1);
-
-	//cout << "E" << endl;
-	if (dist2 > 0 && (dist2 < dist1 || dist1 < 0))
+	double dist1 = t1_get_dist_sum(v1, v2, cc1, cc2, sp1, sp1);
+	if (dist1 >= 0)
 	{
-		//cout << "E2" << endl;
 		int aux = common_cell1;
 		common_cell1 = common_cell2;
 		common_cell2 = aux;
 		cc1 = &this->cells[common_cell1];
 		cc2 = &this->cells[common_cell2];
-	}
-	else if (dist2 < 0 && dist1 < 0)
-	{ //edges always cross
-		//cout << "E3" << endl;
-		v1->x = old_x1;
-		v2->x = old_x2;
-		v1->y = old_y1;
-		v2->y = old_y2;
-		edges[edge].length = old_length;
-		counter_t1_abortions++;
-		return;
-	}
-	ofstream ff;
-	//cout << "F" << endl;
-	if (REPORT_T1)
-	{
-		ff.open("T1_REPORT_outwards_" + std::to_string(counter_moves_accepted) + "_" + std::to_string(v1->ind) + "_" + std::to_string(v2->ind) + ".txt");
-
-		ff << "\nBEFORE\n\n";
-		ff << "edge: " << edge << "\n\n";
-		ff << VERTEX_HEADER << *v1 << "\n"
-		   << *v2 << "\n\n";
-		ff << CELL_HEADER << *cc1 << "\tcommon_cell1\n"
-		   << *cc2 << "\tcommon_cell2\n"
-		   << *sp1 << "\tsp1\n\n";
-		ff << getStats();
-
-		ff << "\n\nDist when cell " << cc1->ind << " goes with vertex " << v1->ind << ": " << dist1 << "\n";
-		ff << "Dist when cell " << cc1->ind << " goes with vertex " << v2->ind << ": " << dist2 << "\n";
 	}
 
 	//Now we know that v1 is closest to common_cell1, and v2 should be closer to common_cell2. Time to update everything
@@ -2097,17 +2029,6 @@ void Tissue::make_t1_at_border_outwards(Rearrangement &r)
 		double cent_x = 0.5*(v1->x + v2->x);
 		double cent_y = 0.5*(v1->y + v2->y);	
 		printLine("T1_outwards", v1->ind, v2->ind, cent_x, cent_y, static_cast<int>(edges[edge].type));	
-	}
-	if (REPORT_T1)
-	{
-		ff << "\n\nAFTER\n\n";
-		ff << VERTEX_HEADER << *v1 << "\n"
-		   << *v2 << "\n\n";
-		ff << CELL_HEADER << *cc1 << "\tcommon_cell1\n"
-		   << *cc2 << "\tcommon_cell2\n"
-		   << *sp1 << "\tsp1\n\n";
-		ff << getStats();
-		ff.close();
 	}
 
 } /// End make_t1_outwards
@@ -2483,44 +2404,13 @@ void Tissue::make_t1(Rearrangement &r)
 	//Determine which cell goes with which point. Compare new point locations of v1 and v2 with all the neighbours of v1 and v2.
 
 	double dist1 = t1_get_dist_sum(v1, v2, cc1, cc2, sp1, sp2);
-	double dist2 = t1_get_dist_sum(v1, v2, cc2, cc1, sp1, sp2);
-
-	if (dist2 > 0 && (dist2 < dist1 || dist1 < 0))
+	if (dist1 >= 0)
 	{
 		int aux = common_cell1;
 		common_cell1 = common_cell2;
 		common_cell2 = aux;
 		cc1 = &this->cells[common_cell1];
 		cc2 = &this->cells[common_cell2];
-	}
-	else if (dist2 < 0 && dist1 < 0)
-	{ //edges always cross
-		v1->x = old_x1;
-		v2->x = old_x2;
-		v1->y = old_y1;
-		v2->y = old_y2;
-		edges[edge].length = old_length;
-		counter_t1_abortions++;
-		return;
-	}
-	ofstream ff;
-
-	if (REPORT_T1)
-	{
-		ff.open("T1_REPORT_" + std::to_string(counter_moves_accepted) + "_" + std::to_string(v1->ind) + "_" + std::to_string(v2->ind) + ".txt");
-
-		ff << "\nBEFORE\n\n";
-		ff << "edge: " << edge << "\n\n";
-		ff << VERTEX_HEADER << *v1 << "\n"
-		   << *v2 << "\n\n";
-		ff << CELL_HEADER << *cc1 << "\tcommon_cell1\n"
-		   << *cc2 << "\tcommon_cell2\n"
-		   << *sp1 << "\tsp1\n"
-		   << *sp2 << "\tsp2\n\n";
-		ff << getStats();
-
-		ff << "\n\nDist when cell " << cc1->ind << " goes with vertex " << v1->ind << ": " << dist1 << "\n";
-		ff << "Dist when cell " << cc1->ind << " goes with vertex " << v2->ind << ": " << dist2 << "\n";
 	}
 
 	//Now we know that v1 is closest to common_cell1, and v2 should be closer to common_cell2. Time to update everything
@@ -2572,18 +2462,6 @@ void Tissue::make_t1(Rearrangement &r)
 		double cent_x = 0.5*(v1->x + v2->x);
 		double cent_y = 0.5*(v1->y + v2->y);	
 		printLine("T1", v1->ind, v2->ind, cent_x, cent_y, static_cast<int>(edges[edge].type));	
-	}
-	if (REPORT_T1)
-	{
-		ff << "\n\nAFTER\n\n";
-		ff << VERTEX_HEADER << *v1 << "\n"
-		   << *v2 << "\n\n";
-		ff << CELL_HEADER << *cc1 << "\tcommon_cell1\n"
-		   << *cc2 << "\tcommon_cell2\n"
-		   << *sp1 << "\tsp1\n"
-		   << *sp2 << "\tsp2\n\n";
-		ff << getStats();
-		ff.close();
 	}
 } //End make_t1
 
@@ -2929,7 +2807,7 @@ double Tissue::t1_get_dist_sum(Vertex *v1, Vertex *v2, Cell *c1, Cell *c2, Cell 
 	//These integers will hold the two neighboring vertices (n1 and n2) of vertices v1 and v2, in c1 and c2 respectively, after transition, assuming c1 becomes specific to v1
 	int v1_n1 = -1, v1_n2 = -1, v2_n1 = -1, v2_n2 = -1;
 
-	float dist;
+	float dist, dist2;
 	if (c1->vertices[(v1_in_cell1 + 1) % c1->num_vertices] == v2->ind)
 	{
 		v1_n1 = c1->vertices[(v1_in_cell1 + 2) % c1->num_vertices];
@@ -2953,40 +2831,13 @@ double Tissue::t1_get_dist_sum(Vertex *v1, Vertex *v2, Cell *c1, Cell *c2, Cell 
 	}
 
 	dist = distance(v1->ind, v1_n1) + distance(v1->ind, v1_n2) + distance(v2->ind, v2_n1) + distance(v2->ind, v2_n2);
-
-	StraightLine lv1_c1n1, lv1_c1n2, lv2_c2n1, lv2_c2n2, lv1v2, cell_edge;
-	lv1_c1n1 = getLineFromEdge(v1, &this->vertices[v1_n1]);
-	lv1_c1n2 = getLineFromEdge(v1, &this->vertices[v1_n2]);
-	lv2_c2n1 = getLineFromEdge(v2, &this->vertices[v2_n1]);
-	lv2_c2n2 = getLineFromEdge(v2, &this->vertices[v2_n2]);
-	lv1v2 = getLineFromEdge(v1, v2);
-	vector<StraightLine> lines = {lv1_c1n1, lv1_c1n2, lv2_c2n1, lv2_c2n2, lv1v2};
-	vector<Cell *> neighbour_cells = {c1, c2, s1, s2};
-	int indices_avoid[6] = {v1->ind, v2->ind, v1_n1, v1_n2, v2_n1, v2_n2};
-
-	Edge *ee;
-	for (StraightLine l : lines)
+	dist2 = distance(v1->ind, v2_n1) + distance(v1->ind, v2_n2) + distance(v2->ind, v1_n1) + distance(v2->ind, v1_n2);
+	if (dist < dist2)
 	{
-		for (Cell *cellptr : neighbour_cells)
-		{
-			for (int i = 0; i < cellptr->num_vertices; i++)
-			{
-				ee = &this->edges[cellptr->edges[i]];
-				//can't be one of the edges that are going to move, and edges cannot touch
-				//(contains(s1->ind, ee->cells, 2) && contains(c2->ind, ee->cells, 2)) || (contains(s2->ind, ee->cells, 2) && contains(c1->ind, ee->cells, 2))
-				if (!(contains(ee->vertices[0], indices_avoid, 6) && contains(ee->vertices[1], indices_avoid, 6)) &&
-					!contains(l.v1, ee->vertices, 2) && !contains(l.v2, ee->vertices, 2))
-				{
-					cell_edge = getLineFromEdge(ee);
-					if (lines_cross(cell_edge, l))
-						return -1;
-				}
-			}
-		}
-	}
-	if (lines_cross(lv1_c1n1, lv2_c2n1) || lines_cross(lv1_c1n1, lv2_c2n2) || lines_cross(lv1_c1n2, lv2_c2n1) || lines_cross(lv1_c1n2, lv2_c2n2))
 		return -1;
-	return dist;
+	}else{
+		return 1;
+	}
 }
 
 //Assumes that number of cells contacting both vertices <=3:
