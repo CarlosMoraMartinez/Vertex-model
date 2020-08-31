@@ -1906,9 +1906,9 @@ void Tissue::make_t1_at_border_inwards(Rearrangement &r)
 		counter_t1_abortions++;
 		return;
 	}
-	ofstream ff;
+/*	ofstream ff;
 	if (REPORT_T1)
-	{
+ 	{
 		ff.open("T1_REPORT_inwards_" + std::to_string(counter_moves_accepted) + "_" + std::to_string(v1->ind) + "_" + std::to_string(v2->ind) + ".txt");
 
 		ff << "\nBEFORE\n\n";
@@ -1922,7 +1922,7 @@ void Tissue::make_t1_at_border_inwards(Rearrangement &r)
 
 		ff << "\n\nDist when cell " << cc1->ind << " goes with vertex " << v1->ind << ": " << dist1 << "\n";
 		ff << "Dist when cell " << cc1->ind << " goes with vertex " << v2->ind << ": " << dist2 << "\n";
-	}
+	} */
 	//cout << "F\n";
 	//Now we know that v1 is closest to common_cell1, and v2 should be closer to common_cell2. Time to update everything
 	//1) Cell exclussive of v1 is going to touch v2, and cell exclussive of v2 is going to touch v1
@@ -1969,7 +1969,7 @@ void Tissue::make_t1_at_border_inwards(Rearrangement &r)
 		double cent_y = 0.5*(v1->y + v2->y);	
 		printLine("T1_inwards", v1->ind, v2->ind, cent_x, cent_y, static_cast<int>(edges[edge].type));	
 	}
-	if (REPORT_T1)
+/* 	if (REPORT_T1)
 	{
 		ff << "\n\nAFTER\n\n";
 		ff << VERTEX_HEADER << *v1 << "\n"
@@ -1979,7 +1979,7 @@ void Tissue::make_t1_at_border_inwards(Rearrangement &r)
 		   << *sp2 << "\tsp2\n\n";
 		ff << getStats();
 		ff.close();
-	}
+	} */
 
 } // end t1 at border inwards
 
@@ -2029,8 +2029,16 @@ void Tissue::make_t1_at_border_outwards(Rearrangement &r)
 	t1_rotate_edge90degrees(v1, v2, edge);
 	//cout << "D" << endl;
 	//Determine which cell goes with which point. Compare new point locations of v1 and v2 with all the neighbours of v1 and v2.
-
-	double dist1 = t1_get_dist_sum(v1, v2, cc1, cc2, sp1, sp1); //Not very efficient: to check for edge collisions will examine twice sp1
+	double dist1 = t1_get_dist_sum(v1, v2, cc1, cc2, sp1, sp1);
+	if (dist1 >= 0)
+	{
+		int aux = common_cell1;
+		common_cell1 = common_cell2;
+		common_cell2 = aux;
+		cc1 = &this->cells[common_cell1];
+		cc2 = &this->cells[common_cell2];
+	}
+/* 	double dist1 = t1_get_dist_sum(v1, v2, cc1, cc2, sp1, sp1); //Not very efficient: to check for edge collisions will examine twice sp1
 	double dist2 = t1_get_dist_sum(v1, v2, cc2, cc1, sp1, sp1);
 
 	//cout << "E" << endl;
@@ -2053,8 +2061,8 @@ void Tissue::make_t1_at_border_outwards(Rearrangement &r)
 		edges[edge].length = old_length;
 		counter_t1_abortions++;
 		return;
-	}
-	ofstream ff;
+	} */
+	/* ofstream ff;
 	//cout << "F" << endl;
 	if (REPORT_T1)
 	{
@@ -2071,7 +2079,7 @@ void Tissue::make_t1_at_border_outwards(Rearrangement &r)
 
 		ff << "\n\nDist when cell " << cc1->ind << " goes with vertex " << v1->ind << ": " << dist1 << "\n";
 		ff << "Dist when cell " << cc1->ind << " goes with vertex " << v2->ind << ": " << dist2 << "\n";
-	}
+	} */
 
 	//Now we know that v1 is closest to common_cell1, and v2 should be closer to common_cell2. Time to update everything
 	//1) Cell exclussive of v1 is going to touch v2, and cell exclussive of v2 is going to touch v1
@@ -2124,7 +2132,7 @@ void Tissue::make_t1_at_border_outwards(Rearrangement &r)
 		double cent_y = 0.5*(v1->y + v2->y);	
 		printLine("T1_outwards", v1->ind, v2->ind, cent_x, cent_y, static_cast<int>(edges[edge].type));	
 	}
-	if (REPORT_T1)
+/* 	if (REPORT_T1)
 	{
 		ff << "\n\nAFTER\n\n";
 		ff << VERTEX_HEADER << *v1 << "\n"
@@ -2135,7 +2143,7 @@ void Tissue::make_t1_at_border_outwards(Rearrangement &r)
 		ff << getStats();
 		ff.close();
 	}
-
+ */
 } /// End make_t1_outwards
 
 void Tissue::make_divide_cell(Rearrangement &r)
@@ -2507,8 +2515,16 @@ void Tissue::make_t1(Rearrangement &r)
 	t1_rotate_edge90degrees(v1, v2, edge);
 
 	//Determine which cell goes with which point. Compare new point locations of v1 and v2 with all the neighbours of v1 and v2.
-
 	double dist1 = t1_get_dist_sum(v1, v2, cc1, cc2, sp1, sp2);
+	if (dist1 >= 0)
+	{
+		int aux = common_cell1;
+		common_cell1 = common_cell2;
+		common_cell2 = aux;
+		cc1 = &this->cells[common_cell1];
+		cc2 = &this->cells[common_cell2];
+	}
+/* 	double dist1 = t1_get_dist_sum(v1, v2, cc1, cc2, sp1, sp2);
 	double dist2 = t1_get_dist_sum(v1, v2, cc2, cc1, sp1, sp2);
 
 	if (dist2 > 0 && (dist2 < dist1 || dist1 < 0))
@@ -2528,8 +2544,8 @@ void Tissue::make_t1(Rearrangement &r)
 		edges[edge].length = old_length;
 		counter_t1_abortions++;
 		return;
-	}
-	ofstream ff;
+	} */
+/* 	ofstream ff;
 
 	if (REPORT_T1)
 	{
@@ -2547,7 +2563,7 @@ void Tissue::make_t1(Rearrangement &r)
 
 		ff << "\n\nDist when cell " << cc1->ind << " goes with vertex " << v1->ind << ": " << dist1 << "\n";
 		ff << "Dist when cell " << cc1->ind << " goes with vertex " << v2->ind << ": " << dist2 << "\n";
-	}
+	} */
 
 	//Now we know that v1 is closest to common_cell1, and v2 should be closer to common_cell2. Time to update everything
 	//1) Cell exclussive of v1 is going to touch v2, and cell exclussive of v2 is going to touch v1
@@ -2599,7 +2615,7 @@ void Tissue::make_t1(Rearrangement &r)
 		double cent_y = 0.5*(v1->y + v2->y);	
 		printLine("T1", v1->ind, v2->ind, cent_x, cent_y, static_cast<int>(edges[edge].type));	
 	}
-	if (REPORT_T1)
+/* 	if (REPORT_T1)
 	{
 		ff << "\n\nAFTER\n\n";
 		ff << VERTEX_HEADER << *v1 << "\n"
@@ -2610,7 +2626,7 @@ void Tissue::make_t1(Rearrangement &r)
 		   << *sp2 << "\tsp2\n\n";
 		ff << getStats();
 		ff.close();
-	}
+	} */
 } //End make_t1
 
 void Tissue::t1_update_sizes(Vertex *v1, Vertex *v2, int edge)
@@ -2955,7 +2971,7 @@ double Tissue::t1_get_dist_sum(Vertex *v1, Vertex *v2, Cell *c1, Cell *c2, Cell 
 	//These integers will hold the two neighboring vertices (n1 and n2) of vertices v1 and v2, in c1 and c2 respectively, after transition, assuming c1 becomes specific to v1
 	int v1_n1 = -1, v1_n2 = -1, v2_n1 = -1, v2_n2 = -1;
 
-	float dist;
+	float dist, dist2;
 	if (c1->vertices[(v1_in_cell1 + 1) % c1->num_vertices] == v2->ind)
 	{
 		v1_n1 = c1->vertices[(v1_in_cell1 + 2) % c1->num_vertices];
@@ -2979,8 +2995,15 @@ double Tissue::t1_get_dist_sum(Vertex *v1, Vertex *v2, Cell *c1, Cell *c2, Cell 
 	}
 
 	dist = distance(v1->ind, v1_n1) + distance(v1->ind, v1_n2) + distance(v2->ind, v2_n1) + distance(v2->ind, v2_n2);
-
-	StraightLine lv1_c1n1, lv1_c1n2, lv2_c2n1, lv2_c2n2, lv1v2, cell_edge;
+	dist2 = distance(v1->ind, v2_n1) + distance(v1->ind, v2_n2) + distance(v2->ind, v1_n1) + distance(v2->ind, v1_n2);
+	if (dist < dist2)
+	{
+		return -1; 
+	}else{
+		return 1; //Need to change edges
+	}
+	//Check if new edge crosses
+/* 	StraightLine lv1_c1n1, lv1_c1n2, lv2_c2n1, lv2_c2n2, lv1v2, cell_edge;
 	lv1_c1n1 = getLineFromEdge(v1, &this->vertices[v1_n1]);
 	lv1_c1n2 = getLineFromEdge(v1, &this->vertices[v1_n2]);
 	lv2_c2n1 = getLineFromEdge(v2, &this->vertices[v2_n1]);
@@ -3012,7 +3035,7 @@ double Tissue::t1_get_dist_sum(Vertex *v1, Vertex *v2, Cell *c1, Cell *c2, Cell 
 	}
 	if (lines_cross(lv1_c1n1, lv2_c2n1) || lines_cross(lv1_c1n1, lv2_c2n2) || lines_cross(lv1_c1n2, lv2_c2n1) || lines_cross(lv1_c1n2, lv2_c2n2))
 		return -1;
-	return dist;
+	return dist; */
 }
 
 //Assumes that number of cells contacting both vertices <=3:

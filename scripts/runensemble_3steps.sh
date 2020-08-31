@@ -1,6 +1,6 @@
 #$1: Name of file without extension (a .json file that needs to be in ./param_files) 
 
-maxCPU=33
+maxCPU=10
 i=0
 wingarray=(bud5_3ctfat3) 
 
