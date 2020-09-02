@@ -1131,7 +1131,7 @@ inline double Tissue::distance(int v1, int v2)
 {
 	return sqrt(pow(this->vertices[v1].x - this->vertices[v2].x, 2) + pow(this->vertices[v1].y - this->vertices[v2].y, 2));
 }
-inline double Tissue::calculateEnergy(Vertex &v)
+inline double Tissue::calculateEnergy2(Vertex &v)
 {
 	double term1 = 0, term2 = 0, term3 = 0;
 	double pref_area;
@@ -1163,7 +1163,7 @@ inline double Tissue::calculateEnergy(Vertex &v)
 	return 0.5 * term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3;
 }
 //
-inline double Tissue::calculateEnergy2(Vertex &v)
+inline double Tissue::calculateEnergy(Vertex &v)
 {
 	double term1 = 0, term2 = 0, term3 = 0;
 	double aux;
@@ -1223,12 +1223,12 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 	{
 		if (v.edges[i] != EMPTY_CONNECTION)
 		{
-			bufferMovement.edge_tensions[i] = edges[v.edges[i]].tension;
 			bufferMovement.edge_lengths[i] = edges[v.edges[i]].length;
 			edges[v.edges[i]].length = distance(edges[v.edges[i]].vertices[0], edges[v.edges[i]].vertices[1]);
 			if (UPDATE_EDGE_TENSION_EVERY_MOVE)
 			{
 				//setEdgeType(v.edges[i]); not needed since there is base_tension
+				bufferMovement.edge_tensions[i] = edges[v.edges[i]].tension;
 				setEdgeTension(v.edges[i]);
 				//cout <<edges[v.edges[i]].tension<<endl;
 			}

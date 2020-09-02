@@ -1170,46 +1170,65 @@ inline double Tissue::distance(int v1, int v2)
 {
 	return sqrt(pow(this->vertices[v1].x - this->vertices[v2].x, 2) + pow(this->vertices[v1].y - this->vertices[v2].y, 2));
 }
-inline double Tissue::calculateEnergy(Vertex &v)
+inline double Tissue::calculateEnergy2(Vertex &v)
 {
 	double term1 = 0, term2 = 0, term3 = 0;
 	double pref_area;
+	int aux_ind;
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
-		if (v.cells[i] != EMPTY_CONNECTION)
-			term1 += pow(cells[v.cells[i]].area / cells[v.cells[i]].preferred_area - 1, 2);
-	}
-	//Second term is edge length divided by preferred area of cell.
-	//Most of the time both cells will be of the same type, but sometimes one will be hinge and the other will be blade
-	//Therefore, I take the mean between the preferred areas of both cells,
-	//except for Edges in the border (obviously)
-
-	for (int i = 0; i < CELLS_PER_VERTEX; i++)
-	{
-
-		if (v.edges[i] != EMPTY_CONNECTION)
-		{
-			if(isnan( edges[v.edges[i]].tension)){
-				cout << "Moving vertex: " << v.ind << " found edge " << v.edges[i] << " to be nan.";
-				produceOutputs();
-				exit(1);
-			}
-			pref_area = edges[v.edges[i]].type == EdgeType::tissue_boundary ? edges[v.edges[i]].cells[0] == EMPTY_CONNECTION ? cells[edges[v.edges[i]].cells[1]].preferred_area
-																															 : cells[edges[v.edges[i]].cells[0]].preferred_area
-																			: (cells[edges[v.edges[i]].cells[0]].preferred_area + cells[edges[v.edges[i]].cells[1]].preferred_area) * 0.5;
-			term2 += edges[v.edges[i]].tension * edges[v.edges[i]].length / sqrt(pref_area);
+		if (v.cells[i] != EMPTY_CONNECTION){
+			aux_ind = v.cells[i];
+			term1 += pow(cells[aux_ind].area / cells[aux_ind].preferred_area - 1, 2);
+			term3 += 0.5 * cells[aux_ind].perimeter_contractility * cells[aux_ind].perimeter * cells[aux_ind].perimeter/ cells[aux_ind].preferred_area;
 		}
 	}
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
-		if (v.cells[i] != EMPTY_CONNECTION)
-			term3 += 0.5 * cells[v.cells[i]].perimeter_contractility * pow(cells[v.cells[i]].perimeter, 2) / cells[v.cells[i]].preferred_area;
+		if (v.edges[i] != EMPTY_CONNECTION)
+		{
+			aux_ind = v.edges[i];
+			pref_area = edges[aux_ind].type == EdgeType::tissue_boundary ? 
+								edges[aux_ind].cells[0] == EMPTY_CONNECTION ? 																					
+											cells[edges[aux_ind].cells[1]].preferred_area :
+											cells[edges[aux_ind].cells[0]].preferred_area :
+								(cells[edges[aux_ind].cells[0]].preferred_area + cells[edges[aux_ind].cells[1]].preferred_area) * 0.5;
+			term2 += edges[aux_ind].tension * edges[aux_ind].length / sqrt(pref_area);
+		}
 	}
-	if (v.spring != EMPTY_CONNECTION)
+	if (v.spring != EMPTY_CONNECTION){
 		term2 += springs[v.spring].tension * springs[v.spring].length / sqrt(pref_area);
-
+	}
 	return 0.5 * term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3;
 }
+//
+inline double Tissue::calculateEnergy(Vertex &v)
+{
+	double term1 = 0, term2 = 0, term3 = 0;
+	double aux;
+	int aux_ind;
+	for (int i = 0; i < CELLS_PER_VERTEX; i++)
+	{
+		if (v.cells[i] != EMPTY_CONNECTION){
+			aux_ind = v.cells[i];
+			aux = cells[aux_ind].area - cells[aux_ind].preferred_area;
+			term1 += aux*aux;
+			term3 += 0.5 * cells[aux_ind].perimeter_contractility * cells[aux_ind].perimeter * cells[aux_ind].perimeter;
+		}
+	}
+	for (int i = 0; i < CELLS_PER_VERTEX; i++)
+	{
+		if (v.edges[i] != EMPTY_CONNECTION)
+		{
+			aux_ind = v.edges[i];
+			term2 += edges[aux_ind].tension * edges[aux_ind].length;
+		}
+	}
+	if (v.spring != EMPTY_CONNECTION){
+		term2 += springs[v.spring].tension * springs[v.spring].length;
+	}
+	return term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3;
+}//calcEnergy2
 //
 void Tissue::moveVertexBack(Vertex &v)
 {
