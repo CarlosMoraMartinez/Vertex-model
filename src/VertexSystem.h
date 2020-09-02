@@ -250,6 +250,7 @@ class Tissue{
 		void calculateCellCentroid(Cell& c);
 		double distance(int v1, int v2);
 		double calculateEnergy(Vertex& v);
+		double calculateEnergy2(Vertex& v);
 		void derivativeVertexPos(const Vertex &v, pointDerivative & pd);
 		void moveVertex(Vertex& v, float x, float y);
 		void moveVertexBack(Vertex& v);

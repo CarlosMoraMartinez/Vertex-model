@@ -769,48 +769,42 @@ void Tissue::setEdgeType(int e)
 
 void Tissue::setEdgeTension(int e)
 {
-	float mins, maxs, maxangle, angle, pex, pmaxan, punif, prand, tensionext, tensionrand;
-	int cellvar;
 	if (edges[e].type == EdgeType::tissue_boundary)
 		return;
 	if (!(cells[edges[e].cells[0]].vary_line_tension && cells[edges[e].cells[1]].vary_line_tension))
 		return;
+	float mins, maxs, maxangle, angle, pmaxan, punif; //pex, prand, tensionext, tensionrand
+	int cellvar;
 	mins = 0.5 * (cells[edges[e].cells[0]].edge_spatialmin_tension + cells[edges[e].cells[1]].edge_spatialmin_tension);
 	maxs = 0.5 * (cells[edges[e].cells[0]].edge_spatialmax_tension + cells[edges[e].cells[1]].edge_spatialmax_tension);
 	maxangle = 0.5 * (cells[edges[e].cells[0]].edge_maxangle + cells[edges[e].cells[1]].edge_maxangle);
-	tensionext = 0.5 * (cells[edges[e].cells[0]].edge_tension_external + cells[edges[e].cells[1]].edge_tension_external); //This is not an angle! is tension value set from gene Expression directly
 
 	if (vary_edge_tension_with_time)
-	{ //If proportion determined by angle varies with time
+	{ 
+		//If proportion determined by angle (pmaxan) varies with time, then proportion determined by angle is a value between
+		// mint and maxt, which depends on current time time
 		double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
 		time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
 		double mint = (edge_temporal_angle_efect_min.val[static_cast<int>(cells[edges[e].cells[0]].type)] + edge_temporal_angle_efect_min.val[static_cast<int>(cells[edges[e].cells[1]].type)]) * 0.5;
 		double maxt = (edge_temporal_angle_efect_max.val[static_cast<int>(cells[edges[e].cells[0]].type)] + edge_temporal_angle_efect_max.val[static_cast<int>(cells[edges[e].cells[1]].type)]) * 0.5;
-		pex = 0.0;
 		pmaxan = mint + (maxt - mint) * time_factor;
-		prand = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_random + cells[edges[e].cells[1]].edge_angle_prop_random);
-		punif = abs(1.0 - pmaxan); //prand only used in the end; this way it is easier to avoid negative proportions
+		punif = abs(1.0 - pmaxan); 
+/* 		if(counter_moves_accepted % 1000000 == 0) {
+			cout << "time_factor: "<< time_factor << ", min_time_effect: " << mint << ", max_time_effect: " << maxt << ", so maxang effect is: " << pmaxan << endl;
+		} */
 	}
 	else
-	{ //If proportion determined by angle does not vary with time
-		pex = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_external + cells[edges[e].cells[1]].edge_angle_prop_external);
+	{ 
+		//If proportion determined by angle does not vary with time, then pmaxan is coded directly as a parameter in cells touched by edge.
 		pmaxan = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_maxangle + cells[edges[e].cells[1]].edge_angle_prop_maxangle);
-		prand = 0.5 * (cells[edges[e].cells[0]].edge_angle_prop_random + cells[edges[e].cells[1]].edge_angle_prop_random);
 		punif = abs(1.0 - pmaxan);
 	} //end if time determines influence of angle
 
-	maxangle *= M_PI / 180;
+	maxangle *= M_PI / 180; //maxangle is coded in degrees
 	angle = atan2(vertices[edges[e].vertices[1]].y - vertices[edges[e].vertices[0]].y, vertices[edges[e].vertices[1]].x - vertices[edges[e].vertices[0]].x); //angle of edge
 	angle = abs(sin(0.5 * M_PI + abs(angle - maxangle)));																								 //Point of sin wave (from 0 to 1)
 	angle = mins + angle * (maxs - mins);																													 //Value of tension at this point of sin wave
-	//Now integrate with other factors influencing tension
-	tensionrand = prand > 0 ? mins + (maxs - mins) * ((double)std::rand() / (RAND_MAX)) : 0;
-	//Note: edges[e].tension is used because setEdgeType (which also sets default tension depending on edge type) has been called before. Otherwise it would behave as a sort of momentum
-	edges[e].tension = (punif * edges[e].base_tension + pmaxan * angle + pex * tensionext + prand * tensionrand) / (punif + pmaxan + pex + prand);
-	//cout << "maxt: " << maxs << ", mint: " << mins <<", tension: " << edges[e].tension << ", angle: " << 180*atan2(vertices[edges[e].vertices[1]].y - vertices[edges[e].vertices[0]].y, vertices[edges[e].vertices[1]].x - vertices[edges[e].vertices[0]].x)/M_PI << ", angle tension: " << angle << ", random: " << tensionrand << ", prand: " << prand << endl;
-/* 		if(isnan(edges[e].tension) || isnan(edges[e].base_tension)) {
-		cout << " TENSION IS NA AFTER DIVISION: " << edges[e].tension << " " << edges[e].base_tension << endl;
-		exit(1);} */
+	edges[e].tension = (punif * edges[e].base_tension + pmaxan * angle ) / (punif + pmaxan);
 }
 
 /*
@@ -1141,38 +1135,61 @@ inline double Tissue::calculateEnergy(Vertex &v)
 {
 	double term1 = 0, term2 = 0, term3 = 0;
 	double pref_area;
+	int aux_ind;
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
-		if (v.cells[i] != EMPTY_CONNECTION)
-			term1 += pow(cells[v.cells[i]].area / cells[v.cells[i]].preferred_area - 1, 2);
-	}
-	//Second term is edge length divided by preferred area of cell.
-	//Most of the time both cells will be of the same type, but sometimes one will be hinge and the other will be blade
-	//Therefore, I take the mean between the preferred areas of both cells,
-	//except for Edges in the border (obviously)
-
-	for (int i = 0; i < CELLS_PER_VERTEX; i++)
-	{
-
-		if (v.edges[i] != EMPTY_CONNECTION)
-		{
-			pref_area = edges[v.edges[i]].type == EdgeType::tissue_boundary ? edges[v.edges[i]].cells[0] == EMPTY_CONNECTION ? cells[edges[v.edges[i]].cells[1]].preferred_area
-																															 : cells[edges[v.edges[i]].cells[0]].preferred_area
-																			: (cells[edges[v.edges[i]].cells[0]].preferred_area + cells[edges[v.edges[i]].cells[1]].preferred_area) * 0.5;
-			term2 += edges[v.edges[i]].tension * edges[v.edges[i]].length / sqrt(pref_area);
+		if (v.cells[i] != EMPTY_CONNECTION){
+			aux_ind = v.cells[i];
+			term1 += pow(cells[aux_ind].area / cells[aux_ind].preferred_area - 1, 2);
+			term3 += 0.5 * cells[aux_ind].perimeter_contractility * cells[aux_ind].perimeter * cells[aux_ind].perimeter/ cells[aux_ind].preferred_area;
 		}
 	}
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
-		if (v.cells[i] != EMPTY_CONNECTION)
-			term3 += 0.5 * cells[v.cells[i]].perimeter_contractility * pow(cells[v.cells[i]].perimeter, 2) / cells[v.cells[i]].preferred_area;
+		if (v.edges[i] != EMPTY_CONNECTION)
+		{
+			aux_ind = v.edges[i];
+			pref_area = edges[aux_ind].type == EdgeType::tissue_boundary ? 
+								edges[aux_ind].cells[0] == EMPTY_CONNECTION ? 																					
+											cells[edges[aux_ind].cells[1]].preferred_area :
+											cells[edges[aux_ind].cells[0]].preferred_area :
+								(cells[edges[aux_ind].cells[0]].preferred_area + cells[edges[aux_ind].cells[1]].preferred_area) * 0.5;
+			term2 += edges[aux_ind].tension * edges[aux_ind].length / sqrt(pref_area);
+		}
 	}
-	if (v.spring != EMPTY_CONNECTION)
+	if (v.spring != EMPTY_CONNECTION){
 		term2 += springs[v.spring].tension * springs[v.spring].length / sqrt(pref_area);
-
+	}
 	return 0.5 * term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3;
 }
 //
+inline double Tissue::calculateEnergy2(Vertex &v)
+{
+	double term1 = 0, term2 = 0, term3 = 0;
+	double aux;
+	int aux_ind;
+	for (int i = 0; i < CELLS_PER_VERTEX; i++)
+	{
+		if (v.cells[i] != EMPTY_CONNECTION){
+			aux_ind = v.cells[i];
+			aux = cells[aux_ind].area - cells[aux_ind].preferred_area;
+			term1 += aux*aux;
+			term3 += 0.5 * cells[aux_ind].perimeter_contractility * cells[aux_ind].perimeter * cells[aux_ind].perimeter;
+		}
+	}
+	for (int i = 0; i < CELLS_PER_VERTEX; i++)
+	{
+		if (v.edges[i] != EMPTY_CONNECTION)
+		{
+			aux_ind = v.edges[i];
+			term2 += edges[aux_ind].tension * edges[aux_ind].length;
+		}
+	}
+	if (v.spring != EMPTY_CONNECTION){
+		term2 += springs[v.spring].tension * springs[v.spring].length;
+	}
+	return term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3;
+}//calcEnergy2
 void Tissue::moveVertexBack(Vertex &v)
 {
 	v.x = bufferMovement.x;
@@ -1217,18 +1234,34 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 			}
 		}
 	}
-	if (v.spring != EMPTY_CONNECTION){
+	if (v.spring != EMPTY_CONNECTION)
+	{
 		bufferMovement.spring_length = springs[v.spring].length;
 		springs[v.spring].length = distance(springs[v.spring].vertices[0], springs[v.spring].vertices[1]);
 	}
+/*  	double area, perimeter;
+	int previous;
+	int c; */ 
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{ // re-calculate cell areas
 		if (v.cells[i] != EMPTY_CONNECTION)
 		{
 			bufferMovement.cell_areas[i] = cells[v.cells[i]].area;
-			bufferMovement.cell_perimeters[i] = cells[v.cells[i]].perimeter; 
+			bufferMovement.cell_perimeters[i] = cells[v.cells[i]].perimeter;
 			cells[v.cells[i]].area = calculateCellArea(this->cells[v.cells[i]]);
 			cells[v.cells[i]].perimeter = calculateCellPerimeter(this->cells[v.cells[i]]);
+/* 			c = v.cells[i]; //calc area and perimeter outside of function
+ 			area = 0.0;
+			perimeter= 0.0;
+			previous = cells[c].num_vertices - 1;
+			for (int i = 0; i < cells[c].num_vertices; i++)
+			{
+				area += (vertices[cells[c].vertices[previous]].x * vertices[cells[c].vertices[i]].y - vertices[cells[c].vertices[previous]].y * vertices[cells[c].vertices[i]].x);
+				previous = i;
+				perimeter += edges[cells[c].edges[i]].length;
+			}
+			cells[c].area = area; 
+			cells[c].perimeter = perimeter;  */
 		}
 	}
 }
@@ -1316,7 +1349,9 @@ bool Tissue::tryMoveVertex()
 }*/
 inline double Tissue::expAdvance(double x, float exponent)
 {
-	return exponent > 0 ? (1 - exp(-pow(x, exponent))) / EXP_FACTOR : ((1 - exp(-pow(x, exponent))) - EXP_FACTOR) / (1 - EXP_FACTOR);
+	return exponent > 0 ? 
+	(1 - exp(-pow(x, exponent))) / EXP_FACTOR : 
+	((1 - exp(-pow(x, exponent))) - EXP_FACTOR) / (1 - EXP_FACTOR);
 }
 
 void Tissue::advanceSizeWithXcoordAndTime(int vertex_moved)
