@@ -1353,11 +1353,11 @@ bool Tissue::tryMoveVertex()
 		}
 		else if (time_controls_size && xcoord_controls_size)
 		{
-			advanceSizeWithXcoordAndTime(vertex_to_move);
+			advanceSizeWithCoordsAndTime(vertex_to_move);
 		}
 		else if (xcoord_controls_size)
 		{
-			advanceSizeWithXcoord(vertex_to_move);
+			advanceSizeWithCoords(vertex_to_move);
 		}
 		//Counters
 		if (vertices[vertex_to_move].energy <= bufferMovement.energy)
@@ -1399,7 +1399,7 @@ inline double Tissue::expAdvance(double x, float exponent)
 	return exponent > 0 ? (1 - exp(-pow(x, exponent))) / EXP_FACTOR : ((1 - exp(-pow(x, exponent))) - EXP_FACTOR) / (1 - EXP_FACTOR);
 }
 
-void Tissue::advanceSizeWithXcoordAndTime(int vertex_moved)
+void Tissue::advanceSizeWithCoordsAndTime(int vertex_moved)
 {
 	int caux;
 	//double auxprint;
@@ -1438,7 +1438,7 @@ void Tissue::advanceSizeWithXcoordAndTime(int vertex_moved)
 	}
 } //advanceSizeWithTimeAndXcoord
 
-void Tissue::advanceSizeWithXcoord(int vertex_moved)
+void Tissue::advanceSizeWithCoords(int vertex_moved)
 {
 	int caux;
 	float pos_factor = 0;

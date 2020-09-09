@@ -17,6 +17,7 @@ const float TEMPERATURE_POSITIVE_ENERGY = 0.005;
 const float TEMPERATURE_NEGATIVE_ENERGY = 0.1; //Acceptance probability is basically 1
 const bool TEMPERATURE_MEANS_PROPORTION_OF_ACCEPTANCE = true;
 //const float PROB_ACCEPT_NON_FAVORABLE = 0.05;
+const float DEFAULT_K = 0.001;
 const float LINE_TENSION_BLADE = -0.02;
 const float LINE_TENSION_HINGE = -0.01;
 const float LINE_TENSION_VEIN_HINGE = 7.0;
@@ -320,6 +321,7 @@ class Tissue{
 		float temperature_positive_energy;
 		float temperature_negative_energy; 
 		bool temperature_means_proportion_of_acceptance;
+		cell_type_param K;
 		cell_type_param line_tension;
 		cell_type_param line_tension_tissue_boundary;
 		float energy_term1, energy_term2, energy_term3;//, energy_term4;
@@ -338,7 +340,7 @@ class Tissue{
 		cell_type_param division_angle_longest_axis, division_angle_random_noise, division_angle_external, division_angle_external_degrees;
 
 		cell_type_param cell_cycle_limit, xcoord_size_control_factor;
-		bool autonomous_cell_cycle, start_cell_cycle_at_random, cell_cycle_controls_size, time_controls_size, xcoord_controls_size, keep_area_after_division;
+		bool autonomous_cell_cycle, start_cell_cycle_at_random, cell_cycle_controls_size, time_controls_size, xcoord_controls_size, ycoord_controls_size, keep_area_after_division;
 		float time_decrease_exponent, xcoord_decrease_exponent;
 		//float difference_flow_rate;
 
@@ -425,8 +427,8 @@ class Tissue{
 		double expAdvance(double x, float exponent);
 		void advanceCellCycle(int vertex_moved);
 		void advanceSizeWithTime(int vertex_moved);
-		void advanceSizeWithXcoordAndTime(int vertex_moved);
-		void advanceSizeWithXcoord(int vertex_moved);
+		void advanceSizeWithCoordsAndTime(int vertex_moved);
+		void advanceSizeWithCoords(int vertex_moved);
 		//double calculateTerm4Energy(Vertex &v, double old_x, double old_y);
 };
 

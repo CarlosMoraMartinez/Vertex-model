@@ -247,6 +247,7 @@ void Tissue::set_default_simulation_params()
 	t2_transition_critical_area = T2_TRANSITION_CRITICAL_AREA;
 	max_edge_length = MAX_EDGE_LENGTH;
 
+	for(int i = 0; i < NUM_CELL_TYPES; i++) K.val[i] =  DEFAULT_K;
 	for(int i = 0; i < NUM_CELL_TYPES; i++) preferred_area_initial.val[i] =  PREFERRED_AREA_INITIAL;
 	for(int i = 0; i < NUM_CELL_TYPES; i++) preferred_area_final.val[i] = PREFERRED_AREA_FINAL;
 	for(int i = 0; i < NUM_CELL_TYPES; i++) division_angle_random_noise.val[i] = DIVISION_ANGLE_RANDOM_NOISE;
@@ -403,9 +404,12 @@ void Tissue::initialize_params(std::string params_file)
 	time_controls_size = read_real_par(it) > 0;
 	time_controls_size = cell_cycle_controls_size ? false : time_controls_size;
 	time_decrease_exponent = read_real_par(it);
-	xcoord_controls_size = read_real_par(it) > 0;
+	int aux = read_real_par(it);
+	xcoord_controls_size = (aux == 1 || aux == 3);
+	ycoord_controls_size = (aux == 2 || aux == 3);
 	xcoord_decrease_exponent = read_real_par(it);
 
+	K = read_celltype_par(it, sz);
 	line_tension = read_celltype_par(it, sz);
 	line_tension_tissue_boundary = read_celltype_par(it, sz);	
 	perimeter_contract = read_celltype_par(it, sz);
@@ -1173,7 +1177,7 @@ inline double Tissue::calculateEnergy(Vertex &v)
 		if (v.cells[i] != EMPTY_CONNECTION){
 			aux_ind = v.cells[i];
 			aux = cells[aux_ind].area - cells[aux_ind].preferred_area;
-			term1 += aux*aux;
+			term1 += aux*aux*K.val[static_cast<int>(cells[aux_ind].type)];
 			term3 += 0.5 * cells[aux_ind].perimeter_contractility * cells[aux_ind].perimeter * cells[aux_ind].perimeter;
 		}
 	}
@@ -1301,17 +1305,17 @@ bool Tissue::tryMoveVertex()
 		{ //NOTE: Maybe make this before detecting changes so the effect is immediate? Otherwise cells have to wait until next round
 			advanceCellCycle(vertex_to_move);
 		}
-		if (time_controls_size && !xcoord_controls_size)
+		if (time_controls_size && !(xcoord_controls_size || ycoord_controls_size))
 		{
 			advanceSizeWithTime(vertex_to_move);
 		}
-		else if (time_controls_size && xcoord_controls_size)
+		else if (time_controls_size && (xcoord_controls_size || ycoord_controls_size))
 		{
-			advanceSizeWithXcoordAndTime(vertex_to_move);
+			advanceSizeWithCoordsAndTime(vertex_to_move);
 		}
-		else if (xcoord_controls_size)
+		else if (xcoord_controls_size || ycoord_controls_size)
 		{
-			advanceSizeWithXcoord(vertex_to_move);
+			advanceSizeWithCoords(vertex_to_move);
 		}
 		//Counters
 		if (vertices[vertex_to_move].energy <= bufferMovement.energy)
@@ -1354,13 +1358,13 @@ inline double Tissue::expAdvance(double x, float exponent)
 	((1 - exp(-pow(x, exponent))) - EXP_FACTOR) / (1 - EXP_FACTOR);
 }
 
-void Tissue::advanceSizeWithXcoordAndTime(int vertex_moved)
+void Tissue::advanceSizeWithCoordsAndTime(int vertex_moved)
 {
 	int caux;
 	//double auxprint;
 	double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
 	time_factor = expAdvance(time_factor, time_decrease_exponent); //(1 - exp(-pow(time_factor, time_decrease_exponent)))/EXP_FACTOR;
-	float pos_factor = 0, aux_area;
+	float pos_factor = 0, pos_factor_y = 0, aux_area, ini, fin;
 
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
@@ -1368,23 +1372,38 @@ void Tissue::advanceSizeWithXcoordAndTime(int vertex_moved)
 		if (caux == EMPTY_CONNECTION)
 			continue;
 		cells[caux].preferred_area = preferred_area_initial.val[static_cast<int>(cells[caux].type)] + (preferred_area_final.val[static_cast<int>(cells[caux].type)] - preferred_area_initial.val[static_cast<int>(cells[caux].type)]) * time_factor; //Caution: problems if step_mode is on
-		//auxprint = cells[caux].preferred_area;
+		if (cells[caux].type == CellType::vein_blade || cells[caux].type == CellType::blade)
+		{
+			if (keep_area_after_division)
+			{
+				cells[caux].preferred_area /= pow(2, cells[caux].num_divisions);
+			}
+			continue;
+		} //auxprint = cells[caux].preferred_area;
+		calculateCellCentroid(cells[caux]);
+		if (xcoord_controls_size)
+		{
+			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
+			pos_factor = pos_factor < 0 ? 0 : pos_factor / (hinge_max_xpos - hinge_min_xpos);
+		}
+		if (ycoord_controls_size)
+		{
+			pos_factor_y = cells[caux].centroid_y - hinge_min_ypos;
+			pos_factor_y = pos_factor_y < 0 ? 0 : pos_factor_y / (hinge_max_ypos - hinge_min_ypos);
+			pos_factor = xcoord_controls_size ? 0.5 * (pos_factor_y + pos_factor) : pos_factor_y;
+		}
 		if (cells[caux].type == CellType::vein_hinge)
 		{
-			calculateCellCentroid(cells[caux]);
-			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
-			pos_factor = pos_factor < 0 ? 0 : pos_factor / (hinge_max_xpos - hinge_min_xpos);
-			aux_area = preferred_area_initial.val[static_cast<int>(CellType::vein_blade)] + (preferred_area_final.val[static_cast<int>(CellType::vein_blade)] - preferred_area_initial.val[static_cast<int>(CellType::vein_blade)]) * time_factor;
-			cells[caux].preferred_area += (aux_area - cells[caux].preferred_area) * expAdvance(pos_factor, xcoord_decrease_exponent);
+			ini = preferred_area_initial.val[static_cast<int>(CellType::vein_blade)];
+			fin = preferred_area_final.val[static_cast<int>(CellType::vein_blade)];
 		}
-		else if (cells[caux].type == CellType::hinge)
+		else //if (cells[caux].type == CellType::hinge) //unnecessary
 		{
-			calculateCellCentroid(cells[caux]);
-			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
-			pos_factor = pos_factor < 0 ? 0 : pos_factor / (hinge_max_xpos - hinge_min_xpos);
-			aux_area = preferred_area_initial.val[static_cast<int>(CellType::blade)] + (preferred_area_final.val[static_cast<int>(CellType::blade)] - preferred_area_initial.val[static_cast<int>(CellType::blade)]) * time_factor;
-			cells[caux].preferred_area += (aux_area - cells[caux].preferred_area) * expAdvance(pos_factor, xcoord_decrease_exponent);
+			ini = preferred_area_initial.val[static_cast<int>(CellType::blade)];
+			fin = preferred_area_final.val[static_cast<int>(CellType::blade)];
 		}
+		aux_area = ini + (fin - ini) * time_factor;
+		cells[caux].preferred_area += (aux_area - cells[caux].preferred_area) * expAdvance(pos_factor, xcoord_decrease_exponent);
 		if (keep_area_after_division)
 		{
 			cells[caux].preferred_area /= pow(2, cells[caux].num_divisions);
@@ -1393,39 +1412,46 @@ void Tissue::advanceSizeWithXcoordAndTime(int vertex_moved)
 	}
 } //advanceSizeWithTimeAndXcoord
 
-void Tissue::advanceSizeWithXcoord(int vertex_moved)
+
+void Tissue::advanceSizeWithCoords(int vertex_moved)
 {
 	int caux;
-	float pos_factor = 0;
-
+	float pos_factor = 0, pos_factor_y = 0, ini, fin;
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
 		caux = vertices[vertex_moved].cells[i];
 		if (caux == EMPTY_CONNECTION)
 			continue;
-		if (cells[caux].type == CellType::vein_hinge)
-		{
-			calculateCellCentroid(cells[caux]);
-			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
-			pos_factor = pos_factor < 0 ? 0 : pos_factor / (hinge_max_xpos - hinge_min_xpos);
-			cells[caux].preferred_area = preferred_area_initial.val[static_cast<int>(CellType::vein_hinge)] + (preferred_area_initial.val[static_cast<int>(CellType::vein_blade)] - preferred_area_initial.val[static_cast<int>(CellType::vein_hinge)]) * expAdvance(pos_factor, xcoord_decrease_exponent); //(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
-			if (keep_area_after_division)
-			{
-				cells[caux].preferred_area /= pow(2, cells[caux].num_divisions);
-			}
-			//cout << "HingeVein cell: " << " x abs = " << cells[caux].centroid_x << ", x rel = " << pos_factor << ", pref area = " << cells[caux].preferred_area << endl;
+		if (cells[caux].type == CellType::vein_blade || cells[caux].type == CellType::blade){
+			continue;
 		}
 		else if (cells[caux].type == CellType::hinge)
 		{
-			calculateCellCentroid(cells[caux]);
+			ini = preferred_area_initial.val[static_cast<int>(CellType::hinge)];
+			fin = preferred_area_initial.val[static_cast<int>(CellType::blade)];
+		}
+		else //if (cells[caux].type == CellType::vein_hinge) //not necessary
+		{
+			ini = preferred_area_initial.val[static_cast<int>(CellType::vein_hinge)];
+			fin = preferred_area_initial.val[static_cast<int>(CellType::vein_blade)];
+			//cout << "HingeVein cell: " << " x abs = " << cells[caux].centroid_x << ", x rel = " << pos_factor << ", pref area = " << cells[caux].preferred_area << endl;
+		}
+		calculateCellCentroid(cells[caux]);
+		if (xcoord_controls_size)
+		{
 			pos_factor = cells[caux].centroid_x - hinge_min_xpos;
 			pos_factor = pos_factor < 0 ? 0 : pos_factor / (hinge_max_xpos - hinge_min_xpos);
-			cells[caux].preferred_area = preferred_area_initial.val[static_cast<int>(CellType::hinge)] + (preferred_area_initial.val[static_cast<int>(CellType::blade)] - preferred_area_initial.val[static_cast<int>(CellType::hinge)]) * expAdvance(pos_factor, xcoord_decrease_exponent); //(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
-			//cout << "Hinge cell: " << " x abs = " << cells[caux].centroid_x << ", x rel = " << pos_factor << ", pref area = " << cells[caux].preferred_area << endl;
-			if (keep_area_after_division)
-			{
-				cells[caux].preferred_area /= pow(2, cells[caux].num_divisions);
-			}
+		}
+		if (ycoord_controls_size)
+		{
+			pos_factor_y = cells[caux].centroid_y - hinge_min_ypos;
+			pos_factor_y = pos_factor_y < 0 ? 0 : pos_factor_y / (hinge_max_ypos - hinge_min_ypos);
+			pos_factor = xcoord_controls_size ? 0.5 * (pos_factor_y + pos_factor) : pos_factor_y;
+		}
+		cells[caux].preferred_area = ini + (fin - ini) * expAdvance(pos_factor, xcoord_decrease_exponent); //(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
+		if (keep_area_after_division)
+		{
+			cells[caux].preferred_area /= pow(2, cells[caux].num_divisions);
 		}
 	}
 } //advanceSizeWithXcoord
@@ -2431,7 +2457,7 @@ void Tissue::make_t1(Rearrangement &r)
 	Cell *sp1 = &this->cells[only_v1];
 	Cell *sp2 = &this->cells[only_v2];
 
-	if (cc1->num_vertices < 4 || cc2->num_vertices < 4)
+	if (cc1->num_vertices < 4 || cc2->num_vertices < 4 || sp1->num_vertices >= MAX_SIDES_PER_CELL || sp2->num_vertices >= MAX_SIDES_PER_CELL)
 		return; //One of the cells can't lose any other vertex
 	//t1_rotate_edge(v1, v2, edge, cc1, cc2, sp1, sp2);
 	t1_rotate_edge90degrees(v1, v2, edge);
