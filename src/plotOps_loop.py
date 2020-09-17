@@ -19,6 +19,8 @@ RED = '#ff3333'
 WHITE = '#ffffff'
 BLACK = '#000000'
 
+STATIC_COLS=[RED, WHITE, BLUE, GRAY]
+
 
 bladetype = 0
 hingetype = 1
@@ -125,8 +127,8 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
         spcolor = springcols[int(s[2])] if len(s) > 2 else RED
         ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color = spcolor)
     for p in pointsList.keys():
-        if(pointsList[p][2] == 0):
-            ax.scatter(pointsList[p][0], pointsList[p][1], color = RED, s = 2)       
+        if(pointsList[p][2] != 1):
+            ax.scatter(pointsList[p][0], pointsList[p][1], color = STATIC_COLS[pointsList[p][2] ], s = 2)       
     if(add_vnums):
         for i in pointsList.keys():
             ax.annotate(i, pointsList[i][0:2], size=1)
@@ -213,6 +215,16 @@ def getLimits(pointsList):
     ymax += 0.1*ry
     print("SETTING LIMITS: xmin=%2f, ymin=%2f, xmax=%2f, ymax=%2f"%( xmin, ymin, xmax, ymax))
     return (xmin, ymin, xmax, ymax)
+
+
+def getFilename(inputname, fnum):
+    if(fnum == -999):
+        return inputname
+    if('*' in inputname):
+        name = inputname.replace('*', str(fnum))
+    else:
+        name = inputname + str(fnum)
+    return name
 ########################################################################################################################
 # Generating the multipolygon object
 ########################################################################################################################
@@ -222,7 +234,7 @@ parser.add_argument('-i', '--Inputname', metavar='inputname', type=str, default 
                     help='Identifier. Used as prefix of input files of cell coordinates. ')
 parser.add_argument('-i2', '--Input_expr', metavar='input_expr', type=str, default = "", 
                     help='Identifier. Used as prefix of input files of gene expression. ')
-parser.add_argument('-s', '--Start_index', metavar='start', type=int, default = 0, 
+parser.add_argument('-s', '--Start_index', metavar='start', type=int, default = -999, 
                     help='First file to read')
 parser.add_argument('-e', '--End_index', metavar='end', type=int, default = 1000, 
                     help='Last file to read')
@@ -249,10 +261,7 @@ def main():
         step = -1
     limsSet = False
     for fnum in range(args.Start_index, args.End_index, step):
-        if(fnum >= 0):
-            name = args.Inputname + str(fnum)
-        else:
-            name = args.Inputname
+        name = getFilename(args.Inputname, fnum)
         if(not os.path.isfile(name + ".points") or not os.path.isfile(name + ".cells")):
             continue;
         numPoints, pointsList = readPointsFile(name)
