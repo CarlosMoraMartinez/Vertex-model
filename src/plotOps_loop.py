@@ -119,8 +119,9 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     plt.xlim(limits[0], limits[2])
     plt.ylim(limits[1], limits[3])
     #col = np.zeros((len(grid), 6, 2))
-    pc = PolyCollection(grid, facecolors= [wingcols[celltypes[j]] for j in range(len(grid))], alpha = 0.6)
-    pc.set_edgecolors("black")
+    lww = 10000/len(celltypes)
+    pc = PolyCollection(grid, facecolors= [wingcols[celltypes[j]] for j in range(len(grid))], alpha = 0.6, edgecolors='white', linewidths = lww)
+    #pc.set_edgecolors("black")
     ax.add_collection(pc)
 
     for s in sprList:
