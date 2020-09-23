@@ -108,22 +108,23 @@ def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, n
 ##Not tested, probably doesn't works
 def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name, limits, figg=None, printsvg=False):
     from matplotlib.collections import PolyCollection
-
     if(figg is None):
         fig, ax = plt.subplots()
         ax.set_aspect('equal')
     else:
         fig, ax = figg
         ax.collections.clear()
-
     plt.xlim(limits[0], limits[2])
     plt.ylim(limits[1], limits[3])
     #col = np.zeros((len(grid), 6, 2))
     lww = 10000/len(celltypes)
-    pc = PolyCollection(grid, facecolors= [wingcols[celltypes[j]] for j in range(len(grid))], alpha = 0.6, edgecolors='white', linewidths = lww)
+    if(expr):
+        alphas = expr
+    else:
+        alphas = 0.7
+    pc = PolyCollection(grid, facecolors= [wingcols[celltypes[j]] for j in range(len(grid))], alpha = alphas, edgecolors='white', linewidths = lww)
     #pc.set_edgecolors("black")
     ax.add_collection(pc)
-
     for s in sprList:
         spcolor = springcols[int(s[2])] if len(s) > 2 else RED
         ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color = spcolor)
@@ -133,7 +134,6 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     if(add_vnums):
         for i in pointsList.keys():
             ax.annotate(i, pointsList[i][0:2], size=1)
-
     plt.savefig(name + '.png')
     if(printsvg):
         plt.savefig(name + '.svg', format='svg', dpi=1200)
@@ -141,20 +141,19 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     
 
 
-def plot_expr(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name, color_expr):
+def plot_expr(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name, color_expr, limits):
     for g in color_expr:    
         xx = expr[:,g].tolist()
         #xmin = min(xx)
         xmax = max(xx)
         xx = [i/xmax for i in xx]
         #print("_____ ", xx)
-        plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, xx, name + 'g' + str(g))
+        plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, xx, name + 'g' + str(g), limits)
 
 
 def readPointsFile(name):
     pointsFile = open(name + ".points", "r")
     numPoints = int(pointsFile.readline())
-
     # This is the list of points
     pointsList = {}#np.zeros((numPoints,2))
     for row in pointsFile:
@@ -166,7 +165,6 @@ def readPointsFile(name):
 def readCellsFile(name, plot_cell_types, pointsList):
     cellsFile = open(name + ".cells", "r")
     numCells, numVerticesCell = [int(each) for each in cellsFile.readline().split()]
-
     polygonList = []
     celltypes = []
     for row in cellsFile:
@@ -279,7 +277,7 @@ def main():
             fig = plot_grid2(111, polygonList, pointsList, sprList, add_vnums, celltypes, [] ,name, limits, printsvg=args.PlotSVG)  
             if(len(color_expr) > 0 and args.Input_expr != ""):
                 xprList = readExpr(args.Input_expr + str(fnum))
-                plot_expr(111, polygonList, pointsList, sprList, add_vnums, celltypes, xprList, name, color_expr)
+                plot_expr(111, polygonList, pointsList, sprList, add_vnums, celltypes, xprList, name, color_expr, limits)
         except:
             print("Error while plotting")
         print("%d printed"%fnum)

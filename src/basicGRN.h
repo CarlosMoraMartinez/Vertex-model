@@ -67,11 +67,11 @@ class basicGRN {
     void readExpressionFile(std::string expr_file);
     void initializeExpression();
     //Each of this function calculates increment (derivative) of a type of gene.
-    void intracel_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k);
-    void diffusible_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k); 
-    void cell_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k);
-    void edge_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k);
-    void vertex_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k);
+    void intracel_getIncrement(GXMatrix<double>& current_expr, int gene, int k);
+    void diffusible_getIncrement(GXMatrix<double>& current_expr, int gene, int k); 
+    void cell_property_getIncrement(GXMatrix<double>& current_expr, int gene, int k);
+    void edge_property_getIncrement(GXMatrix<double>& current_expr, int gene, int k);
+    void vertex_property_getIncrement(GXMatrix<double>& current_expr, int gene, int k);
 
     double getDegreesFromGradient(int cell);
 
@@ -105,8 +105,8 @@ class basicGRN {
       unsigned int division_angle_external = 5;
     } property_index;
 
-   using increment_function = void(basicGRN::*)(GXMatrix<double>&, int, int, int);
-   std::map<GeneType, increment_function> increment_functions;
+   //using increment_function = void(basicGRN::*)(GXMatrix<double>&, int, int, int);
+   //std::map<GeneType, increment_function> increment_functions;
     
 };
 

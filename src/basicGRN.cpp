@@ -5,11 +5,11 @@
 using namespace std;
 
 basicGRN::basicGRN(){
-    increment_functions.emplace(GeneType::intracel, &basicGRN::intracel_getIncrement);
+/*     increment_functions.emplace(GeneType::intracel, &basicGRN::intracel_getIncrement);
     increment_functions.emplace(GeneType::diffusible, &basicGRN::diffusible_getIncrement);
     increment_functions.emplace(GeneType::cell_property, &basicGRN::cell_property_getIncrement);
     increment_functions.emplace(GeneType::edge_property, &basicGRN::edge_property_getIncrement);
-    increment_functions.emplace(GeneType::vertex_property, &basicGRN::vertex_property_getIncrement);
+    increment_functions.emplace(GeneType::vertex_property, &basicGRN::vertex_property_getIncrement); */
 }
 
 basicGRN::basicGRN(std::string sname): basicGRN(){
@@ -218,18 +218,40 @@ void basicGRN::get_current_cell_grid_params(){
 } // end of get_current_cell_grid_params
 
 void basicGRN::activateAll(GXMatrix<double>& current_expr, int k){
-        increment_function f;
-        for(int c = 0; c < num_cells; c++){
-            for(int g = 0; g < num_genes; g++){
-                if(params.constant_expr[cell_grid->cells[c].type][g] < 0){
-                   // cout << "    A2, cell of type: " << static_cast<int>(cell_grid->cells[c].type) << ", gene type: " << static_cast<int>(gene_types[g]) << endl;
-                    f = increment_functions[gene_types[g]];
-                    (this->*f)(current_expr, c, g, k);
-                }/*else{
-                    rungekutta_parts[k](c, g) = 0;
-                }*/ // Not necessary (runge-kutta matrices already initialized to 0) 
+    //increment_function f;
+    //for(int c = 0; c < num_cells; c++){
+    for (int g = 0; g < num_genes; g++)
+    {
+        //if (params.constant_expr[cell_grid->cells[c].type][g] < 0)
+        //{
+        // cout << "    A2, cell of type: " << static_cast<int>(cell_grid->cells[c].type) << ", gene type: " << static_cast<int>(gene_types[g]) << endl;
+        switch (gene_types[g])
+        {
+        case GeneType::cell_property:
+            cell_property_getIncrement(current_expr, g, k);
+            break;
+        case GeneType::diffusible:
+            diffusible_getIncrement(current_expr, g, k);
+             break;
+        case GeneType::edge_property:
+            edge_property_getIncrement(current_expr, g, k);
+             break;
+        case GeneType::intracel:
+            intracel_getIncrement(current_expr, g, k);
+             break;
+        case GeneType::vertex_property:
+            vertex_property_getIncrement(current_expr, g, k);
+             break;
         }
+        //f = increment_functions[gene_types[g]];
+        //(this->*f)(current_expr, c, g, k);
+        //}
+        /*else{
+                    rungekutta_parts[k](c, g) = 0;
+                }*/
+        // Not necessary (runge-kutta matrices already initialized to 0)
     }
+    //}
 }
 
 void basicGRN::simulateVertexAndNetwork(std::default_random_engine& generator, std::uniform_real_distribution<double>& unif){
@@ -289,19 +311,26 @@ void basicGRN::runge_kutta_4th(){
     // Unless (as should be done), a different "gene" is used for each type of edge
 }
 
-void basicGRN::intracel_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k){
-    double res = 0;
-    CellType ct = cell_grid->cells[cell].type;
-    for(int reg : regulators[ct][gene]){
-        res += current_expr(cell, reg)*interactions[ct](gene, reg);
+void basicGRN::intracel_getIncrement(GXMatrix<double>& current_expr, int gene, int k){
+    double res;
+    for (int cell = 0; cell < num_cells; cell++)
+    {
+        if (params.constant_expr[cell_grid->cells[cell].type][gene] >= 0)
+            continue;
+        res = 0;
+        CellType ct = cell_grid->cells[cell].type;
+        for (int reg : regulators[ct][gene])
+        {
+            res += current_expr(cell, reg) * interactions[ct](gene, reg);
+        }
+        //res = 1/(1 + exp(-1*res)) - params.degr[ct][gene]*current_expr(cell, gene);
+        //res = tanh(res);
+        res = res / (res + params.km[ct][gene]);
+        //Negative transcription is not possible. The only negative term is degradation.
+        res -= params.degr[ct][gene] * current_expr(cell, gene);
+        //Only some parameters can be negative
+        rungekutta_parts[k](cell, gene) = res;
     }
-    //res = 1/(1 + exp(-1*res)) - params.degr[ct][gene]*current_expr(cell, gene);
-    //res = tanh(res);
-    res = res/(res + params.km[ct][gene]);
-    //Negative transcription is not possible. The only negative term is degradation.
-    res -= params.degr[ct][gene]*current_expr(cell, gene);
-    //Only some parameters can be negative
-    rungekutta_parts[k](cell, gene) = res;
 }
 
 void basicGRN::checkNegativeValues(GXMatrix<double>& m){
@@ -317,48 +346,53 @@ void basicGRN::checkNegativeValues(GXMatrix<double>& m){
 }
 
 //Tested manually for various cells during runge-kutta k(0) and k(1) for 2 iterations 
-void basicGRN::diffusible_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k){
-    intracel_getIncrement(current_expr, cell, gene, k);
-    //cout << "        A2.6" << endl;
-    const Cell *c = &cell_grid->cells[cell];
-    //cout << "        A2.7" << endl;
-    const Edge *edge;
-    double diff = 0;
-    //double difaux;
+void basicGRN::diffusible_getIncrement(GXMatrix<double>& current_expr, int gene, int k){
+    intracel_getIncrement(current_expr, gene, k);
+    Cell *c;
+    Edge *edge;
+    double diff;
     int nei;
-    //cout << "        A2.8" << endl;
-    for(int e = 0; e < c->num_vertices; e++){
-        edge = &cell_grid->edges[c->edges[e]];
-        nei = edge->cells[0] == c->ind ? edge->cells[1] : edge->cells[0];
-        if(nei == EMPTY_CONNECTION){
+    for (int cell = 0; cell < num_cells; cell++)
+    {
+        if (params.constant_expr[cell_grid->cells[cell].type][gene] >= 0)
             continue;
-        }else{
+        //cout << "        A2.6" << endl;
+        c = &cell_grid->cells[cell];
+        //cout << "        A2.7" << endl;
+        diff = 0;
+        //double difaux;
+        //cout << "        A2.8" << endl;
+        for (int e = 0; e < c->num_vertices; e++)
+        {
+            edge = &cell_grid->edges[c->edges[e]];
+            nei = edge->cells[0] == c->ind ? edge->cells[1] : edge->cells[0];
+            if (nei == EMPTY_CONNECTION)
+                continue;
             //diff += (current_expr(cell, gene)/c->area - current_expr(nei, gene)/cell_grid->cells[nei].area)*edge->length; //normalizing by area
             //difaux = (current_expr(cell, gene)- current_expr(nei, gene))*edge->length;
-            diff += (current_expr(cell, gene)- current_expr(nei, gene))*edge->length;
+            diff += (current_expr(cell, gene) - current_expr(nei, gene)) * edge->length;
             //cout << "            A2.9 cell: " << cell << ", gene: " << gene << ", nei: " << nei << ", Diff this: " << difaux << ", diff acum: " << diff<<endl;
-	    //cout << "            Edge: " << edge->ind << " Edge length: " << edge->length << "Current expr this :" << current_expr(cell, gene) << "Current expr nei :" << current_expr(nei, gene) << endl;
+            //cout << "            Edge: " << edge->ind << " Edge length: " << edge->length << "Current expr this :" << current_expr(cell, gene) << "Current expr nei :" << current_expr(nei, gene) << endl;
+            //cout << "            A2.10" << endl;
         }
-        //cout << "            A2.10" << endl;
+        //cout << "        A2.11, rk " << k <<": " << rungekutta_parts[k](cell, gene) << endl;
+        rungekutta_parts[k](cell, gene) = rungekutta_parts[k](cell, gene) - params.diff_rate[c->type][gene] * diff / c->perimeter; //*power(diff, 2);
+        //cout << "        A2.12" << k <<": " << rungekutta_parts[k](cell, gene) << endl;
+        //cout << "**" << endl;
     }
-    //cout << "        A2.11, rk " << k <<": " << rungekutta_parts[k](cell, gene) << endl;
-    rungekutta_parts[k](cell, gene) = rungekutta_parts[k](cell, gene) - params.diff_rate[c->type][gene]*diff / c->perimeter; //*power(diff, 2);
-    //cout << "        A2.12" << k <<": " << rungekutta_parts[k](cell, gene) << endl;
-    //cout << "**" << endl;
 } //diffussible
 
-void basicGRN::cell_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k){
+void basicGRN::cell_property_getIncrement(GXMatrix<double>& current_expr, int gene, int k){
     //cout << "        A2.13" << endl;
-    intracel_getIncrement(current_expr, cell, gene, k);
+    intracel_getIncrement(current_expr, gene, k);
 }
-
-void basicGRN::edge_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k){
+void basicGRN::edge_property_getIncrement(GXMatrix<double>& current_expr, int gene, int k){
     //cout << "        A2.14" << endl;
-    intracel_getIncrement(current_expr, cell, gene, k);
+    intracel_getIncrement(current_expr, gene, k);
 }
-void basicGRN::vertex_property_getIncrement(GXMatrix<double>& current_expr, int cell, int gene, int k){
+void basicGRN::vertex_property_getIncrement(GXMatrix<double>& current_expr, int gene, int k){
     //cout << "        A2.15" << endl;
-    intracel_getIncrement(current_expr, cell, gene, k);
+    intracel_getIncrement(current_expr, gene, k);
 }
 void basicGRN::setNewParametersToCells(){
     double angle_total;
