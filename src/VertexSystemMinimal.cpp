@@ -729,7 +729,7 @@ void Tissue::setEdgeType(int e)
 	else if ((cells[c1].type == CellType::hinge && cells[c2].type == CellType::blade) || (cells[c1].type == CellType::blade && cells[c2].type == CellType::hinge))
 	{
 		edges[e].type = EdgeType::hinge;
-		edges[e].tension = 0.5 * (line_tension.val[static_cast<int>(CellType::hinge)] + line_tension.val[static_cast<int>(CellType::blade)]);
+		edges[e].tension = 0.5 * (line_tension.val[static_cast<int>(CellType::vein_hinge)] + line_tension.val[static_cast<int>(CellType::vein_blade)]);
 		edges[e].can_transition = false;
 	}
 	else if ((cells[c1].type == CellType::blade && cells[c2].type == CellType::vein_blade) ||
