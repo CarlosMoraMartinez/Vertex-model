@@ -3871,7 +3871,7 @@ void Tissue::writePointsFile(std::string fname)
 	for (Vertex v : vertices)
 	{
 		if (!v.dead)
-			fo << v.x << "\t" << v.y << "\t" << v.ind << "\t" << v.movable << "\n";
+			fo << v.x << "\t" << v.y << "\t" << v.ind << "\t" << (v.movable ? v.movable_x && v.movable_y? 1 : v.movable_x? 2 : 3 : 0) << "\n";
 	}
 	fo.close();
 }
@@ -3922,7 +3922,8 @@ void Tissue::printCelltypeParam(cell_type_param par, std::string name){
 //Overloading of << operator for VERTICES. Useful to print
 std::ostream &operator<<(std::ostream &out, const Vertex &v)
 {
-	out << v.ind << "\t" << v.x << "\t" << v.y << "\t" << v.energy << "\t" << v.movable << "\t" << v.spring << "\t";
+	int vmovable = v.movable ? v.movable_x && v.movable_y? 1 : v.movable_x? 2 : 3 : 0;
+	out << v.ind << "\t" << v.x << "\t" << v.y << "\t" << v.energy << "\t" << vmovable << "\t" << v.spring << "\t";
 	for (int i = 0; i < sizeof(v.cells) / sizeof(v.cells[0]); i++)
 	{ // print cells touching vertex separated by ','
 		out << v.cells[i] << ",";
