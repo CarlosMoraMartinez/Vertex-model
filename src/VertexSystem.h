@@ -51,7 +51,7 @@ const float LENGTH_ROTATED_EDGE = 0.5*T1_TRANSITION_CRITICAL_DISTANCE*1.2; //aft
 
 // Implementation constants
 const unsigned short CELLS_PER_VERTEX = 3;
-const unsigned short MAX_SIDES_PER_CELL = 30; //Maybe pass as argument instead of constant?
+const unsigned short MAX_SIDES_PER_CELL = 100; //Maybe pass as argument instead of constant?
 const unsigned short VERTEX_PER_EDGE = 2;
 const int EMPTY_CONNECTION = -999;  //Value to initialize arrays (cells in vertex, etc)
 const int RANDOM_SEED = 1234;
