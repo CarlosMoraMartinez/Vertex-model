@@ -4,7 +4,7 @@
 
 maxCPU=32
 i=0
-wingarray=(etournay1_moveX) 
+wingarray=(etournay1_moveX2) 
 #small7-16df s10-3-4 bud5_3y
 #strechbig1_3cpv (bud0 hex2020_1_s5.0_20x20_n0.4) #(wing2E wing2Edumpy) #(wing1D wingDumpy2) #wing2F wing2Edumpy #bud3b bud2 iso20_3_df gr1
 
