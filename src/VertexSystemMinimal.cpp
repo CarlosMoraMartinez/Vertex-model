@@ -2101,12 +2101,18 @@ void Tissue::make_divide_cell(Rearrangement &r)
 		return;
 
 	double x1, x2, y1, y2;
-	int e1 = -1, e2 = -1;
+	int e1 = EMPTY_CONNECTION, e2 = EMPTY_CONNECTION;
 	if (!getDivisionPoints(cell, x1, x2, y1, y2, e1, e2))
 	{
 		return;
 	}
-
+	if(e1 == EMPTY_CONNECTION || e2 == EMPTY_CONNECTION)
+	{
+		if(REPORT_OUT > 1){
+			cout << "At make_divide_cell: after getDivisionPoints edge is not found"<< endl;
+		}
+		return;
+	}
 	int newvind1 = newVertex(x1, y1);
 	int newvind2 = newVertex(x2, y2); //create new vertices that are going to be positioned at (x1, y1) and (x2, y2) insideedges e1 and e2
 	int newcind = newCell();
