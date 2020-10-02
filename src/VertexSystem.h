@@ -68,6 +68,7 @@ const std::string CELLS_FILE_EXTENSION = ".cells";
 const std::string CELLTAB_FILE_EXTENSION = ".celltab";
 const std::string EDGE_FILE_EXTENSION = ".edges";
 const std::string SPRING_FILE_EXTENSION = ".spr";
+const std::string SPRINGTAB_FILE_EXTENSION = ".sprtab";
 const std::string PARAMS_FILE_EXTENSION = ".vp";
 
 const bool T1_ACTIVE = true;
@@ -99,7 +100,7 @@ const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tper
 	std::string("edge_angle_prop_random\tedge_tension_external\t")+
 	std::string("edge_maxangle\tedge_spatialmax_tension\tedge_spatialmin_tension\n");
 const std::string EDGE_HEADER = "ind\ttype\tlength\ttension\tbase_tension\tvertices\tcells\n";
-
+const std::string SPR_HEADER = "ind\ttype\ttension\tlength\tcompartment\tstatic_vertex\tmovable_vertex\tx_static\ty_static\tx_movable\ty_movable\n";
 //Enum class to define types of cells 
 enum class CellType{blade = 0, hinge = 1, vein_blade = 2, vein_hinge = 3};
 
@@ -282,6 +283,7 @@ class Tissue{
 		void writeCellsFile(std::string fname);
 		void writeCellDataTable(std::string fname);
 		void writeEdgeDataTable(std::string fname);
+		void writeSpringDataTable(std::string fname);
 		void writePointsFile(std::string fname);
 		void writeSpringsFile(std::string fname);
 		void writeAllData(std::string fname);
@@ -299,7 +301,12 @@ class Tissue{
 		void restoreHinge();
 		void restoreVeins();
 		void restoreShape();
-
+		//Methods to set spring tensions according to gradients
+		void setSpringTension_mode1(); // A-P compartments (uses tension determined by spring type)
+		void setSpringTension_mode2(); // P-D gradient
+		void setSpringTension_mode3(); //P-D gradient multiplied by a factor in each compartment
+		void setSpringTension_mode4(); // A different (independent) gradient in each compartment
+ 
 		std::vector<int> getNeighbourCells(int cell);
 		
 		friend std::ostream& operator<<(std::ostream& out, const Tissue& t); //Don't worry about these 4 lines, only important for output
@@ -326,9 +333,22 @@ class Tissue{
 		cell_type_param line_tension_tissue_boundary;
 		float energy_term1, energy_term2, energy_term3;//, energy_term4;
 		//float spring_constant;
-        spring_type_param spring_type_constants;
-        spring_type_param spring_type_min_positions;
-		float add_static_to_hinge;
+        spring_type_param spring_type_constants; //Used if spring_tension_mode ==0
+        spring_type_param spring_type_min_positions; //Used when going from expansion to hinge contraction
+		float add_static_to_hinge; //Used when going from expansion to hinge contraction, to set static vertices in anterior hinge
+		int spring_tension_mode; //0: with tension for each type, 1: A-P compartments, 2: PD gradient, 3: AP compartments and PD gradient, 4:Different gradients in A or P
+		float spring_posterior_comparment_region; //used if spring_tension_mode is 1 or 3
+		float spring_posterior_compartment_factor; //used if spring_tension_mode is 1 or 3
+		float spring_gradient_min_tension; //used if spring_tension_mode is 2 or 3
+		float spring_gradient_max_tension; //used if spring_tension_mode is 2 or 3
+		float spring_gradient_exponent; //used if spring_tension_mode is 2 or 3
+		float spring_gradient_min_tension_P; //used if spring_tension_mode is 4
+		float spring_gradient_max_tension_P; //used if spring_tension_mode is 4
+		float spring_gradient_exponent_P; //used if spring_tension_mode is 4
+		float AP_compartment_limit;	
+		int mode_to_order_springs_PD; //used if spring_tension_mode is 2 or 3
+
+		
 		cell_type_param perimeter_contract;
 
 		float t1_transition_critical_distance; 
@@ -429,6 +449,8 @@ class Tissue{
 		void advanceSizeWithTime(int vertex_moved);
 		void advanceSizeWithCoordsAndTime(int vertex_moved);
 		void advanceSizeWithCoords(int vertex_moved);
+		std::vector<float> getSpringGradientFactor_mode1(std::vector<int> &vert_indices);
+		std::vector<float> getSpringGradientFactor_mode2(std::vector<int> &vert_indices);
 		//double calculateTerm4Energy(Vertex &v, double old_x, double old_y);
 };
 
