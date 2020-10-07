@@ -250,7 +250,7 @@
 >spring_tension_mode # 0: from parameter spring_tension; 1: A-P compartments; 2 P-D gradient; 3: A-P compartment and P-D gradient; 4: different gradients for A and P. Mode 1 is the only one using spring tension by types
 3
 >spring_posterior_comparment_region  #If spring_tension_mode = 1 or 3, used to define the posterior compartment (by y <= this param*height)
-0.4,0.5
+0.5
 >spring_posterior_compartment_factor #If spring_tension_mode = 1 or 3, multiply posterior tension by this number
 0.1,0.5,0.7
 >spring_gradient_min_tension #
@@ -258,7 +258,7 @@
 >spring_gradient_max_tension #
 1.5,1.0,0.75
 >spring_gradient_exponent #
-0.1,0.5,1,2,4
+1,2,4
 >spring_gradient_min_tension_P # If spring_tension_mode == 4, for posterior compartment gradient
 0.1
 >spring_gradient_max_tension_P # If spring_tension_mode == 4, for posterior compartment gradient
