@@ -273,6 +273,17 @@ void Tissue::set_default_simulation_params()
 	edge_temporal_angle_efect_max = vary_line_tension;
 	edge_temporal_angle_efect_min = vary_line_tension;
 
+	spring_tension_mode = 0; //0: with tension for each type, 1: A-P compartments, 2: PD gradient, 3: AP compartments and PD gradient, 4:Different gradients in A or P
+	spring_posterior_comparment_region = 0; //used if spring_tension_mode is 1 or 3
+	spring_posterior_compartment_factor = 0; //used if spring_tension_mode is 1 or 3
+	spring_gradient_min_tension = 0; //used if spring_tension_mode is 2 or 3
+	spring_gradient_max_tension = 0; //used if spring_tension_mode is 2 or 3
+	spring_gradient_exponent = 0; //used if spring_tension_mode is 2 or 3
+	spring_gradient_min_tension_P = 0; //used if spring_tension_mode is 4
+	spring_gradient_max_tension_P = 0; //used if spring_tension_mode is 4
+	spring_gradient_exponent_P = 0; //used if spring_tension_mode is 4		
+	mode_to_order_springs_PD = 0; //used if spring_tension_mode is 2 or 3
+
 	for(int i = 0; i < NUM_SPRING_TYPES; i++) spring_type_min_positions.val[i] = 0.5;
 	add_static_to_hinge = -1;
 }
@@ -440,6 +451,17 @@ void Tissue::initialize_params(std::string params_file)
 	spring_type_min_positions = read_springtype_par(it, sz);
 	add_static_to_hinge = read_real_par(it);
 	//difference_flow_rate = read_real_par(it);
+
+	spring_tension_mode = read_real_par(it); //0: with tension for each type, 1: A-P compartments, 2: PD gradient, 3: AP compartments and PD gradient, 4:Different gradients in A or P
+	spring_posterior_comparment_region = read_real_par(it); //used if spring_tension_mode is 1 or 3
+	spring_posterior_compartment_factor = read_real_par(it); //used if spring_tension_mode is 1 or 3
+	spring_gradient_min_tension = read_real_par(it); //used if spring_tension_mode is 2 or 3
+	spring_gradient_max_tension = read_real_par(it); //used if spring_tension_mode is 2 or 3
+	spring_gradient_exponent = read_real_par(it); //used if spring_tension_mode is 2 or 3
+	spring_gradient_min_tension_P = read_real_par(it); //used if spring_tension_mode is 4
+	spring_gradient_max_tension_P = read_real_par(it); //used if spring_tension_mode is 4
+	spring_gradient_exponent_P = read_real_par(it); //used if spring_tension_mode is 4		
+	mode_to_order_springs_PD = read_real_par(it);
 }
 
 /*
@@ -533,6 +555,32 @@ void Tissue::initialize_springs(std::ifstream &inp)
 			this->num_springs--; //The input file has more springs
 		}
 	}
+	//Now set spring tension in case it is not directly set by spring_type_constants
+	cout << "Setting spring tension... \n";
+	switch (spring_tension_mode)
+	{
+	case 1:
+		cout << "Spring tension mode : 1\n";
+		setSpringTension_mode1();
+		break;
+	case 2:
+		cout << "Spring tension mode : 2\n";
+		setSpringTension_mode2();
+		break;
+	case 3:
+		cout << "Spring tension mode : 3\n";
+		setSpringTension_mode3();
+		break;
+	case 4:
+		cout << "Spring tension mode : 4\n";
+		setSpringTension_mode4();
+		break;
+	case 0:
+		cout << "Spring tension mode : 0\n";
+	default:
+		break;
+	}
+	cout << "Spring tension set\n";
 }
 
 /*
@@ -788,7 +836,8 @@ void Tissue::setEdgeTension(int e)
 		//If proportion determined by angle (pmaxan) varies with time, then proportion determined by angle is a value between
 		// mint and maxt, which depends on current time time
 		double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
-		time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
+		time_factor = time_factor >= 1? 1.0 : expAdvance(time_factor, vary_edge_tension_time_exponent);
+		//time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
 		double mint = (edge_temporal_angle_efect_min.val[static_cast<int>(cells[edges[e].cells[0]].type)] + edge_temporal_angle_efect_min.val[static_cast<int>(cells[edges[e].cells[1]].type)]) * 0.5;
 		double maxt = (edge_temporal_angle_efect_max.val[static_cast<int>(cells[edges[e].cells[0]].type)] + edge_temporal_angle_efect_max.val[static_cast<int>(cells[edges[e].cells[1]].type)]) * 0.5;
 		pmaxan = mint + (maxt - mint) * time_factor;
@@ -810,6 +859,146 @@ void Tissue::setEdgeTension(int e)
 	angle = mins + angle * (maxs - mins);																													 //Value of tension at this point of sin wave
 	edges[e].tension = (punif * edges[e].base_tension + pmaxan * angle ) / (punif + pmaxan);
 }
+
+// A-P compartments (uses tension determined by spring type)
+void Tissue::setSpringTension_mode1(){
+	//1) Calculate division point
+	float miny = vertices[0].y, maxy = vertices[0].y;
+	for(Vertex v: vertices){
+		if(v.y > maxy) maxy = v.y;
+		if(v.y < miny) miny = v.y;
+	}
+	AP_compartment_limit = miny + (maxy - miny)*spring_posterior_comparment_region;
+	int vaux;
+	for(Edge &s: springs){
+		vaux = vertices[s.vertices[0]].movable ? s.vertices[1] : s.vertices[0];
+		if(vertices[vaux].y <= AP_compartment_limit){
+			s.tension*=spring_posterior_compartment_factor;
+		}
+	}
+} 
+// P-D gradient
+void Tissue::setSpringTension_mode2(){
+	AP_compartment_limit = 0;//To avoid future problems
+	std::vector<int> vert_indices;
+	std::vector<float> gradient_factor;
+	int vaux;
+	for(Edge &s: springs){
+		vaux = vertices[s.vertices[0]].movable ? s.vertices[1] : s.vertices[0];	
+		vert_indices.push_back(vaux);
+	}
+	switch(mode_to_order_springs_PD){
+		case 1:
+			gradient_factor = getSpringGradientFactor_mode1(vert_indices);
+			break;
+		case 2:
+			gradient_factor = getSpringGradientFactor_mode2(vert_indices);
+			break;
+		default:
+			break;
+	}
+	for(int i = 0; i < num_springs; i++){
+		springs[i].tension = spring_gradient_min_tension + (spring_gradient_max_tension - spring_gradient_min_tension)*expAdvance(gradient_factor[i], spring_gradient_exponent);
+	}
+} 
+//P-D gradient multiplied by a factor in each compartment
+void Tissue::setSpringTension_mode3(){
+	setSpringTension_mode2();
+	setSpringTension_mode1();
+} 
+// A different (independent) gradient in each compartment
+void Tissue::setSpringTension_mode4(){
+	//1) Calculate division point
+	float miny = vertices[0].y, maxy = vertices[0].y;
+	for(Vertex v: vertices){
+		if(v.y > maxy) maxy = v.y;
+		if(v.y < miny) miny = v.y;
+	}
+	AP_compartment_limit = miny + (maxy - miny)*spring_posterior_comparment_region;
+	int vaux;
+	std::vector<int> vert_indices_anterior, vert_indices_posterior, anterior_springs, posterior_springs;
+	std::vector<float> gradient_factor_anterior, gradient_factor_posterior;	
+	for(Edge &s: springs){
+		vaux = vertices[s.vertices[0]].movable ? s.vertices[1] : s.vertices[0];
+		if(vertices[vaux].y <= AP_compartment_limit){
+			vert_indices_posterior.push_back(vaux);
+			posterior_springs.push_back(s.ind);
+		}else{
+			vert_indices_anterior.push_back(vaux);
+			anterior_springs.push_back(s.ind);
+		}
+	}
+	switch (mode_to_order_springs_PD)
+	{
+	case 1:
+		gradient_factor_anterior = getSpringGradientFactor_mode1(vert_indices_anterior);
+		gradient_factor_posterior = getSpringGradientFactor_mode1(vert_indices_posterior);
+		break;
+	case 2:
+		gradient_factor_anterior = getSpringGradientFactor_mode2(vert_indices_anterior);
+		gradient_factor_posterior = getSpringGradientFactor_mode2(vert_indices_posterior);
+		break;
+	default:
+		break;
+	}
+	float aux;
+	int spr;
+	for(int i = 0; i < anterior_springs.size(); i++){
+		spr = anterior_springs[i];
+		aux = expAdvance(gradient_factor_anterior[i], spring_gradient_exponent);
+		springs[spr].tension = spring_gradient_min_tension + (spring_gradient_max_tension - spring_gradient_min_tension)*aux;
+	}	
+	for(int i = 0; i < posterior_springs.size(); i++){
+		spr = posterior_springs[i];
+		aux = expAdvance(gradient_factor_posterior[i], spring_gradient_exponent_P);
+		springs[spr].tension = spring_gradient_min_tension_P + (spring_gradient_max_tension_P - spring_gradient_min_tension_P)*aux;
+	}	
+} 
+//Factor = proportional to position in x
+std::vector<float> Tissue::getSpringGradientFactor_mode1(std::vector<int> &vert_indices){
+	std::vector<float> factors;
+	//1) Calculate min and max points to compare
+	float minx = vertices[vert_indices[0]].x, maxx = vertices[vert_indices[0]].x, threshold;
+	for(int i: vert_indices){
+		if(vertices[i].x > maxx) maxx = vertices[i].x;
+		if(vertices[i].x < minx) minx = vertices[i].x;
+	}
+	float aux;
+	for(int i = 0; i < vert_indices.size(); i++ ){
+		factors.push_back((vertices[vert_indices[i]].x - minx)/(maxx - minx));
+	}
+	return factors;
+}
+//Factor = proportional to vertex order in x
+std::vector<float> Tissue::getSpringGradientFactor_mode2(std::vector<int> &vert_indices){
+	std::vector<int> ordered(vert_indices.size());
+	std::vector<float> factor(vert_indices.size());
+	//Initialize new vector
+	for(int i = 0; i < vert_indices.size();i++){
+		ordered[i] = vert_indices[i];
+	}
+	//Order 
+	int aux;
+	for(int i = 0; i < ordered.size() - 1;i++){
+			for(int j = i+1; j < ordered.size();j++){
+				if(vertices[ordered[j]].x < vertices[ordered[i]].x){
+					aux = ordered[j];
+					ordered[j] = ordered[i];
+					ordered[i] = aux;
+				}
+		}
+	}
+	//Get factor according to Order
+	for(int i = 0; i < ordered.size();i++){
+			for(int j = 0; j < ordered.size();j++){
+				if(ordered[j] ==  vert_indices[i]){
+					factor[i] = static_cast<float>(j)/ordered.size();
+				}
+		}
+	}     
+	return factor;
+}
+
 
 /*
 Adds a cell index to the vector of cells in a vertex structure
@@ -1363,7 +1552,8 @@ void Tissue::advanceSizeWithCoordsAndTime(int vertex_moved)
 	int caux;
 	//double auxprint;
 	double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
-	time_factor = expAdvance(time_factor, time_decrease_exponent); //(1 - exp(-pow(time_factor, time_decrease_exponent)))/EXP_FACTOR;
+	time_factor = time_factor >= 1? 1.0 : expAdvance(time_factor, time_decrease_exponent);
+	//time_factor = expAdvance(time_factor, time_decrease_exponent); //(1 - exp(-pow(time_factor, time_decrease_exponent)))/EXP_FACTOR;
 	float pos_factor = 0, pos_factor_y = 0, aux_area, ini, fin;
 
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
@@ -1480,7 +1670,8 @@ void Tissue::advanceSizeWithTime(int vertex_moved)
 {
 	int caux;
 	double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
-	time_factor = expAdvance(time_factor, time_decrease_exponent); //(1 - exp(-pow(time_factor, time_decrease_exponent)))/EXP_FACTOR;
+	time_factor = time_factor >= 1? 1.0 : expAdvance(time_factor, time_decrease_exponent);
+	//time_factor = expAdvance(time_factor, time_decrease_exponent); //(1 - exp(-pow(time_factor, time_decrease_exponent)))/EXP_FACTOR;
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
 		caux = vertices[vertex_moved].cells[i];
@@ -1506,6 +1697,7 @@ void Tissue::produceOutputs(std::string add_to_name)
 		writeSpringsFile(fname);
 	//writeAllData(fname); //THIS IS USEFUL TO DEBUG, BUT THE FORMAT IS NOT READ BY PLOTTING PROGRAM
 	writeCellDataTable(fname);
+	writeSpringDataTable(fname);
 	if (REPORT_OUT > 0)
 		cout << "\nWritting file: " << written_files << " at move " << counter_moves_accepted << endl;
 		std::cout << getStats() << endl;
@@ -3644,6 +3836,24 @@ void Tissue::addSpringsAutomatically()
 		if (!vertices_have_spring[e.vertices[1]])
 			setStaticVertex(e.vertices[1]);
 	}
+	switch (spring_tension_mode)
+	{
+	case 1:
+		setSpringTension_mode1();
+		break;
+	case 2:
+		setSpringTension_mode2();
+		break;
+	case 3:
+		setSpringTension_mode3();
+		break;
+	case 4:
+		setSpringTension_mode4();
+		break;
+	case 0:
+	default:
+		break;
+	}
 }
 
 void Tissue::setStaticVertex(int v)
@@ -3899,6 +4109,37 @@ void Tissue::writeCellDataTable(std::string fname)
 	{
 		if (!c.dead)
 			of << c << "\n";
+	}
+	of.close();
+}
+//HEADER =  "ind\ttype\ttension\tlength\tstatic_vertex\tmovable_vertex\tx_static\ty_static\tx_movable\ty_movable"
+void Tissue::writeSpringDataTable(std::string fname)
+{
+	ofstream of;
+	of.open(fname + SPRINGTAB_FILE_EXTENSION);
+	of << SPR_HEADER;
+	int vmov, vs;
+	for (Edge s : springs)
+	{
+		if (!s.dead)
+			of << s.ind << "\t";
+			of << static_cast<int>(s.type) << "\t";
+			of << s.tension << "\t";
+			of << s.length << "\t";
+			if(vertices[s.vertices[0]].movable){
+				vmov = s.vertices[0];
+				vs = s.vertices[1];
+			}else{
+				vmov = s.vertices[1];
+				vs = s.vertices[0];				
+			}
+			of << (vertices[vs].y <= AP_compartment_limit ? "P" : "A") << "\t";
+			of << vs << "\t";
+			of << vmov << "\t";
+			of << vertices[vs].x << "\t";
+			of << vertices[vs].y << "\t";
+			of << vertices[vmov].x << "\t";
+			of << vertices[vmov].y << "\n";
 	}
 	of.close();
 }
