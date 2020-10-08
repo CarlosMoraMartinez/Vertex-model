@@ -117,11 +117,11 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     plt.xlim(limits[0], limits[2])
     plt.ylim(limits[1], limits[3])
     #col = np.zeros((len(grid), 6, 2))
-    lww = 10000/len(celltypes)
+    lww = 10000/len(celltypes) if(len(celltypes)>1000) else 1
     if(expr):
         alphas = expr
     else:
-        alphas = 0.7
+        alphas = 0.85
     pc = PolyCollection(grid, facecolors= [wingcols[celltypes[j]] for j in range(len(grid))], alpha = alphas, edgecolors='white', linewidths = lww)
     #pc.set_edgecolors("black")
     ax.add_collection(pc)
@@ -148,7 +148,7 @@ def plot_expr(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, n
         xmax = max(xx)
         xx = [i/xmax for i in xx]
         #print("_____ ", xx)
-        plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, xx, name + 'g' + str(g), limits)
+        plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, xx, name + 'g' + str(g))
 
 
 def readPointsFile(name):

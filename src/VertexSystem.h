@@ -108,7 +108,7 @@ enum class CellType{blade = 0, hinge = 1, vein_blade = 2, vein_hinge = 3};
 enum class EdgeType{blade = 0, hinge = 1, vein_hinge = 2, vein_blade = 3, tissue_boundary = 4, spring = 5, vein = 6};
 
 //Enum class to define types of transitions
-enum class RearrangementType{t1 = 0, t2 = 1, divide_cell = 2, divide_edge = 3, join_limit_edges = 4, t1_at_border_outwards = 5, t1_at_border_inwards = 6, rotate_inwards = 7};
+enum class RearrangementType{t1 = 0, t2 = 1, divide_cell = 2, divide_edge = 3, join_limit_edges = 4, t1_at_border_outwards = 5, t1_at_border_inwards = 6, rotate_inwards = 7, random_t1 = 8};
 // Structure for Vertex
 struct Vertex{
 	int ind;
@@ -353,6 +353,7 @@ class Tissue{
 
 		float t1_transition_critical_distance; 
 		float t2_transition_critical_area;
+		float active_t1_prob,min_angle_for_active_t1, max_angle_for_active_t1, minsin2rant1, maxsin2rant1; //To make T1s at random
 		//float max_cell_area;	
 		float max_edge_length; 
 		cell_type_param preferred_area_initial, preferred_area_final, max_cell_area;
@@ -451,6 +452,7 @@ class Tissue{
 		void advanceSizeWithCoords(int vertex_moved);
 		std::vector<float> getSpringGradientFactor_mode1(std::vector<int> &vert_indices);
 		std::vector<float> getSpringGradientFactor_mode2(std::vector<int> &vert_indices);
+		void addRandomTransition();
 		//double calculateTerm4Energy(Vertex &v, double old_x, double old_y);
 };
 
