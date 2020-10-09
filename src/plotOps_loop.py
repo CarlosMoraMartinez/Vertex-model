@@ -27,6 +27,7 @@ hingetype = 1
 veintype = 2
 veinhinge = 3
 wingcols = ['blue', 'green', 'black', 'gray']
+wingcols_comp = ['red', 'darkred', 'lightsalmon', 'mistyrose']
 springcols = ['red', 'yellow', 'purple', 'pink', 'brown']
 
 
@@ -106,7 +107,7 @@ def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, n
     plt.clf()
 
 ##Not tested, probably doesn't works
-def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name, limits, figg=None, printsvg=False):
+def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name, limits, figg=None, printsvg=False, comparewing=[]):
     from matplotlib.collections import PolyCollection
     if(figg is None):
         fig, ax = plt.subplots()
@@ -125,15 +126,20 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     pc = PolyCollection(grid, facecolors= [wingcols[celltypes[j]] for j in range(len(grid))], alpha = alphas, edgecolors='white', linewidths = lww)
     #pc.set_edgecolors("black")
     ax.add_collection(pc)
-    for s in sprList:
-        spcolor = springcols[int(s[2])] if len(s) > 2 else RED
-        ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color = spcolor)
-    for p in pointsList.keys():
-        if(pointsList[p][2] != 1):
-            ax.scatter(pointsList[p][0], pointsList[p][1], color = STATIC_COLS[pointsList[p][2] ], s = 2)       
-    if(add_vnums):
-        for i in pointsList.keys():
-            ax.annotate(i, pointsList[i][0:2], size=1)
+    if(not comparewing):
+        for s in sprList:
+            spcolor = springcols[int(s[2])] if len(s) > 2 else RED
+            ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color = spcolor)
+        for p in pointsList.keys():
+            if(pointsList[p][2] != 1):
+                ax.scatter(pointsList[p][0], pointsList[p][1], color = STATIC_COLS[pointsList[p][2] ], s = 2)       
+        if(add_vnums):
+            for i in pointsList.keys():
+                ax.annotate(i, pointsList[i][0:2], size=1)
+    else:
+        pc2 = PolyCollection(comparewing[2], facecolors= [wingcols_comp[comparewing[3][j]] for j in range(len(comparewing[2]))], alpha = 0.5, edgecolors='white', linewidths = 0)
+        ax.add_collection(pc2)
+        name = name + '_vs_'  + comparewing[0]
     plt.savefig(name + '.png')
     if(printsvg):
         plt.savefig(name + '.svg', format='svg', dpi=1200)
@@ -215,7 +221,16 @@ def getLimits(pointsList):
     print("SETTING LIMITS: xmin=%2f, ymin=%2f, xmax=%2f, ymax=%2f"%( xmin, ymin, xmax, ymax))
     return (xmin, ymin, xmax, ymax)
 
-
+def positionCompareWing(comparewing,grid):
+    if(not comparewing):
+        return []
+    g2 = [coord for coord in zip(*[j for i in grid for j in i])]
+    c2 = [coord for coord in zip(*[j for i in comparewing[2] for j in i])]
+    dif_x = min(g2[0]) - min(c2[0])
+    dif_y = max(g2[1]) - max(c2[1])
+    cmod = [[[p[0] + dif_x, p[1] + dif_y] for p in cell] for cell in comparewing[2]]
+    pmod = {k:[p[0] + dif_x, p[1] + dif_y, p[2]] for k, p in comparewing[1].items()}
+    return [comparewing[0], pmod, cmod, comparewing[3]]
 def getFilename(inputname, fnum):
     if(fnum == -999):
         return inputname
@@ -247,6 +262,8 @@ parser.add_argument('-l', '--FixedLimits', metavar='fixed_limits', type=bool, de
                     help='Use max and min coordinates from first plot in all plots')
 parser.add_argument('-f', '--PlotSVG', metavar='plot_svg', type=bool, default = False, 
                     help='Print .svg additionally to .png')
+parser.add_argument('-c', '--Compare', metavar='compare_wing', type=str, default = "", 
+                    help='Second wing to compare with. Both wings will be plotted on the top of each other')                    
 
 def main():
     args = parser.parse_args()
@@ -259,13 +276,23 @@ def main():
     else:
         step = -1
     limsSet = False
+    secondName = args.Compare
+    if(secondName):
+        print("Getting wing to compare")
+        np2, pl2 = readPointsFile(secondName)
+        nc2, cl2, ct2 = readCellsFile(secondName, plot_cell_types, pl2)
+        comparewing = [secondName, pl2, cl2, ct2]
+        print("Wing to compare read")
+    else:
+        comparewing = []
     for fnum in range(args.Start_index, args.End_index, step):
         name = getFilename(args.Inputname, fnum)
         if(not os.path.isfile(name + ".points") or not os.path.isfile(name + ".cells")):
-            continue;
+            continue
         numPoints, pointsList = readPointsFile(name)
         numCells, polygonList, celltypes = readCellsFile(name, plot_cell_types, pointsList)
         numsprings, sprList = readSprings(name)
+        comparewingMod = positionCompareWing(comparewing, polygonList)
         ########################################################################################################################
         # Plotting the final polygons
         ########################################################################################################################
@@ -274,7 +301,7 @@ def main():
             limits = getLimits(pointsList)
             limsSet = True
         try:
-            fig = plot_grid2(111, polygonList, pointsList, sprList, add_vnums, celltypes, [] ,name, limits, printsvg=args.PlotSVG)  
+            fig = plot_grid2(111, polygonList, pointsList, sprList, add_vnums, celltypes, [] ,name, limits, printsvg=args.PlotSVG, comparewing=comparewingMod)  
             if(len(color_expr) > 0 and args.Input_expr != ""):
                 xprList = readExpr(args.Input_expr + str(fnum))
                 plot_expr(111, polygonList, pointsList, sprList, add_vnums, celltypes, xprList, name, color_expr, limits)
