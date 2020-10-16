@@ -22,6 +22,8 @@ veintype = 2
 veinhinge = 3
 wingcols = ['blue', 'green', 'black', 'gray']
 springcols = ['red', 'yellow', 'purple', 'pink', 'brown']
+STATIC_COLS=["red", "white", "blue", "gray"]
+
 
 DEFAULT_SPRING_KIND = 0
 
@@ -321,7 +323,9 @@ class HexGrid:
         for c in self.springs:
             sscolor = "red" if len(c) < 3 else springcols[c[2]]
             plt.plot( [self.vertices[c[0]][0], self.vertices[c[1]][0]] ,  [self.vertices[c[0]][1], self.vertices[c[1]][1]], c = sscolor)
-
+        for x, y, ind, mov in self.vertices:
+            if(mov != 1):
+                ax.scatter(x, y, color = STATIC_COLS[mov], s = 2)
         if(save):
             self.saveFig()
         return(fig, ax, pc)

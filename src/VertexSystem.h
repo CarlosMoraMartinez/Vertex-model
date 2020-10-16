@@ -23,6 +23,7 @@ const float LINE_TENSION_HINGE = -0.01;
 const float LINE_TENSION_VEIN_HINGE = 7.0;
 const float LINE_TENSION_VEIN_BLADE = 1.0;
 const float LINE_TENSION_TISSUE_BOUNDARY = 4.0;//4.0;
+const float HINGE_BLADE_INTERFACE_TENSION = 1.0;
 const float SPRING_CONSTANT = 2;
 const float PERIMETER_CONTRACT_BLADE = 0.03;
 const float PERIMETER_CONTRACT_HINGE = 0.6;
@@ -379,7 +380,7 @@ class Tissue{
 		cell_type_param edge_spatialmin_tension;
 		cell_type_param edge_temporal_angle_efect_max;
 		cell_type_param edge_temporal_angle_efect_min;
-
+		float hinge_blade_interface_tension;
 		float length_rotated_edge; 
 		double hinge_min_xpos, hinge_max_xpos, hinge_min_ypos, hinge_max_ypos, max_xpos, max_ypos, min_xpos, min_ypos;
 		//Data structures

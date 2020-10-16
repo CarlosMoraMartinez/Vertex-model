@@ -284,6 +284,7 @@ void Tissue::set_default_simulation_params()
 	spring_gradient_exponent_P = 0; //used if spring_tension_mode is 4		
 	mode_to_order_springs_PD = 0; //used if spring_tension_mode is 2 or 3
 
+	hinge_blade_interface_tension = HINGE_BLADE_INTERFACE_TENSION;
 	for(int i = 0; i < NUM_SPRING_TYPES; i++) spring_type_min_positions.val[i] = 0.5;
 	add_static_to_hinge = -1;
 }
@@ -462,6 +463,15 @@ void Tissue::initialize_params(std::string params_file)
 	spring_gradient_max_tension_P = read_real_par(it); //used if spring_tension_mode is 4
 	spring_gradient_exponent_P = read_real_par(it); //used if spring_tension_mode is 4		
 	mode_to_order_springs_PD = read_real_par(it);
+
+	//For random ("active") T1 transitions
+	active_t1_prob = read_real_par(it);
+	min_angle_for_active_t1 = read_real_par(it);
+	max_angle_for_active_t1 = read_real_par(it);
+	minsin2rant1 = sin(M_PI * min_angle_for_active_t1/180);
+	maxsin2rant1 = sin(M_PI * max_angle_for_active_t1/180);
+
+	hinge_blade_interface_tension = read_real_par(it);
 }
 
 /*
@@ -777,7 +787,7 @@ void Tissue::setEdgeType(int e)
 	else if ((cells[c1].type == CellType::hinge && cells[c2].type == CellType::blade) || (cells[c1].type == CellType::blade && cells[c2].type == CellType::hinge))
 	{
 		edges[e].type = EdgeType::hinge;
-		edges[e].tension = 0.5 * (line_tension.val[static_cast<int>(CellType::vein_hinge)] + line_tension.val[static_cast<int>(CellType::vein_blade)]);
+		edges[e].tension = hinge_blade_interface_tension;
 		edges[e].can_transition = false;
 	}
 	else if ((cells[c1].type == CellType::blade && cells[c2].type == CellType::vein_blade) ||
@@ -882,11 +892,30 @@ void Tissue::setSpringTension_mode2(){
 	AP_compartment_limit = 0;//To avoid future problems
 	std::vector<int> vert_indices;
 	std::vector<float> gradient_factor;
-	int vaux;
+	int vaux, vcell;
+	bool include[num_springs];
 	for(Edge &s: springs){
-		vaux = vertices[s.vertices[0]].movable ? s.vertices[1] : s.vertices[0];	
+		if(vertices[s.vertices[0]].movable){
+			vaux = s.vertices[1];
+			vcell = s.vertices[0];
+		}else{
+			 vaux = s.vertices[0];
+			 vcell = s.vertices[1];
+		}
+		include[s.ind] = true;
+ 		 for(int i=0; i < CELLS_PER_VERTEX; i++){
+			if(vertices[vcell].cells[i] != EMPTY_CONNECTION){
+				if(cells[vertices[vcell].cells[i]].type == CellType::hinge){
+					include[s.ind] = false;
+					break;
+				}
+			}
+		} 
+		if(include[s.ind]){
 		vert_indices.push_back(vaux);
+		}
 	}
+
 	switch(mode_to_order_springs_PD){
 		case 1:
 			gradient_factor = getSpringGradientFactor_mode1(vert_indices);
@@ -898,7 +927,8 @@ void Tissue::setSpringTension_mode2(){
 			break;
 	}
 	for(int i = 0; i < num_springs; i++){
-		springs[i].tension = spring_gradient_min_tension + (spring_gradient_max_tension - spring_gradient_min_tension)*expAdvance(gradient_factor[i], spring_gradient_exponent);
+		if(include[i])
+			springs[i].tension = spring_gradient_min_tension + (spring_gradient_max_tension - spring_gradient_min_tension)*expAdvance(gradient_factor[i], spring_gradient_exponent);
 	}
 } 
 //P-D gradient multiplied by a factor in each compartment
@@ -1989,9 +2019,24 @@ void Tissue::detectChangesAfterMove(int vertex_moved)
 			rearrangements_needed.push(Rearrangement{caux, RearrangementType::divide_cell});
 		}
 	}
+	if(active_t1_prob > 0){
+		if(unif(generator) < active_t1_prob)
+			addRandomTransition();
+	}
 
 } //detect rearrangements
-
+void Tissue::addRandomTransition(){
+	int edge;
+	do{
+		edge = std::rand() % num_edges;
+	}while(edges[edge].dead && static_cast<int>(edges[edge].type) < 2 && vertices[edges[edge].vertices[0]].movable && vertices[edges[edge].vertices[1]].movable);
+	float angle = atan2(vertices[edges[edge].vertices[0]].x - vertices[edges[edge].vertices[1]].x, vertices[edges[edge].vertices[0]].y - vertices[edges[edge].vertices[1]].y);
+	float ansin = abs(sin(angle));
+	if(ansin < maxsin2rant1 && ansin > minsin2rant1){
+		rearrangements_needed.push(Rearrangement{edge, RearrangementType::random_t1});
+	}
+	//cout << "Random T1 in edge " << edge << endl;
+}
 void Tissue::performRearrangements()
 {
 
@@ -2002,6 +2047,7 @@ void Tissue::performRearrangements()
 		rearrangements_needed.pop();
 		switch (r.type)
 		{
+		case RearrangementType::random_t1:
 		case RearrangementType::t1:
 			//cout << "Entering t1 \n";
 			if (t1_active)
@@ -2636,7 +2682,7 @@ void Tissue::make_t1(Rearrangement &r)
 {
 
 	int edge = r.element_index;
-	if (edges[edge].length > t1_transition_critical_distance)
+	if (edges[edge].length > t1_transition_critical_distance && r.type != RearrangementType::random_t1)
 		return; //Check that condition is still true (other rearrangements could have taken place since detection)
 
 	Vertex *v1 = &vertices[edges[edge].vertices[0]];

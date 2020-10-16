@@ -386,7 +386,7 @@ class varyOneByOne:
         if(mode["type"] == "regular"):
             values = np.linspace(default - abs(default)*mode["values"][0], default + abs(default)*mode["values"][0], int(2 / mode["values"][1] + 1))
             if(mode["absol"] == "yes"):
-                values = values[values >= 0]
+                values = values[values > 0]
         else:
             this_val = []
             for k,v in default.items():
