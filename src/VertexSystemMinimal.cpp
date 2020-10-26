@@ -373,13 +373,13 @@ void Tissue::initialize_params(std::string params_file)
 	std::vector<std::string>::iterator it = inp.begin();
 	//READ PARAMETERS IN ORDER FROM HERE:
 	t1_active = read_real_par(it) > 0;
-	t1_inwards_active = static_cast<bool>(read_real_par(it));
-	t1_outwards_active = static_cast<bool>(read_real_par(it));
-	division_active = static_cast<bool>(read_real_par(it));
-	t2_active = static_cast<bool>(read_real_par(it));
-	join_edges_active = static_cast<bool>(read_real_par(it));
+	t1_inwards_active = read_real_par(it) > 0;
+	t1_outwards_active = read_real_par(it) > 0;
+	division_active = read_real_par(it) > 0;
+	t2_active = read_real_par(it) > 0;
+	join_edges_active = read_real_par(it) > 0;
 	control_cells_2sides = static_cast<bool>(read_real_par(it));
-	check_if_edges_cross_opt = static_cast<bool>(read_real_par(it));
+	check_if_edges_cross_opt = read_real_par(it) > 0;
 	int temp_num_moves = static_cast<int>(read_real_par(it));
 	upper_bound_movements = max_accepted_movements;
 	if(temp_num_moves > 0)
@@ -472,6 +472,7 @@ void Tissue::initialize_params(std::string params_file)
 	maxsin2rant1 = sin(M_PI * max_angle_for_active_t1/180);
 
 	hinge_blade_interface_tension = read_real_par(it);
+	random_seed = read_real_par(it);
 }
 
 /*
@@ -507,6 +508,8 @@ void Tissue::initialize_vertices(std::ifstream &inp)
 		v.movable = s.empty() ? true : stoi(s);
 		v.movable_x = s.empty() ? true : stoi(s) == 1 || stoi(s) == 2;
 		v.movable_y = s.empty() ? true : stoi(s) == 1 || stoi(s) == 3;
+		v.moves_accepted = 1;
+		v.moves_rejected = 1;
 		//cout << "movable: " << s << ", " << static_cast<int>(v.movable) << static_cast<int>(v.movable_x) << static_cast<int>(v.movable_y) << endl;
 		this->vertices.push_back(v);
 	}
@@ -890,7 +893,7 @@ void Tissue::setSpringTension_mode1(){
 // P-D gradient
 void Tissue::setSpringTension_mode2(){
 	AP_compartment_limit = 0;//To avoid future problems
-	std::vector<int> vert_indices;
+	std::vector<int> vert_indices, spr_indices;
 	std::vector<float> gradient_factor;
 	int vaux, vcell;
 	bool include[num_springs];
@@ -912,7 +915,8 @@ void Tissue::setSpringTension_mode2(){
 			}
 		} 
 		if(include[s.ind]){
-		vert_indices.push_back(vaux);
+			vert_indices.push_back(vaux);
+			spr_indices.push_back(s.ind);
 		}
 	}
 
@@ -926,9 +930,11 @@ void Tissue::setSpringTension_mode2(){
 		default:
 			break;
 	}
-	for(int i = 0; i < num_springs; i++){
-		if(include[i])
-			springs[i].tension = spring_gradient_min_tension + (spring_gradient_max_tension - spring_gradient_min_tension)*expAdvance(gradient_factor[i], spring_gradient_exponent);
+	for(int i = 0; i < spr_indices.size(); i++){
+			//cout << i <<": tension before: " << springs[spr_indices[i]].tension;
+			springs[spr_indices[i]].tension = spring_gradient_min_tension + (spring_gradient_max_tension - spring_gradient_min_tension)*expAdvance(gradient_factor[i], spring_gradient_exponent);
+			//cout << ", tension after: " << springs[spr_indices[i]].tension << ", grad fact: " << gradient_factor[i] << ", exp: " << expAdvance(gradient_factor[i], spring_gradient_exponent)<< endl;
+
 	}
 } 
 //P-D gradient multiplied by a factor in each compartment
@@ -1111,6 +1117,8 @@ int Tissue::newVertex()
 	vertices[v].movable_y = true;
 	vertices[v].spring = EMPTY_CONNECTION;
 	vertices[v].dead = false;
+	vertices[v].moves_accepted = 1;
+	vertices[v].moves_rejected = 1;
 	this->num_vertices++;
 	//if (!dead_vertices.empty()) dead_vertices.pop();
 	return v;
@@ -1491,7 +1499,6 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 //counter_favorable_accepted, counter_favorable_rejected, counter_unfav_accepted, counter_unfav_rejected
 bool Tissue::tryMoveVertex()
 {
-
 	int vertex_to_move;
 	do
 	{
@@ -1512,13 +1519,14 @@ bool Tissue::tryMoveVertex()
 	//Prob of accepting unfavourable movement ins constant
 	move_prob = vertices[vertex_to_move].energy <= bufferMovement.energy ? temperature_negative_energy : temperature_positive_energy;
 	double move = unif(generator);
-	if (move < move_prob)
+	if (move < move_prob) //|| vertices[vertex_to_move].moves_rejected/vertices[vertex_to_move].moves_accepted > 5
 	{
 /* 		for(int i = 0; i < CELLS_PER_VERTEX; i++){
 			if(vertices[vertex_to_move].edges[i] != EMPTY_CONNECTION){
 				setEdgeTension(vertices[vertex_to_move].edges[i]);
 			}
 		} */
+		vertices[vertex_to_move].moves_accepted ++;
 		detectChangesAfterMove(vertex_to_move);
 		if (autonomous_cell_cycle)
 		{ //NOTE: Maybe make this before detecting changes so the effect is immediate? Otherwise cells have to wait until next round
@@ -1550,6 +1558,7 @@ bool Tissue::tryMoveVertex()
 	else
 	{
 		//Counters
+		vertices[vertex_to_move].moves_rejected ++;
 		if (vertices[vertex_to_move].energy <= bufferMovement.energy)
 		{
 			counter_favorable_rejected++;
@@ -1722,12 +1731,15 @@ void Tissue::produceOutputs(std::string add_to_name)
 	std:string fname = simname + "_" + add_to_name + "_" + std::to_string(written_files);
 	writeCellsFile(fname);
 	writePointsFile(fname);
-	writeEdgeDataTable(fname);
 	if (num_springs > 0)
 		writeSpringsFile(fname);
 	//writeAllData(fname); //THIS IS USEFUL TO DEBUG, BUT THE FORMAT IS NOT READ BY PLOTTING PROGRAM
-	writeCellDataTable(fname);
-	writeSpringDataTable(fname);
+	if(WRITE_DATA_TABLES){
+		writeEdgeDataTable(fname);
+		writeCellDataTable(fname);
+		writeSpringDataTable(fname);
+		writePointsDataTable(fname);
+	}
 	if (REPORT_OUT > 0)
 		cout << "\nWritting file: " << written_files << " at move " << counter_moves_accepted << endl;
 		std::cout << getStats() << endl;
@@ -1930,8 +1942,10 @@ void Tissue::simulateEuler()
 
 void Tissue::simulate(std::default_random_engine &generator, std::uniform_real_distribution<double> &unif)
 {
+	srand(random_seed);
 	this->generator = generator;
 	this->unif = unif;
+
 	switch (this->integration_mode)
 	{
 	case INTEGR_MONTECARLO:
@@ -2517,7 +2531,12 @@ void Tissue::make_divide_cell(Rearrangement &r)
 		printLine("DIVISION", cell, newcind, cent_x, cent_y, static_cast<int>(cells[cell].type));	
 	}
 	//cout << "!!!!!written: "<< written_files << endl;
-	//produceOutputs();
+
+	/* if(newvind1==23620 || newvind2==23620){
+		produceOutputs();
+		cout << "FOUND" << endl;
+		exit(1);
+	} */
 } // END make_divide_cell
 
 bool Tissue::getDivisionPoints(const int cell, double &x1, double &x2, double &y1, double &y2, int &e1, int &e2)
@@ -4202,7 +4221,18 @@ void Tissue::writeEdgeDataTable(std::string fname)
 	}
 	of.close();
 }
-
+void Tissue::writePointsDataTable(std::string fname)
+{
+	ofstream of;
+	of.open(fname + POINTTAB_FILE_EXTENSION);
+	of << VERTEX_HEADER;
+	for (Vertex v : vertices)
+	{
+		if (!v.dead)
+			of << v << "\n";
+	}
+	of.close();
+}
 void Tissue::printCelltypeParam(cell_type_param par, std::string name){
 	cout << name << ": ";
 	for(int i = 0; i < NUM_CELL_TYPES; i++) cout << i << "=" << par.val[i] << ",\t";
@@ -4216,7 +4246,7 @@ void Tissue::printCelltypeParam(cell_type_param par, std::string name){
 std::ostream &operator<<(std::ostream &out, const Vertex &v)
 {
 	int vmovable = v.movable ? v.movable_x && v.movable_y? 1 : v.movable_x? 2 : 3 : 0;
-	out << v.ind << "\t" << v.x << "\t" << v.y << "\t" << v.energy << "\t" << vmovable << "\t" << v.spring << "\t";
+	out << v.ind << "\t" << v.x << "\t" << v.y << "\t" << v.energy << "\t" << vmovable << "\t" << v.spring << "\t" << v.moves_accepted << "\t" << v.moves_rejected << "\t";
 	for (int i = 0; i < sizeof(v.cells) / sizeof(v.cells[0]); i++)
 	{ // print cells touching vertex separated by ','
 		out << v.cells[i] << ",";

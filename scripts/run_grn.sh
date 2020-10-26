@@ -1,5 +1,8 @@
 
 
+#1 wing
+#2 .grn file
+#3 .vp file
 
 
 # mkdir $1

@@ -27,7 +27,7 @@ hingetype = 1
 veintype = 2
 veinhinge = 3
 wingcols = ['blue', 'green', 'black', 'gray']
-wingcols_comp = ['red', 'darkred', 'lightsalmon', 'mistyrose']
+wingcols_comp = [['red', 'darkred', 'lightsalmon', 'mistyrose'], ['olivedrab', 'darkgreen', 'yellowgreen', 'yellowgreen']]
 springcols = ['red', 'yellow', 'purple', 'pink', 'brown']
 
 
@@ -137,9 +137,12 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
             for i in pointsList.keys():
                 ax.annotate(i, pointsList[i][0:2], size=1)
     else:
-        pc2 = PolyCollection(comparewing[2], facecolors= [wingcols_comp[comparewing[3][j]] for j in range(len(comparewing[2]))], alpha = 0.5, edgecolors='white', linewidths = 0)
-        ax.add_collection(pc2)
-        name = name + '_vs_'  + comparewing[0]
+        for cw in range(len(comparewing)):
+            thiscomparewing = comparewing[cw]
+            thiscolors = [wingcols_comp[cw][thiscomparewing[3][j]] for j in range(len(thiscomparewing[2]))]
+            pc2 = PolyCollection(thiscomparewing[2], facecolors= thiscolors, alpha = 0.3, edgecolors='white', linewidths = 0)
+            ax.add_collection(pc2)
+            name = name + '_vs_'  + thiscomparewing[0]
     plt.savefig(name + '.png')
     if(printsvg):
         plt.savefig(name + '.svg', format='svg', dpi=1200)
@@ -277,12 +280,16 @@ def main():
         step = -1
     limsSet = False
     secondName = args.Compare
+    cwings = []
     if(secondName):
-        print("Getting wing to compare")
-        np2, pl2 = readPointsFile(secondName)
-        nc2, cl2, ct2 = readCellsFile(secondName, plot_cell_types, pl2)
-        comparewing = [secondName, pl2, cl2, ct2]
-        print("Wing to compare read")
+        secondName = secondName.split(",")
+        for s in secondName:
+            print("Getting wing to compare: ", s)
+            np2, pl2 = readPointsFile(s)
+            nc2, cl2, ct2 = readCellsFile(s, plot_cell_types, pl2)
+            comparewing = [s, pl2, cl2, ct2]
+            cwings.append(comparewing)
+            print("Wing to compare read")
     else:
         comparewing = []
     for fnum in range(args.Start_index, args.End_index, step):
@@ -292,7 +299,7 @@ def main():
         numPoints, pointsList = readPointsFile(name)
         numCells, polygonList, celltypes = readCellsFile(name, plot_cell_types, pointsList)
         numsprings, sprList = readSprings(name)
-        comparewingMod = positionCompareWing(comparewing, polygonList)
+        comparewingMod = [positionCompareWing(cw, polygonList) for cw in cwings]
         ########################################################################################################################
         # Plotting the final polygons
         ########################################################################################################################

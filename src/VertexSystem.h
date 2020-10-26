@@ -68,6 +68,7 @@ const std::string VERTEX_FILE_EXTENSION = ".points";
 const std::string CELLS_FILE_EXTENSION = ".cells";
 const std::string CELLTAB_FILE_EXTENSION = ".celltab";
 const std::string EDGE_FILE_EXTENSION = ".edges";
+const std::string POINTTAB_FILE_EXTENSION = ".ptab";
 const std::string SPRING_FILE_EXTENSION = ".spr";
 const std::string SPRINGTAB_FILE_EXTENSION = ".sprtab";
 const std::string PARAMS_FILE_EXTENSION = ".vp";
@@ -91,8 +92,9 @@ const bool UPDATE_EDGE_TENSION_EVERY_MOVE = true; //Update edge tension if tensi
 const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
 const int REPORT_OUT = 0;//SET THIS TO 0 IF EVOLUTION IS GOING TO BE USED OR IN CASE OF LONG SIMULATIONS
+const bool WRITE_DATA_TABLES = true;
 
-const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tcells\tedges\tneighbour_vertices\n";
+const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tmoves_accepted\tmoves_rejected\tcells\tedges\tneighbour_vertices\n";
 const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\t" +
 	std::string("centroid_x\tcentroid_y\tangle_longest\tangle_signal\t")+
 	std::string("angle_random\tdegrees_signal\tmax_area\tcell_cycle_state\tcell_cycle_limit\tcan_divide\tnum_vertices\t")+
@@ -119,6 +121,8 @@ struct Vertex{
 	int cells[CELLS_PER_VERTEX];
 	int edges[CELLS_PER_VERTEX];
 	int neighbour_vertices[CELLS_PER_VERTEX];
+	int moves_accepted;
+	int moves_rejected;
 	bool movable; //>0  in param_file
 	bool movable_x; //== 2 in param_file, == 1 movable both
 	bool movable_y; // == 3  in param_file, == 1 movable both
@@ -285,6 +289,7 @@ class Tissue{
 		void writeCellDataTable(std::string fname);
 		void writeEdgeDataTable(std::string fname);
 		void writeSpringDataTable(std::string fname);
+		void writePointsDataTable(std::string fname);
 		void writePointsFile(std::string fname);
 		void writeSpringsFile(std::string fname);
 		void writeAllData(std::string fname);
@@ -364,6 +369,7 @@ class Tissue{
 		cell_type_param cell_cycle_limit, xcoord_size_control_factor;
 		bool autonomous_cell_cycle, start_cell_cycle_at_random, cell_cycle_controls_size, time_controls_size, xcoord_controls_size, ycoord_controls_size, keep_area_after_division;
 		float time_decrease_exponent, xcoord_decrease_exponent;
+		int random_seed;
 		//float difference_flow_rate;
 
 		//Parameters related to edge tension modification

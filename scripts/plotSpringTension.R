@@ -11,3 +11,4 @@ plot(d$x_static, d$tension, xlab = "Spring position in X",
      ylab = "Spring tension constant", col = as.factor(d$compartment))
 plot(d$y_static, d$tension, xlab = "Spring position in Y", 
      ylab = "Spring tension constant", col = as.factor(d$compartment))
+

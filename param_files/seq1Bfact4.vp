@@ -1,4 +1,4 @@
-# exp4_20
+# exp4_20 #For Aeq = 35
 >t1_active #
 1
 >t1_inwards_active #
@@ -16,11 +16,11 @@
 >check_if_edges_cross_opt #
 0
 >number_of_accepted_movements #this overwrites line command argument if > 0
-10000000
+500000000
 >write_Every_N #overwrites line command if > 0
-2000000
+20000000
 >upper_bound #
-10000000
+800000000
 >Integration_mode #0 = MonteCarlo, 1=Euler
 0
 >min_range_vertex_movement #
@@ -35,12 +35,12 @@
 2.0
 >temperature_means_proportion_of_acceptance #If true, unfavourable movements are rejected with negative_energy probability, independently of their energy increase (makes things easier to control)
 1
->ENERGY_TERM1  #(Area)
+>ENERGY_TERM1 #(Area)
 1
->ENERGY_TERM2  #(Tension)
-1
->ENERGY_TERM3  #(Perimeter)
-2.0
+>ENERGY_TERM2 #(Tension)
+0.169
+>ENERGY_TERM3 #(Perimeter)
+0.0286
 >t1_transition_critical_distance #
 0.05
 >length_rotated_edge #
@@ -58,13 +58,21 @@
 >keep_blade_area_after_division #Overrides all other size controls in BLADE
 1
 >TIME_CONTROLS_SIZE #(can't be true if CELL_CYCLE_CONTROLS_SIZE is true; is overriden)
-1
+-1
 >time_decrease_exponent #(at each move, a cell proportion of (final size - starting size) is multiplied by exp(-(x**THIS_PARAM))), where x is current_move/final_moves
 0.5
 >xcoord_controls_size #
 -1
 >xcoord_decrease_exponent #
 5
+
+>>K #
+0:0.0082
+1:0.0082
+2:0.0082
+3:0.0082
+<
+
 >>line_tension ##tension 
 0:-0.02
 1:-0.02
@@ -94,10 +102,10 @@
 <
 
 >>preferred_area_final #
-0:60.0
-1:60.0
-2:60.0
-3:60.0
+0:35.0
+1:35.0
+2:35.0
+3:35.0
 <
 
 >>division_angle_random_noise #

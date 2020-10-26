@@ -16,11 +16,11 @@
 >check_if_edges_cross_opt #
 0
 >number_of_accepted_movements #this overwrites line command argument if > 0
-10000000
+800000000
 >write_Every_N #overwrites line command if > 0
-2000000
+20000000
 >upper_bound #
-10000000
+800000000
 >Integration_mode #0 = MonteCarlo, 1=Euler
 0
 >min_range_vertex_movement #
@@ -65,18 +65,18 @@
 -1
 >xcoord_decrease_exponent #
 5
->>line_tension ##tension 
-0:-0.02
-1:-0.02
-2:-0.02
-3:-0.02
+>>line_tension #
+0:-0.831
+1:-0.831
+2:-0.831
+3:-0.831
 <
 
 >>line_tension_border #
-0:0.75
-1:0.75
-2:0.75
-3:0.75
+0:31.177
+1:31.177
+2:31.177
+3:31.177
 <
 
 >>perimeter_contract #
@@ -203,17 +203,17 @@
 <
 
 >>edge_spatialmax_tension #
-0:0.2
-1:0.2
-2:0.2
-3:0.2
+0:8.31
+1:8.31
+2:8.31
+3:8.31
 <
 
 >>edge_spatialmin_tension #
-0:-0.2
-1:-0.2
-2:-0.2
-3:-0.2
+0:-8.31
+1:-8.31
+2:-8.31
+3:-8.31
 <
 
 >>edge_temporal_angle_efect_max #between 0 and 1

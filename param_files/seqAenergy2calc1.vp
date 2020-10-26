@@ -1,4 +1,4 @@
-# exp4_20
+# small10_3
 >t1_active #
 1
 >t1_inwards_active #
@@ -16,11 +16,11 @@
 >check_if_edges_cross_opt #
 0
 >number_of_accepted_movements #this overwrites line command argument if > 0
-10000000
+100000000
 >write_Every_N #overwrites line command if > 0
-2000000
+20000000
 >upper_bound #
-10000000
+400000000
 >Integration_mode #0 = MonteCarlo, 1=Euler
 0
 >min_range_vertex_movement #
@@ -30,16 +30,16 @@
 >h #When using Euler/Runge-Kutta integration
 0.01
 >temperature_positive_energy #Noise added if Euler integration (if >0), temperature when E1 > E0 if Monte Carlo integration
-0.1
->temperature_negative_energy #
+0.05
+>temperature_negative_energy
 2.0
 >temperature_means_proportion_of_acceptance #If true, unfavourable movements are rejected with negative_energy probability, independently of their energy increase (makes things easier to control)
 1
->ENERGY_TERM1  #(Area)
+>ENERGY_TERM1 #(Area)
 1
->ENERGY_TERM2  #(Tension)
+>ENERGY_TERM2 #(Tension)
 1
->ENERGY_TERM3  #(Perimeter)
+>ENERGY_TERM3 #(Perimeter)
 2.0
 >t1_transition_critical_distance #
 0.05
@@ -58,32 +58,32 @@
 >keep_blade_area_after_division #Overrides all other size controls in BLADE
 1
 >TIME_CONTROLS_SIZE #(can't be true if CELL_CYCLE_CONTROLS_SIZE is true; is overriden)
-1
+-1
 >time_decrease_exponent #(at each move, a cell proportion of (final size - starting size) is multiplied by exp(-(x**THIS_PARAM))), where x is current_move/final_moves
 0.5
->xcoord_controls_size #
+>xcoord_controls_size
 -1
->xcoord_decrease_exponent #
+>xcoord_decrease_exponent
 5
->>line_tension ##tension 
-0:-0.02
-1:-0.02
-2:-0.02
-3:-0.02
+>>line_tension #
+0:-0.831
+1:-0.831
+2:-0.831
+3:-0.831
 <
 
 >>line_tension_border #
-0:0.75
-1:0.75
-2:0.75
-3:0.75
+0:31.177
+1:31.177
+2:31.177
+3:31.177
 <
 
 >>perimeter_contract #
-0:0.03
-1:0.03
-2:0.03
-3:0.03
+0:0.36
+1:0.36
+2:0.36
+3:0.36
 <
 
 >>preferred_area_initial #
@@ -94,10 +94,10 @@
 <
 
 >>preferred_area_final #
-0:60.0
-1:60.0
-2:60.0
-3:60.0
+0:12.0
+1:12.0
+2:12.0
+3:12.0
 <
 
 >>division_angle_random_noise #
@@ -157,7 +157,7 @@
 <
 
 >vary_edge_tension_with_time # if <0: vary prop_max_angle, the rest prop_uniform; if 1: use edge_temporal_angle_efect_max and min
--1
+1
 >vary_edge_tension_time_exponent ##If negative, angle influence on tension goes from edge_temporal_angle_efect_max to min
 -1.0
 >>edge_angle_prop_external #overriden if vary_edge_tension_with_time
@@ -175,10 +175,10 @@
 <
 
 >>edge_angle_prop_maxangle #overriden if vary_edge_tension_with_time
-0:0.4
-1:0.4
-2:0.4
-3:0.4
+0:1.0
+1:1.0
+2:1.0
+3:1.0
 <
 
 >>edge_angle_prop_random #
@@ -203,17 +203,17 @@
 <
 
 >>edge_spatialmax_tension #
-0:0.2
-1:0.2
-2:0.2
-3:0.2
+0:8.31
+1:8.31
+2:8.31
+3:8.31
 <
 
 >>edge_spatialmin_tension #
-0:-0.2
-1:-0.2
-2:-0.2
-3:-0.2
+0:-8.31
+1:-8.31
+2:-8.31
+3:-8.31
 <
 
 >>edge_temporal_angle_efect_max #between 0 and 1
@@ -231,8 +231,8 @@
 <
 
 >>spring_type_xlength_proportion #
-0:0.5
-1:0.65
+0:0.6
+1:0.7
 2:0.8
 3:0.9
 <

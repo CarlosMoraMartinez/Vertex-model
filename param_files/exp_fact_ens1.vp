@@ -58,7 +58,7 @@
 >keep_blade_area_after_division #Overrides all other size controls in BLADE
 1
 >TIME_CONTROLS_SIZE #(can't be true if CELL_CYCLE_CONTROLS_SIZE is true; is overriden)
--1
+1
 >time_decrease_exponent #(at each move, a cell proportion of (final size - starting size) is multiplied by exp(-(x**THIS_PARAM))), where x is current_move/final_moves
 0.5
 >xcoord_controls_size #
