@@ -26,10 +26,12 @@ bladetype = 0
 hingetype = 1
 veintype = 2
 veinhinge = 3
-wingcols = ['blue', 'green', 'black', 'gray']
+wingcols = ['dodgerblue', 'lawngreen', 'crimson', 'yellow']
+#wingcols = ['dodgerblue', 'black', 'indigo', 'dimgray']
+#wingcols = ['blue', 'green', 'black', 'gray']
 wingcols_comp = [['red', 'darkred', 'lightsalmon', 'mistyrose'], ['olivedrab', 'darkgreen', 'yellowgreen', 'yellowgreen']]
 springcols = ['red', 'yellow', 'purple', 'pink', 'brown']
-
+EDGE_COLOR = 'black'
 
 GM = (sqrt(5)-1.0)/2.0
 W = 8.0
@@ -118,12 +120,12 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     plt.xlim(limits[0], limits[2])
     plt.ylim(limits[1], limits[3])
     #col = np.zeros((len(grid), 6, 2))
-    lww = 10000/len(celltypes) if(len(celltypes)>1000) else 1
+    lww = 5000/len(celltypes) if(len(celltypes)>1000) else 1
     if(expr):
         alphas = expr
     else:
-        alphas = 0.85
-    pc = PolyCollection(grid, facecolors= [wingcols[celltypes[j]] for j in range(len(grid))], alpha = alphas, edgecolors='white', linewidths = lww)
+        alphas = 1 #0.85
+    pc = PolyCollection(grid, facecolors= [wingcols[celltypes[j]] for j in range(len(grid))], alpha = alphas, edgecolors=EDGE_COLOR, linewidths = lww)
     #pc.set_edgecolors("black")
     ax.add_collection(pc)
     if(not comparewing):
@@ -140,7 +142,7 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
         for cw in range(len(comparewing)):
             thiscomparewing = comparewing[cw]
             thiscolors = [wingcols_comp[cw][thiscomparewing[3][j]] for j in range(len(thiscomparewing[2]))]
-            pc2 = PolyCollection(thiscomparewing[2], facecolors= thiscolors, alpha = 0.3, edgecolors='white', linewidths = 0)
+            pc2 = PolyCollection(thiscomparewing[2], facecolors= thiscolors, alpha = 0.3, edgecolors='black', linewidths = 0)
             ax.add_collection(pc2)
             name = name + '_vs_'  + thiscomparewing[0]
     plt.savefig(name + '.png')
