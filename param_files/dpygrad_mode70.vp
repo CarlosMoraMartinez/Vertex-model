@@ -16,17 +16,17 @@
 >check_if_edges_cross_opt #
 0
 >number_of_accepted_movements #this overwrites line command argument if > 0
-4000000000
->write_Every_N #overwrites line command if > 0
-100000000
->upper_bound #
 2000000000
+>write_Every_N #overwrites line command if > 0
+50000000
+>upper_bound #
+1000000000
 >Integration_mode #0 = MonteCarlo, 1=Euler
 0
 >min_range_vertex_movement #
 0.0
 >max_range_vertex_movement (0.01) #In Euler, if positive, derivatives are set to this value when they are bigger than it
-0.01
+0.02
 >h #When using Euler/Runge-Kutta integration
 0.01
 >temperature_positive_energy #Noise added if Euler integration (if >0), temperature when E1 > E0 if Monte Carlo integration
