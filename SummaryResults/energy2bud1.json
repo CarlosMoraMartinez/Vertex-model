@@ -1,0 +1,771 @@
+{
+    "ensemble_name": "energy2bud1",
+    "size": "2400",
+    "date": "2020-09-03",
+    "purpose": "First simulation step, conv.ext, with new Energy function:try to fit parameters.",
+    "code_changed": "",
+    "from_condition": "",
+    "wings": [
+        "bud5_3ctfat3"
+    ],
+    "result": "",
+    "conditions_varied": {
+        "ENERGY_TERM1 (Area": [
+            0.05,
+            1.0,
+            2.0,
+            0.1,
+            0.01
+        ],
+        "ENERGY_TERM2 (Tension": [
+            0.05,
+            1.0,
+            2.0,
+            0.1,
+            0.01
+        ],
+        "edge_spatialmax_tension": [
+            "{'0': 0.5, '1': 0.5, '2': 0.5, '3': 0.5}",
+            "{'0': 0.02, '1': 0.02, '2': 0.02, '3': 0.02}",
+            "{'0': 1, '1': 1, '2': 1, '3': 1}",
+            "{'0': 5, '1': 5, '2': 5, '3': 5}"
+        ],
+        "edge_spatialmin_tension": [
+            "{'0': -0.02, '1': -0.02, '2': -0.02, '3': -0.02}",
+            "{'0': -1, '1': -1, '2': -1, '3': -1}",
+            "{'0': -5, '1': -5, '2': -5, '3': -5}",
+            "{'0': -0.5, '1': -0.5, '2': -0.5, '3': -0.5}"
+        ],
+        "perimeter_contrac": [
+            "{'0': 3.0, '1': 3.0, '2': 3.0, '3': 3.0}",
+            "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}",
+            "{'0': 0.3, '1': 0.3, '2': 0.3, '3': 0.3}"
+        ],
+        "upper_boun": [
+            100000000,
+            400000000
+        ]
+    },
+    "good_simulations": [
+        "energy2bud1_0",
+        "energy2bud1_1",
+        "energy2bud1_2",
+        "energy2bud1_3",
+        "energy2bud1_4",
+        "energy2bud1_5",
+        "energy2bud1_6",
+        "energy2bud1_7",
+        "energy2bud1_8",
+        "energy2bud1_9",
+        "energy2bud1_10",
+        "energy2bud1_11",
+        "energy2bud1_49",
+        "energy2bud1_50",
+        "energy2bud1_240",
+        "energy2bud1_241",
+        "energy2bud1_242",
+        "energy2bud1_243",
+        "energy2bud1_244",
+        "energy2bud1_245",
+        "energy2bud1_246",
+        "energy2bud1_247",
+        "energy2bud1_248",
+        "energy2bud1_249",
+        "energy2bud1_250",
+        "energy2bud1_251",
+        "energy2bud1_252",
+        "energy2bud1_253",
+        "energy2bud1_254",
+        "energy2bud1_255",
+        "energy2bud1_288",
+        "energy2bud1_301",
+        "energy2bud1_302",
+        "energy2bud1_303",
+        "energy2bud1_1040",
+        "energy2bud1_1041",
+        "energy2bud1_1042",
+        "energy2bud1_1043",
+        "energy2bud1_1044",
+        "energy2bud1_1045",
+        "energy2bud1_1046",
+        "energy2bud1_1047",
+        "energy2bud1_1048",
+        "energy2bud1_1049",
+        "energy2bud1_1050",
+        "energy2bud1_1051",
+        "energy2bud1_1052",
+        "energy2bud1_1053",
+        "energy2bud1_1054",
+        "energy2bud1_1055",
+        "energy2bud1_1088",
+        "energy2bud1_1089",
+        "energy2bud1_1090",
+        "energy2bud1_1091",
+        "energy2bud1_1092",
+        "energy2bud1_1093",
+        "energy2bud1_1094",
+        "energy2bud1_1095",
+        "energy2bud1_1096",
+        "energy2bud1_1097",
+        "energy2bud1_1098",
+        "energy2bud1_1099",
+        "energy2bud1_1100",
+        "energy2bud1_1101",
+        "energy2bud1_1102",
+        "energy2bud1_1103",
+        "energy2bud1_1136",
+        "energy2bud1_1137",
+        "energy2bud1_1138",
+        "energy2bud1_1139",
+        "energy2bud1_1140",
+        "energy2bud1_1141",
+        "energy2bud1_1142",
+        "energy2bud1_1143",
+        "energy2bud1_1144",
+        "energy2bud1_1145",
+        "energy2bud1_1146",
+        "energy2bud1_1147",
+        "energy2bud1_1148",
+        "energy2bud1_1149",
+        "energy2bud1_1150",
+        "energy2bud1_1151",
+        "energy2bud1_1184",
+        "energy2bud1_1185",
+        "energy2bud1_1186",
+        "energy2bud1_1187",
+        "energy2bud1_1188",
+        "energy2bud1_1189",
+        "energy2bud1_1190",
+        "energy2bud1_1191",
+        "energy2bud1_1192",
+        "energy2bud1_1193",
+        "energy2bud1_1194",
+        "energy2bud1_1195",
+        "energy2bud1_1196",
+        "energy2bud1_1197",
+        "energy2bud1_1198",
+        "energy2bud1_1199",
+        "energy2bud1_1200",
+        "energy2bud1_1201",
+        "energy2bud1_1202",
+        "energy2bud1_1203",
+        "energy2bud1_1204",
+        "energy2bud1_1205",
+        "energy2bud1_1206",
+        "energy2bud1_1207",
+        "energy2bud1_1208",
+        "energy2bud1_1209",
+        "energy2bud1_1210",
+        "energy2bud1_1211"
+    ],
+    "params_by_result_type": {
+        "collapsed": {
+            "total_with_this_result": 1,
+            "ENERGY_TERM1": {
+                "present_values": [
+                    0.01
+                ],
+                "absent_values": [
+                    0.05,
+                    1.0,
+                    2.0,
+                    0.1
+                ],
+                "count": {
+                    "0.01": 1
+                }
+            },
+            "ENERGY_TERM2": {
+                "present_values": [
+                    1.0
+                ],
+                "absent_values": [
+                    0.05,
+                    2.0,
+                    0.1,
+                    0.01
+                ],
+                "count": {
+                    "1.0": 1
+                }
+            },
+            "edge_spatialmax_tension": {
+                "present_values": [
+                    "{'0': 1, '1': 1, '2': 1, '3': 1}"
+                ],
+                "absent_values": [
+                    "{'0': 0.5, '1': 0.5, '2': 0.5, '3': 0.5}",
+                    "{'0': 0.02, '1': 0.02, '2': 0.02, '3': 0.02}",
+                    "{'0': 5, '1': 5, '2': 5, '3': 5}"
+                ],
+                "count": {
+                    "{'0': 1, '1': 1, '2': 1, '3': 1}": 1
+                }
+            },
+            "edge_spatialmin_tension": {
+                "present_values": [
+                    "{'0': -0.5, '1': -0.5, '2': -0.5, '3': -0.5}"
+                ],
+                "absent_values": [
+                    "{'0': -0.02, '1': -0.02, '2': -0.02, '3': -0.02}",
+                    "{'0': -1, '1': -1, '2': -1, '3': -1}",
+                    "{'0': -5, '1': -5, '2': -5, '3': -5}"
+                ],
+                "count": {
+                    "{'0': -0.5, '1': -0.5, '2': -0.5, '3': -0.5}": 1
+                }
+            },
+            "perimeter_contrac": {
+                "present_values": [
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}"
+                ],
+                "absent_values": [
+                    "{'0': 3.0, '1': 3.0, '2': 3.0, '3': 3.0}",
+                    "{'0': 0.3, '1': 0.3, '2': 0.3, '3': 0.3}"
+                ],
+                "count": {
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}": 1
+                }
+            },
+            "upper_boun": {
+                "present_values": [
+                    100000000
+                ],
+                "absent_values": [
+                    400000000
+                ],
+                "count": {
+                    "100000000": 1
+                }
+            }
+        },
+        "squares": {
+            "total_with_this_result": 2,
+            "ENERGY_TERM1": {
+                "present_values": [
+                    0.01
+                ],
+                "absent_values": [
+                    0.05,
+                    1.0,
+                    2.0,
+                    0.1
+                ],
+                "count": {
+                    "0.01": 2
+                }
+            },
+            "ENERGY_TERM2": {
+                "present_values": [
+                    0.1,
+                    1.0
+                ],
+                "absent_values": [
+                    0.05,
+                    2.0,
+                    0.01
+                ],
+                "count": {
+                    "0.1": 1,
+                    "1.0": 1
+                }
+            },
+            "edge_spatialmax_tension": {
+                "present_values": [
+                    "{'0': 5, '1': 5, '2': 5, '3': 5}",
+                    "{'0': 0.02, '1': 0.02, '2': 0.02, '3': 0.02}"
+                ],
+                "absent_values": [
+                    "{'0': 0.5, '1': 0.5, '2': 0.5, '3': 0.5}",
+                    "{'0': 1, '1': 1, '2': 1, '3': 1}"
+                ],
+                "count": {
+                    "{'0': 5, '1': 5, '2': 5, '3': 5}": 1,
+                    "{'0': 0.02, '1': 0.02, '2': 0.02, '3': 0.02}": 1
+                }
+            },
+            "edge_spatialmin_tension": {
+                "present_values": [
+                    "{'0': -5, '1': -5, '2': -5, '3': -5}",
+                    "{'0': -0.5, '1': -0.5, '2': -0.5, '3': -0.5}"
+                ],
+                "absent_values": [
+                    "{'0': -0.02, '1': -0.02, '2': -0.02, '3': -0.02}",
+                    "{'0': -1, '1': -1, '2': -1, '3': -1}"
+                ],
+                "count": {
+                    "{'0': -5, '1': -5, '2': -5, '3': -5}": 1,
+                    "{'0': -0.5, '1': -0.5, '2': -0.5, '3': -0.5}": 1
+                }
+            },
+            "perimeter_contrac": {
+                "present_values": [
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}"
+                ],
+                "absent_values": [
+                    "{'0': 3.0, '1': 3.0, '2': 3.0, '3': 3.0}",
+                    "{'0': 0.3, '1': 0.3, '2': 0.3, '3': 0.3}"
+                ],
+                "count": {
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}": 2
+                }
+            },
+            "upper_boun": {
+                "present_values": [
+                    100000000
+                ],
+                "absent_values": [
+                    400000000
+                ],
+                "count": {
+                    "100000000": 2
+                }
+            }
+        },
+        "big,same_shape,squares": {
+            "total_with_this_result": 16,
+            "ENERGY_TERM1": {
+                "present_values": [
+                    2.0
+                ],
+                "absent_values": [
+                    0.05,
+                    1.0,
+                    0.1,
+                    0.01
+                ],
+                "count": {
+                    "2.0": 16
+                }
+            },
+            "ENERGY_TERM2": {
+                "present_values": [
+                    0.1
+                ],
+                "absent_values": [
+                    0.05,
+                    1.0,
+                    2.0,
+                    0.01
+                ],
+                "count": {
+                    "0.1": 16
+                }
+            },
+            "perimeter_contrac": {
+                "present_values": [
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}"
+                ],
+                "absent_values": [
+                    "{'0': 3.0, '1': 3.0, '2': 3.0, '3': 3.0}",
+                    "{'0': 0.3, '1': 0.3, '2': 0.3, '3': 0.3}"
+                ],
+                "count": {
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}": 16
+                }
+            },
+            "upper_boun": {
+                "present_values": [
+                    100000000
+                ],
+                "absent_values": [
+                    400000000
+                ],
+                "count": {
+                    "100000000": 16
+                }
+            }
+        },
+        "squares,collapsed": {
+            "total_with_this_result": 1,
+            "ENERGY_TERM1": {
+                "present_values": [
+                    0.01
+                ],
+                "absent_values": [
+                    0.05,
+                    1.0,
+                    2.0,
+                    0.1
+                ],
+                "count": {
+                    "0.01": 1
+                }
+            },
+            "ENERGY_TERM2": {
+                "present_values": [
+                    1.0
+                ],
+                "absent_values": [
+                    0.05,
+                    2.0,
+                    0.1,
+                    0.01
+                ],
+                "count": {
+                    "1.0": 1
+                }
+            },
+            "edge_spatialmax_tension": {
+                "present_values": [
+                    "{'0': 0.5, '1': 0.5, '2': 0.5, '3': 0.5}"
+                ],
+                "absent_values": [
+                    "{'0': 0.02, '1': 0.02, '2': 0.02, '3': 0.02}",
+                    "{'0': 1, '1': 1, '2': 1, '3': 1}",
+                    "{'0': 5, '1': 5, '2': 5, '3': 5}"
+                ],
+                "count": {
+                    "{'0': 0.5, '1': 0.5, '2': 0.5, '3': 0.5}": 1
+                }
+            },
+            "edge_spatialmin_tension": {
+                "present_values": [
+                    "{'0': -0.5, '1': -0.5, '2': -0.5, '3': -0.5}"
+                ],
+                "absent_values": [
+                    "{'0': -0.02, '1': -0.02, '2': -0.02, '3': -0.02}",
+                    "{'0': -1, '1': -1, '2': -1, '3': -1}",
+                    "{'0': -5, '1': -5, '2': -5, '3': -5}"
+                ],
+                "count": {
+                    "{'0': -0.5, '1': -0.5, '2': -0.5, '3': -0.5}": 1
+                }
+            },
+            "perimeter_contrac": {
+                "present_values": [
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}"
+                ],
+                "absent_values": [
+                    "{'0': 3.0, '1': 3.0, '2': 3.0, '3': 3.0}",
+                    "{'0': 0.3, '1': 0.3, '2': 0.3, '3': 0.3}"
+                ],
+                "count": {
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}": 1
+                }
+            },
+            "upper_boun": {
+                "present_values": [
+                    100000000
+                ],
+                "absent_values": [
+                    400000000
+                ],
+                "count": {
+                    "100000000": 1
+                }
+            }
+        },
+        "ok,small": {
+            "total_with_this_result": 26,
+            "ENERGY_TERM1": {
+                "present_values": [
+                    0.01
+                ],
+                "absent_values": [
+                    0.05,
+                    1.0,
+                    2.0,
+                    0.1
+                ],
+                "count": {
+                    "0.01": 26
+                }
+            },
+            "ENERGY_TERM2": {
+                "present_values": [
+                    0.05,
+                    0.01
+                ],
+                "absent_values": [
+                    1.0,
+                    2.0,
+                    0.1
+                ],
+                "count": {
+                    "0.05": 2,
+                    "0.01": 24
+                }
+            },
+            "edge_spatialmax_tension": {
+                "present_values": [
+                    "{'0': 0.5, '1': 0.5, '2': 0.5, '3': 0.5}",
+                    "{'0': 0.02, '1': 0.02, '2': 0.02, '3': 0.02}",
+                    "{'0': 1, '1': 1, '2': 1, '3': 1}"
+                ],
+                "absent_values": [
+                    "{'0': 5, '1': 5, '2': 5, '3': 5}"
+                ],
+                "count": {
+                    "{'0': 0.5, '1': 0.5, '2': 0.5, '3': 0.5}": 8,
+                    "{'0': 0.02, '1': 0.02, '2': 0.02, '3': 0.02}": 10,
+                    "{'0': 1, '1': 1, '2': 1, '3': 1}": 8
+                }
+            },
+            "perimeter_contrac": {
+                "present_values": [
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}"
+                ],
+                "absent_values": [
+                    "{'0': 3.0, '1': 3.0, '2': 3.0, '3': 3.0}",
+                    "{'0': 0.3, '1': 0.3, '2': 0.3, '3': 0.3}"
+                ],
+                "count": {
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}": 26
+                }
+            }
+        },
+        "squares,big": {
+            "total_with_this_result": 1,
+            "ENERGY_TERM1": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    1.0,
+                    2.0,
+                    0.1,
+                    0.01
+                ],
+                "count": {
+                    "0.05": 1
+                }
+            },
+            "ENERGY_TERM2": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    1.0,
+                    2.0,
+                    0.1,
+                    0.01
+                ],
+                "count": {
+                    "0.05": 1
+                }
+            },
+            "edge_spatialmax_tension": {
+                "present_values": [
+                    "{'0': 0.02, '1': 0.02, '2': 0.02, '3': 0.02}"
+                ],
+                "absent_values": [
+                    "{'0': 0.5, '1': 0.5, '2': 0.5, '3': 0.5}",
+                    "{'0': 1, '1': 1, '2': 1, '3': 1}",
+                    "{'0': 5, '1': 5, '2': 5, '3': 5}"
+                ],
+                "count": {
+                    "{'0': 0.02, '1': 0.02, '2': 0.02, '3': 0.02}": 1
+                }
+            },
+            "edge_spatialmin_tension": {
+                "present_values": [
+                    "{'0': -5, '1': -5, '2': -5, '3': -5}"
+                ],
+                "absent_values": [
+                    "{'0': -0.02, '1': -0.02, '2': -0.02, '3': -0.02}",
+                    "{'0': -1, '1': -1, '2': -1, '3': -1}",
+                    "{'0': -0.5, '1': -0.5, '2': -0.5, '3': -0.5}"
+                ],
+                "count": {
+                    "{'0': -5, '1': -5, '2': -5, '3': -5}": 1
+                }
+            },
+            "perimeter_contrac": {
+                "present_values": [
+                    "{'0': 0.3, '1': 0.3, '2': 0.3, '3': 0.3}"
+                ],
+                "absent_values": [
+                    "{'0': 3.0, '1': 3.0, '2': 3.0, '3': 3.0}",
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}"
+                ],
+                "count": {
+                    "{'0': 0.3, '1': 0.3, '2': 0.3, '3': 0.3}": 1
+                }
+            },
+            "upper_boun": {
+                "present_values": [
+                    100000000
+                ],
+                "absent_values": [
+                    400000000
+                ],
+                "count": {
+                    "100000000": 1
+                }
+            }
+        },
+        "crashed": {
+            "total_with_this_result": 46,
+            "ENERGY_TERM1": {
+                "present_values": [
+                    0.05,
+                    0.01
+                ],
+                "absent_values": [
+                    1.0,
+                    2.0,
+                    0.1
+                ],
+                "count": {
+                    "0.05": 44,
+                    "0.01": 2
+                }
+            },
+            "ENERGY_TERM2": {
+                "present_values": [
+                    0.05,
+                    1.0,
+                    0.01
+                ],
+                "absent_values": [
+                    2.0,
+                    0.1
+                ],
+                "count": {
+                    "0.05": 12,
+                    "1.0": 2,
+                    "0.01": 32
+                }
+            },
+            "upper_boun": {
+                "present_values": [
+                    100000000
+                ],
+                "absent_values": [
+                    400000000
+                ],
+                "count": {
+                    "100000000": 46
+                }
+            }
+        },
+        "triangles": {
+            "total_with_this_result": 5,
+            "ENERGY_TERM1": {
+                "present_values": [
+                    0.01
+                ],
+                "absent_values": [
+                    0.05,
+                    1.0,
+                    2.0,
+                    0.1
+                ],
+                "count": {
+                    "0.01": 5
+                }
+            },
+            "ENERGY_TERM2": {
+                "present_values": [
+                    1.0,
+                    2.0
+                ],
+                "absent_values": [
+                    0.05,
+                    0.1,
+                    0.01
+                ],
+                "count": {
+                    "1.0": 4,
+                    "2.0": 1
+                }
+            },
+            "edge_spatialmax_tension": {
+                "present_values": [
+                    "{'0': 0.5, '1': 0.5, '2': 0.5, '3': 0.5}",
+                    "{'0': 0.02, '1': 0.02, '2': 0.02, '3': 0.02}",
+                    "{'0': 1, '1': 1, '2': 1, '3': 1}"
+                ],
+                "absent_values": [
+                    "{'0': 5, '1': 5, '2': 5, '3': 5}"
+                ],
+                "count": {
+                    "{'0': 0.5, '1': 0.5, '2': 0.5, '3': 0.5}": 2,
+                    "{'0': 0.02, '1': 0.02, '2': 0.02, '3': 0.02}": 1,
+                    "{'0': 1, '1': 1, '2': 1, '3': 1}": 2
+                }
+            },
+            "edge_spatialmin_tension": {
+                "present_values": [
+                    "{'0': -1, '1': -1, '2': -1, '3': -1}",
+                    "{'0': -0.5, '1': -0.5, '2': -0.5, '3': -0.5}",
+                    "{'0': -0.02, '1': -0.02, '2': -0.02, '3': -0.02}"
+                ],
+                "absent_values": [
+                    "{'0': -5, '1': -5, '2': -5, '3': -5}"
+                ],
+                "count": {
+                    "{'0': -1, '1': -1, '2': -1, '3': -1}": 3,
+                    "{'0': -0.5, '1': -0.5, '2': -0.5, '3': -0.5}": 1,
+                    "{'0': -0.02, '1': -0.02, '2': -0.02, '3': -0.02}": 1
+                }
+            },
+            "perimeter_contrac": {
+                "present_values": [
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}"
+                ],
+                "absent_values": [
+                    "{'0': 3.0, '1': 3.0, '2': 3.0, '3': 3.0}",
+                    "{'0': 0.3, '1': 0.3, '2': 0.3, '3': 0.3}"
+                ],
+                "count": {
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}": 5
+                }
+            },
+            "upper_boun": {
+                "present_values": [
+                    100000000
+                ],
+                "absent_values": [
+                    400000000
+                ],
+                "count": {
+                    "100000000": 5
+                }
+            }
+        },
+        "ok,big": {
+            "total_with_this_result": 84,
+            "ENERGY_TERM1": {
+                "present_values": [
+                    0.05,
+                    2.0
+                ],
+                "absent_values": [
+                    1.0,
+                    0.1,
+                    0.01
+                ],
+                "count": {
+                    "0.05": 20,
+                    "2.0": 64
+                }
+            },
+            "perimeter_contrac": {
+                "present_values": [
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}",
+                    "{'0': 3.0, '1': 3.0, '2': 3.0, '3': 3.0}"
+                ],
+                "absent_values": [
+                    "{'0': 0.3, '1': 0.3, '2': 0.3, '3': 0.3}"
+                ],
+                "count": {
+                    "{'0': 0.03, '1': 0.03, '2': 0.03, '3': 0.03}": 20,
+                    "{'0': 3.0, '1': 3.0, '2': 3.0, '3': 3.0}": 64
+                }
+            },
+            "upper_boun": {
+                "present_values": [
+                    100000000
+                ],
+                "absent_values": [
+                    400000000
+                ],
+                "count": {
+                    "100000000": 84
+                }
+            }
+        }
+    }
+}

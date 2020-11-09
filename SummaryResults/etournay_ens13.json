@@ -1,0 +1,77 @@
+{
+    "ensemble_name": "etournay_ens13",
+    "size": "2",
+    "date": "2020-10-02",
+    "purpose": "Check good conditions from etournay_ens11 with changes in initial wing: more or less static vertices in anterior hinge; static vertices can move in X axis or not. This simulation comes from etournay_ens11 condition 24",
+    "code_changed": "",
+    "from_condition": "",
+    "wings": [],
+    "result": "Good in general. Asymmetric contraction in hinge seems necessary. Wing with anterior vertices that cannot move in the X axis seem better.",
+    "conditions_varied": {
+        "coord_controls_size": [
+            0,
+            2
+        ]
+    },
+    "good_simulations": [
+        "etournay_ens13_1"
+    ],
+    "params_by_result_type": {
+        "Not very good": {
+            "total_with_this_result": 1,
+            "coord_controls_size": {
+                "present_values": [
+                    0
+                ],
+                "absent_values": [
+                    2
+                ],
+                "count": {
+                    "0": 1
+                }
+            }
+        },
+        "ok": {
+            "total_with_this_result": 1,
+            "coord_controls_size": {
+                "present_values": [
+                    2
+                ],
+                "absent_values": [
+                    0
+                ],
+                "count": {
+                    "2": 1
+                }
+            }
+        },
+        " from ens11_47": {
+            "total_with_this_result": 1,
+            "coord_controls_size": {
+                "present_values": [
+                    2
+                ],
+                "absent_values": [
+                    0
+                ],
+                "count": {
+                    "2": 1
+                }
+            }
+        },
+        "X3 unmove probably the best": {
+            "total_with_this_result": 1,
+            "coord_controls_size": {
+                "present_values": [
+                    2
+                ],
+                "absent_values": [
+                    0
+                ],
+                "count": {
+                    "2": 1
+                }
+            }
+        }
+    }
+}

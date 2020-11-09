@@ -1,0 +1,189 @@
+{
+    "ensemble_name": "exp4_20_hc10b",
+    "size": "8",
+    "date": "2020-07-20",
+    "purpose": "Most simulations crashed in ensemble hc10. Therefore, this ensemble is identical; tried to assess the reason for crashing. It turned out that only one of the simulations crashed, due to a high number of sides in one cell",
+    "code_changed": "",
+    "from_condition": "",
+    "wings": [],
+    "result": "Some simulations are good and even vein cells divided. However, posterior border should be more rounded and hinge should contract maybe more",
+    "conditions_varied": {
+        "time_decrease_exponent": [
+            0.25,
+            0.5
+        ],
+        "line_tensio": [
+            "{'0': -0.02, '1': -0.02, '2': 0.5, '3': 0.5}",
+            "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}"
+        ],
+        "max_cell_are": [
+            "{'0': 20.0, '1': 20.0, '2': 20.0, '3': 20.0}",
+            "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}"
+        ]
+    },
+    "good_simulations": [
+        "exp4_20_hc10b_0",
+        "exp4_20_hc10b_7"
+    ],
+    "params_by_result_type": {
+        "hinge shape not very good": {
+            "total_with_this_result": 1,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.5
+                ],
+                "absent_values": [
+                    0.25
+                ],
+                "count": {
+                    "0.5": 1
+                }
+            },
+            "line_tensio": {
+                "present_values": [
+                    "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': -0.02, '1': -0.02, '2': 0.5, '3': 0.5}"
+                ],
+                "count": {
+                    "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}": 1
+                }
+            },
+            "max_cell_are": {
+                "present_values": [
+                    "{'0': 20.0, '1': 20.0, '2': 20.0, '3': 20.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}"
+                ],
+                "count": {
+                    "{'0': 20.0, '1': 20.0, '2': 20.0, '3': 20.0}": 1
+                }
+            }
+        },
+        "veins don\u2019t divide": {
+            "total_with_this_result": 4
+        },
+        "not enough contraction": {
+            "total_with_this_result": 5
+        },
+        "ok": {
+            "total_with_this_result": 2
+        },
+        "shape not bad": {
+            "total_with_this_result": 3
+        },
+        "some weird things happen": {
+            "total_with_this_result": 1,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25
+                ],
+                "absent_values": [
+                    0.5
+                ],
+                "count": {
+                    "0.25": 1
+                }
+            },
+            "line_tensio": {
+                "present_values": [
+                    "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': -0.02, '1': -0.02, '2': 0.5, '3': 0.5}"
+                ],
+                "count": {
+                    "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}": 1
+                }
+            },
+            "max_cell_are": {
+                "present_values": [
+                    "{'0': 20.0, '1': 20.0, '2': 20.0, '3': 20.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}"
+                ],
+                "count": {
+                    "{'0': 20.0, '1': 20.0, '2': 20.0, '3': 20.0}": 1
+                }
+            }
+        },
+        "crashed due to a cell with too many sides": {
+            "total_with_this_result": 1,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25
+                ],
+                "absent_values": [
+                    0.5
+                ],
+                "count": {
+                    "0.25": 1
+                }
+            },
+            "line_tensio": {
+                "present_values": [
+                    "{'0': -0.02, '1': -0.02, '2': 0.5, '3': 0.5}"
+                ],
+                "absent_values": [
+                    "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}"
+                ],
+                "count": {
+                    "{'0': -0.02, '1': -0.02, '2': 0.5, '3': 0.5}": 1
+                }
+            },
+            "max_cell_are": {
+                "present_values": [
+                    "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}"
+                ],
+                "absent_values": [
+                    "{'0': 20.0, '1': 20.0, '2': 20.0, '3': 20.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}": 1
+                }
+            }
+        },
+        "veins divide": {
+            "total_with_this_result": 2,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.5
+                ],
+                "absent_values": [
+                    0.25
+                ],
+                "count": {
+                    "0.5": 2
+                }
+            },
+            "max_cell_are": {
+                "present_values": [
+                    "{'0': 20.0, '1': 20.0, '2': 20.0, '3': 20.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}"
+                ],
+                "count": {
+                    "{'0': 20.0, '1': 20.0, '2': 20.0, '3': 20.0}": 2
+                }
+            }
+        },
+        "second division round": {
+            "total_with_this_result": 3,
+            "max_cell_are": {
+                "present_values": [
+                    "{'0': 20.0, '1': 20.0, '2': 20.0, '3': 20.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}"
+                ],
+                "count": {
+                    "{'0': 20.0, '1': 20.0, '2': 20.0, '3': 20.0}": 3
+                }
+            }
+        }
+    }
+}

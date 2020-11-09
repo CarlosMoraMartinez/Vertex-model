@@ -1,0 +1,84 @@
+{
+    "ensemble_name": "etournay_ens1",
+    "size": "288",
+    "date": "2020-08-24",
+    "purpose": "Run simulation with a realistic wing(11000 cells, 22000 vertices)",
+    "code_changed": "",
+    "from_condition": "",
+    "wings": [],
+    "result": "All simulations crashed, the larger ones did it at around 60% of the total length. Spring tension was low in general, frustration (irregularities) arose in many places of the hinge",
+    "conditions_varied": {
+        "temperature_positive_energ": [
+            0.05,
+            0.1
+        ],
+        "ENERGY_TERM2 (Tension": [
+            1,
+            2
+        ],
+        "ENERGY_TERM3 (Perimeter": [
+            1,
+            3
+        ],
+        "line_tension_borde": [
+            "{'0': 10.0, '1': 10.0, '2': 10.0, '3': 10.0}",
+            "{'0': 80.0, '1': 80.0, '2': 80.0, '3': 80.0}",
+            "{'0': 40.0, '1': 40.0, '2': 40.0, '3': 40.0}"
+        ],
+        "preferred_area_fina": [
+            "{'0': 24.0, '1': 5.0, '2': 24.0, '3': 5.0}",
+            "{'0': 24.0, '1': 1.0, '2': 24.0, '3': 1.0}"
+        ],
+        "division_angle_random_nois": [
+            "{'0': 0.2, '1': 0.2, '2': 0.2, '3': 0.2}",
+            "{'0': 0.0, '1': 0.0, '2': 0.0, '3': 0.0}"
+        ],
+        "spring_type_tensio": [
+            "{'0': 2.0, '1': 1.0, '2': 0.5, '3': 0.2}",
+            "{'0': 2.0, '1': 1.5, '2': 0.8, '3': 0.5}",
+            "{'0': 2.5, '1': 1.5, '2': 0.8, '3': 0.8}"
+        ]
+    },
+    "good_simulations": [],
+    "params_by_result_type": {
+        "crashed": {
+            "total_with_this_result": 260
+        },
+        "CRASHED": {
+            "total_with_this_result": 28,
+            "temperature_positive_energ": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 28
+                }
+            },
+            "ENERGY_TERM2": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    2
+                ],
+                "count": {
+                    "1": 28
+                }
+            },
+            "ENERGY_TERM3": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    3
+                ],
+                "count": {
+                    "1": 28
+                }
+            }
+        }
+    }
+}

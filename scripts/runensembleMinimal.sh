@@ -4,7 +4,9 @@
 
 maxCPU=10
 i=0
-wingarray=(bud5_3fat3_fact_5) #budsmall (bud0 hex2020_1_s5.0_20x20_n0.4) #(wing2E wing2Edumpy) #(wing1D wingDumpy2) #wing2F wing2Edumpy #bud3b bud2 iso20_3_df gr1
+wingarray=(etournay1_vein1e) 
+#small7-16df s10-3-4 bud5_3y etournay1_unmoveX7
+#strechbig1_3cpv (bud0 hex2020_1_s5.0_20x20_n0.4) #(wing2E wing2Edumpy) #(wing1D wingDumpy2) #wing2F wing2Edumpy #bud3b bud2 iso20_3_df gr1
 
 cd param_files
 python ../src/vertex_parms_ensemble.py -i $3'.vp' -o $3
@@ -14,7 +16,7 @@ echo $3' Param Files generated'
 mkdir $3
 mkdir $3/src
 mkdir $3/param_files
-cp src/VertexSystem.cpp src/VertexSystem.h src/vertex_cmm.cpp src/plotOps_loop.py scripts/compile.sh $3/src
+cp src/VertexSystemMinimal.cpp src/VertexSystem.h src/vertex_cmm.cpp src/plotOps_loop.py scripts/compileMinimal.sh $3/src
 
 cp ./param_files/$3/* $3/param_files
 
@@ -32,7 +34,7 @@ do
     mkdir $NAME
     mkdir $NAME/src
     mkdir $NAME/param_files
-    cp src/VertexSystem.cpp src/VertexSystem.h src/vertex_cmm.cpp src/plotOps_loop.py src/compile.sh $NAME/src
+    cp src/VertexSystemMinimal.cpp src/VertexSystem.h src/vertex_cmm.cpp src/plotOps_loop.py src/compileMinimal.sh $NAME/src
     cd $NAME
 
     cp '../param_files/'$NAME'.vp' param_files
@@ -52,7 +54,7 @@ do
                 echo '      CPUs lower than '$maxCPU
                 echo '      sending job: '$NAME ' ' $wing
                 cp -r ../../initial_conds/$wing ./
-                bash src/compile.sh $wing $NAME $1 $2 >$NAME'-'$wing.out 2>$NAME'-'$wing.err &
+                bash src/compileMinimal.sh $wing $NAME $1 $2 >$NAME'-'$wing.out 2>$NAME'-'$wing.err &
                 i=$(($i + 1))
                 sleep 3
             else

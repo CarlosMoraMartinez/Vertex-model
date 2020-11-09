@@ -1,0 +1,433 @@
+{
+    "ensemble_name": "exp_fact_ens2",
+    "size": "18",
+    "date": "2020-09-16",
+    "purpose": "Set expansion conditions from conv.ext when using Energy equation 2. Improve results from ens1",
+    "code_changed": "",
+    "from_condition": "",
+    "wings": [
+        "bud5_3fat3_fact_5"
+    ],
+    "result": "Best are 0, 9, 15",
+    "conditions_varied": {
+        "temperature_positive_energy": [
+            0.1,
+            0.05
+        ],
+        "ENERGY_TERM2": [
+            0.129,
+            0.11900000000000001,
+            0.15
+        ],
+        "line_tension_border": [
+            "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}",
+            "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}",
+            "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}"
+        ]
+    },
+    "good_simulations": [
+        "exp_fact_ens2_0",
+        "exp_fact_ens2_1",
+        "exp_fact_ens2_3",
+        "exp_fact_ens2_7",
+        "exp_fact_ens2_9",
+        "exp_fact_ens2_15"
+    ],
+    "params_by_result_type": {
+        "fat": {
+            "total_with_this_result": 2,
+            "ENERGY_TERM2": {
+                "present_values": [
+                    0.15
+                ],
+                "absent_values": [
+                    0.129,
+                    0.11900000000000001
+                ],
+                "count": {
+                    "0.15": 2
+                }
+            },
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}"
+                ],
+                "absent_values": [
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}",
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}"
+                ],
+                "count": {
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}": 2
+                }
+            }
+        },
+        "length 400": {
+            "total_with_this_result": 2,
+            "ENERGY_TERM2": {
+                "present_values": [
+                    0.15
+                ],
+                "absent_values": [
+                    0.129,
+                    0.11900000000000001
+                ],
+                "count": {
+                    "0.15": 2
+                }
+            },
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}",
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}"
+                ],
+                "absent_values": [
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}"
+                ],
+                "count": {
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}": 1,
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}": 1
+                }
+            }
+        },
+        "length 500": {
+            "total_with_this_result": 6,
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}",
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}"
+                ],
+                "absent_values": [
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}"
+                ],
+                "count": {
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}": 5,
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}": 1
+                }
+            }
+        },
+        "thin": {
+            "total_with_this_result": 1,
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 1
+                }
+            },
+            "ENERGY_TERM2": {
+                "present_values": [
+                    0.11900000000000001
+                ],
+                "absent_values": [
+                    0.129,
+                    0.15
+                ],
+                "count": {
+                    "0.11900000000000001": 1
+                }
+            },
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}"
+                ],
+                "absent_values": [
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}",
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}"
+                ],
+                "count": {
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}": 1
+                }
+            }
+        },
+        "medium thin": {
+            "total_with_this_result": 1,
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.1
+                ],
+                "absent_values": [
+                    0.05
+                ],
+                "count": {
+                    "0.1": 1
+                }
+            },
+            "ENERGY_TERM2": {
+                "present_values": [
+                    0.15
+                ],
+                "absent_values": [
+                    0.129,
+                    0.11900000000000001
+                ],
+                "count": {
+                    "0.15": 1
+                }
+            },
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}"
+                ],
+                "absent_values": [
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}",
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}"
+                ],
+                "count": {
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}": 1
+                }
+            }
+        },
+        "not bad": {
+            "total_with_this_result": 1,
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 1
+                }
+            },
+            "ENERGY_TERM2": {
+                "present_values": [
+                    0.11900000000000001
+                ],
+                "absent_values": [
+                    0.129,
+                    0.15
+                ],
+                "count": {
+                    "0.11900000000000001": 1
+                }
+            },
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}"
+                ],
+                "absent_values": [
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}",
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}"
+                ],
+                "count": {
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}": 1
+                }
+            }
+        },
+        "thinner": {
+            "total_with_this_result": 4,
+            "ENERGY_TERM2": {
+                "present_values": [
+                    0.129,
+                    0.11900000000000001
+                ],
+                "absent_values": [
+                    0.15
+                ],
+                "count": {
+                    "0.129": 2,
+                    "0.11900000000000001": 2
+                }
+            },
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}",
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}"
+                ],
+                "absent_values": [
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}"
+                ],
+                "count": {
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}": 3,
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}": 1
+                }
+            }
+        },
+        "ok": {
+            "total_with_this_result": 6,
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}",
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}"
+                ],
+                "absent_values": [
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}"
+                ],
+                "count": {
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}": 4,
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}": 2
+                }
+            }
+        },
+        "egg": {
+            "total_with_this_result": 1,
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.1
+                ],
+                "absent_values": [
+                    0.05
+                ],
+                "count": {
+                    "0.1": 1
+                }
+            },
+            "ENERGY_TERM2": {
+                "present_values": [
+                    0.15
+                ],
+                "absent_values": [
+                    0.129,
+                    0.11900000000000001
+                ],
+                "count": {
+                    "0.15": 1
+                }
+            },
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}"
+                ],
+                "absent_values": [
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}",
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}"
+                ],
+                "count": {
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}": 1
+                }
+            }
+        },
+        "more regular": {
+            "total_with_this_result": 4,
+            "ENERGY_TERM2": {
+                "present_values": [
+                    0.11900000000000001,
+                    0.129
+                ],
+                "absent_values": [
+                    0.15
+                ],
+                "count": {
+                    "0.11900000000000001": 2,
+                    "0.129": 2
+                }
+            },
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}",
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}"
+                ],
+                "absent_values": [
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}"
+                ],
+                "count": {
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}": 2,
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}": 2
+                }
+            }
+        },
+        "too thin": {
+            "total_with_this_result": 2,
+            "ENERGY_TERM2": {
+                "present_values": [
+                    0.11900000000000001,
+                    0.129
+                ],
+                "absent_values": [
+                    0.15
+                ],
+                "count": {
+                    "0.11900000000000001": 1,
+                    "0.129": 1
+                }
+            },
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}"
+                ],
+                "absent_values": [
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}",
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}"
+                ],
+                "count": {
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}": 2
+                }
+            }
+        },
+        "more irregular": {
+            "total_with_this_result": 2,
+            "temperature_positive_energy": {
+                "present_values": [
+                    0.05
+                ],
+                "absent_values": [
+                    0.1
+                ],
+                "count": {
+                    "0.05": 2
+                }
+            },
+            "ENERGY_TERM2": {
+                "present_values": [
+                    0.11900000000000001,
+                    0.15
+                ],
+                "absent_values": [
+                    0.129
+                ],
+                "count": {
+                    "0.11900000000000001": 1,
+                    "0.15": 1
+                }
+            },
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}"
+                ],
+                "absent_values": [
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}",
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}"
+                ],
+                "count": {
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}": 2
+                }
+            }
+        },
+        "length 450": {
+            "total_with_this_result": 5,
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}",
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}"
+                ],
+                "absent_values": [
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}"
+                ],
+                "count": {
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}": 1,
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}": 4
+                }
+            }
+        },
+        "weird hinge-blade border": {
+            "total_with_this_result": 6,
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}"
+                ],
+                "absent_values": [
+                    "{'0': 0.75, '1': 0.75, '2': 0.75, '3': 0.75}",
+                    "{'0': 0.4, '1': 0.4, '2': 0.4, '3': 0.4}"
+                ],
+                "count": {
+                    "{'0': 0.75, '1': 2.0, '2': 0.75, '3': 2.0}": 6
+                }
+            }
+        }
+    }
+}

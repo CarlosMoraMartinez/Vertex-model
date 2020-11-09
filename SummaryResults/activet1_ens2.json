@@ -1,0 +1,19 @@
+{
+    "ensemble_name": "activet1_ens2",
+    "size": "3",
+    "date": "2020-10-09",
+    "purpose": "Random T1s made to horizontal edges, which become vertical (45-90 degrees)",
+    "code_changed": "Added T1 at random with a given probability and at given angles.",
+    "from_condition": "",
+    "wings": [],
+    "result": "",
+    "conditions_varied": {
+        "active_t1_pro": [
+            1e-05,
+            0.0001,
+            -1.0
+        ]
+    },
+    "good_simulations": [],
+    "params_by_result_type": []
+}

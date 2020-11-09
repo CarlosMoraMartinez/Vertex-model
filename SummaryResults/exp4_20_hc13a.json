@@ -1,0 +1,271 @@
+{
+    "ensemble_name": "exp4_20_hc13a",
+    "size": "64",
+    "date": "2020-07-21",
+    "purpose": "Improve previous wings (from hc10 and 11 mostly). Tried to make hinge contract more (removed x_coord spatial gradient) and make sure that vein cells divided. Also reduced noise from 10% to 5%.",
+    "code_changed": "",
+    "from_condition": "",
+    "wings": [
+        "s10-3-4e4-20dfct3"
+    ],
+    "result": "Some simulations are ok (eg., 62), better than the ones from ensemble 10b. Additionally, cell division takes place in a wave from proximal to distal, which is great. ",
+    "conditions_varied": {
+        "time_decrease_exponent": [
+            0.25,
+            0.5
+        ],
+        "xcoord_controls_siz": [
+            1,
+            -1
+        ],
+        "line_tensio": [
+            "{'0': -0.02, '1': -0.02, '2': 0.5, '3': 0.5}",
+            "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}"
+        ],
+        "line_tension_borde": [
+            "{'0': 10.0, '1': 20.0, '2': 10.0, '3': 20.0}",
+            "{'0': 10.0, '1': 10.0, '2': 10.0, '3': 10.0}"
+        ],
+        "preferred_area_fina": [
+            "{'0': 30.0, '1': 1.0, '2': 30.0, '3': 1.0}",
+            "{'0': 30.0, '1': 5.0, '2': 30.0, '3': 5.0}"
+        ],
+        "max_cell_are": [
+            "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}",
+            "{'0': 20.0, '1': 20.0, '2': 20.0, '3': 20.0}"
+        ]
+    },
+    "good_simulations": [
+        "exp4_20_hc13_27",
+        "exp4_20_hc13_30",
+        "exp4_20_hc13_54",
+        "exp4_20_hc13_58",
+        "exp4_20_hc13_62"
+    ],
+    "params_by_result_type": {
+        "weird hinge": {
+            "total_with_this_result": 1,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25
+                ],
+                "absent_values": [
+                    0.5
+                ],
+                "count": {
+                    "0.25": 1
+                }
+            },
+            "xcoord_controls_siz": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    -1
+                ],
+                "count": {
+                    "1": 1
+                }
+            },
+            "line_tensio": {
+                "present_values": [
+                    "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': -0.02, '1': -0.02, '2': 0.5, '3': 0.5}"
+                ],
+                "count": {
+                    "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}": 1
+                }
+            },
+            "line_tension_borde": {
+                "present_values": [
+                    "{'0': 10.0, '1': 20.0, '2': 10.0, '3': 20.0}"
+                ],
+                "absent_values": [
+                    "{'0': 10.0, '1': 10.0, '2': 10.0, '3': 10.0}"
+                ],
+                "count": {
+                    "{'0': 10.0, '1': 20.0, '2': 10.0, '3': 20.0}": 1
+                }
+            },
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 1.0, '2': 30.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 5.0, '2': 30.0, '3': 5.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 1.0, '2': 30.0, '3': 1.0}": 1
+                }
+            },
+            "max_cell_are": {
+                "present_values": [
+                    "{'0': 20.0, '1': 20.0, '2': 20.0, '3': 20.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}"
+                ],
+                "count": {
+                    "{'0': 20.0, '1': 20.0, '2': 20.0, '3': 20.0}": 1
+                }
+            }
+        },
+        "not complete division hinge": {
+            "total_with_this_result": 5,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25
+                ],
+                "absent_values": [
+                    0.5
+                ],
+                "count": {
+                    "0.25": 5
+                }
+            },
+            "xcoord_controls_siz": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    -1
+                ],
+                "count": {
+                    "1": 5
+                }
+            },
+            "line_tension_borde": {
+                "present_values": [
+                    "{'0': 10.0, '1': 10.0, '2': 10.0, '3': 10.0}"
+                ],
+                "absent_values": [
+                    "{'0': 10.0, '1': 20.0, '2': 10.0, '3': 20.0}"
+                ],
+                "count": {
+                    "{'0': 10.0, '1': 10.0, '2': 10.0, '3': 10.0}": 5
+                }
+            }
+        },
+        "low contraction": {
+            "total_with_this_result": 3,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25
+                ],
+                "absent_values": [
+                    0.5
+                ],
+                "count": {
+                    "0.25": 3
+                }
+            },
+            "xcoord_controls_siz": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    -1
+                ],
+                "count": {
+                    "1": 3
+                }
+            },
+            "line_tensio": {
+                "present_values": [
+                    "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': -0.02, '1': -0.02, '2': 0.5, '3': 0.5}"
+                ],
+                "count": {
+                    "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}": 3
+                }
+            },
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 5.0, '2': 30.0, '3': 5.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 1.0, '2': 30.0, '3': 1.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 5.0, '2': 30.0, '3': 5.0}": 3
+                }
+            }
+        },
+        "ok": {
+            "total_with_this_result": 5,
+            "xcoord_controls_siz": {
+                "present_values": [
+                    -1
+                ],
+                "absent_values": [
+                    1
+                ],
+                "count": {
+                    "-1": 5
+                }
+            },
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 5.0, '2': 30.0, '3': 5.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 1.0, '2': 30.0, '3': 1.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 5.0, '2': 30.0, '3': 5.0}": 5
+                }
+            }
+        },
+        "crashed": {
+            "total_with_this_result": 2,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25
+                ],
+                "absent_values": [
+                    0.5
+                ],
+                "count": {
+                    "0.25": 2
+                }
+            },
+            "xcoord_controls_siz": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    -1
+                ],
+                "count": {
+                    "1": 2
+                }
+            },
+            "line_tensio": {
+                "present_values": [
+                    "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': -0.02, '1': -0.02, '2': 0.5, '3': 0.5}"
+                ],
+                "count": {
+                    "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}": 2
+                }
+            },
+            "line_tension_borde": {
+                "present_values": [
+                    "{'0': 10.0, '1': 20.0, '2': 10.0, '3': 20.0}"
+                ],
+                "absent_values": [
+                    "{'0': 10.0, '1': 10.0, '2': 10.0, '3': 10.0}"
+                ],
+                "count": {
+                    "{'0': 10.0, '1': 20.0, '2': 10.0, '3': 20.0}": 2
+                }
+            }
+        }
+    }
+}

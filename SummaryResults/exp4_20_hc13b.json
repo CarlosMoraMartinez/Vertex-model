@@ -1,0 +1,115 @@
+{
+    "ensemble_name": "exp4_20_hc13b",
+    "size": "64",
+    "date": "2020-07-21",
+    "purpose": "Same as exp4_20_hc13 but with wing ...ct4, in which a higher portion of the proximal vertices are fixed. ",
+    "code_changed": "",
+    "from_condition": "",
+    "wings": [
+        "s10-3-4e4-20dfct4"
+    ],
+    "result": "It was worse than hc13a. Only simulation 62 was ok (higher tension in hinge border)",
+    "conditions_varied": {
+        "line_tensio": [
+            "{'0': -0.02, '1': -0.02, '2': 0.5, '3': 0.5}",
+            "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}"
+        ],
+        "line_tension_borde": [
+            "{'0': 10.0, '1': 20.0, '2': 10.0, '3': 20.0}",
+            "{'0': 10.0, '1': 10.0, '2': 10.0, '3': 10.0}"
+        ],
+        "max_cell_are": [
+            "{'0': 20.0, '1': 20.0, '2': 20.0, '3': 20.0}",
+            "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}"
+        ],
+        "preferred_area_fina": [
+            "{'0': 30.0, '1': 5.0, '2': 30.0, '3': 5.0}",
+            "{'0': 30.0, '1': 1.0, '2': 30.0, '3': 1.0}"
+        ],
+        "time_decrease_exponent": [
+            0.25,
+            0.5
+        ],
+        "xcoord_controls_siz": [
+            1,
+            -1
+        ]
+    },
+    "good_simulations": [
+        "exp4_20_hc13_62"
+    ],
+    "params_by_result_type": {
+        "not good": {
+            "total_with_this_result": 63
+        },
+        "ok": {
+            "total_with_this_result": 1,
+            "line_tensio": {
+                "present_values": [
+                    "{'0': -0.02, '1': -0.02, '2': 0.5, '3': 0.5}"
+                ],
+                "absent_values": [
+                    "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}"
+                ],
+                "count": {
+                    "{'0': -0.02, '1': -0.02, '2': 0.5, '3': 0.5}": 1
+                }
+            },
+            "line_tension_borde": {
+                "present_values": [
+                    "{'0': 10.0, '1': 20.0, '2': 10.0, '3': 20.0}"
+                ],
+                "absent_values": [
+                    "{'0': 10.0, '1': 10.0, '2': 10.0, '3': 10.0}"
+                ],
+                "count": {
+                    "{'0': 10.0, '1': 20.0, '2': 10.0, '3': 20.0}": 1
+                }
+            },
+            "max_cell_are": {
+                "present_values": [
+                    "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}"
+                ],
+                "absent_values": [
+                    "{'0': 20.0, '1': 20.0, '2': 20.0, '3': 20.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}": 1
+                }
+            },
+            "preferred_area_fina": {
+                "present_values": [
+                    "{'0': 30.0, '1': 5.0, '2': 30.0, '3': 5.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 1.0, '2': 30.0, '3': 1.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 5.0, '2': 30.0, '3': 5.0}": 1
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.5
+                ],
+                "absent_values": [
+                    0.25
+                ],
+                "count": {
+                    "0.5": 1
+                }
+            },
+            "xcoord_controls_siz": {
+                "present_values": [
+                    -1
+                ],
+                "absent_values": [
+                    1
+                ],
+                "count": {
+                    "-1": 1
+                }
+            }
+        }
+    }
+}

@@ -1,7 +1,7 @@
 
 
 cd $1
-wingarray=(strechbig1_3cpv) 
+wingarray=(etournay1_vein1c) 
 #(wing2E wing2Edumpy) #(wing2C wing2Cdumpy)bud2 budsmall strechsmall_3cpv
 
 params=$(ls | grep $1)

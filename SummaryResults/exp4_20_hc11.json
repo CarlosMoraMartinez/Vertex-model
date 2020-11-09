@@ -1,0 +1,68 @@
+{
+    "ensemble_name": "exp4_20_hc11",
+    "size": "48",
+    "date": "2020-07-20",
+    "purpose": "Increase spring tension to improve border roundness in postero-proximal blade",
+    "code_changed": "",
+    "from_condition": "",
+    "wings": [
+        "s10-3-4e4-20dfct3"
+    ],
+    "result": "Not good. Border needs more flexibility. Hinge keeps contracting too little in the most posterior part",
+    "conditions_varied": {
+        "time_decrease_exponent": [
+            0.25,
+            0.5
+        ],
+        "line_tensio": [
+            "{'0': -0.01, '1': -0.01, '2': 1.0, '3': 1.0}",
+            "{'0': -0.02, '1': -0.02, '2': 0.5, '3': 0.5}",
+            "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}"
+        ],
+        "spring_type_tensio": [
+            "{'0': 2.5, '1': 2.0, '2': 1.5, '3': 1.25}",
+            "{'0': 2.5, '1': 2.0, '2': 1.5, '3': 1.0}"
+        ],
+        "max_cell_are": [
+            "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}",
+            "{'0': 20.0, '1': 20.0, '2': 20.0, '3': 20.0}"
+        ],
+        "cell_cycle_limi": [
+            "{'0': 200000, '1': 200000, '2': 200000, '3': 200000}",
+            "{'0': 100000, '1': 100000, '2': 100000, '3': 100000}"
+        ]
+    },
+    "good_simulations": [],
+    "params_by_result_type": {
+        "Not good": {
+            "total_with_this_result": 11,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.25
+                ],
+                "absent_values": [
+                    0.5
+                ],
+                "count": {
+                    "0.25": 11
+                }
+            },
+            "line_tensio": {
+                "present_values": [
+                    "{'0': -0.02, '1': -0.02, '2': 0.5, '3': 0.5}",
+                    "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': -0.01, '1': -0.01, '2': 1.0, '3': 1.0}"
+                ],
+                "count": {
+                    "{'0': -0.02, '1': -0.02, '2': 0.5, '3': 0.5}": 3,
+                    "{'0': -0.02, '1': -0.02, '2': 1.0, '3': 1.0}": 8
+                }
+            }
+        },
+        "Not very good": {
+            "total_with_this_result": 37
+        }
+    }
+}

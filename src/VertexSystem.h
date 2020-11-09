@@ -24,6 +24,7 @@ const float LINE_TENSION_VEIN_HINGE = 7.0;
 const float LINE_TENSION_VEIN_BLADE = 1.0;
 const float LINE_TENSION_TISSUE_BOUNDARY = 4.0;//4.0;
 const float HINGE_BLADE_INTERFACE_TENSION = 1.0;
+const float LINE_TENSION_INTERSTATIC = -0.5;
 const float SPRING_CONSTANT = 2;
 const float PERIMETER_CONTRACT_BLADE = 0.03;
 const float PERIMETER_CONTRACT_HINGE = 0.6;
@@ -351,6 +352,7 @@ class Tissue{
 		float spring_gradient_min_tension_P; //used if spring_tension_mode is 4
 		float spring_gradient_max_tension_P; //used if spring_tension_mode is 4
 		float spring_gradient_exponent_P; //used if spring_tension_mode is 4
+		float line_tension_interstatic;
 		float AP_compartment_limit;	
 		int mode_to_order_springs_PD; //used if spring_tension_mode is 2 or 3
 

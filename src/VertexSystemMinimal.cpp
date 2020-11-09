@@ -284,6 +284,7 @@ void Tissue::set_default_simulation_params()
 	spring_gradient_exponent_P = 0; //used if spring_tension_mode is 4		
 	mode_to_order_springs_PD = 0; //used if spring_tension_mode is 2 or 3
 
+	line_tension_interstatic  = LINE_TENSION_INTERSTATIC;
 	hinge_blade_interface_tension = HINGE_BLADE_INTERFACE_TENSION;
 	for(int i = 0; i < NUM_SPRING_TYPES; i++) spring_type_min_positions.val[i] = 0.5;
 	add_static_to_hinge = -1;
@@ -472,6 +473,7 @@ void Tissue::initialize_params(std::string params_file)
 	maxsin2rant1 = sin(M_PI * max_angle_for_active_t1/180);
 
 	hinge_blade_interface_tension = read_real_par(it);
+	line_tension_interstatic = read_real_par(it);
 	random_seed = read_real_par(it);
 }
 
@@ -772,8 +774,13 @@ void Tissue::setEdgeType(int e)
 	{
 		aux = edges[e].cells[0] == EMPTY_CONNECTION ? edges[e].cells[1] : edges[e].cells[0];
 		edges[e].type = EdgeType::tissue_boundary;
-		edges[e].tension = line_tension_tissue_boundary.val[static_cast<int>(cells[aux].type)];
-		edges[e].can_transition = true;
+		if(!(vertices[edges[e].vertices[0]].movable_x && vertices[edges[e].vertices[0]].movable_y) ){
+			edges[e].tension = line_tension_interstatic;
+			edges[e].can_transition = false;
+		}else{
+			edges[e].tension = line_tension_tissue_boundary.val[static_cast<int>(cells[aux].type)];
+			edges[e].can_transition = true;
+		}
 	}
 	else if (cells[c1].type == CellType::blade && cells[c2].type == CellType::blade)
 	{ 

@@ -1,0 +1,30 @@
+{
+    "ensemble_name": "dpygrad_mode4",
+    "size": "25",
+    "date": "2020-10-09",
+    "purpose": "Test mode 4",
+    "code_changed": "Added 5 modes for setting spring tension: 0=by regions, as it used to be; 1= A-P regions; 2=P-D Gradient; 3=P-D gradient and A-P regions; 4=A-P regions with independent gradients",
+    "from_condition": "",
+    "wings": [
+        "etournay1_unmoveX3"
+    ],
+    "result": "Spring tension was too high so no big changes observed",
+    "conditions_varied": {
+        "spring_gradient_exponent": [
+            0.1,
+            0.5,
+            2.0,
+            1.0,
+            4.0
+        ],
+        "spring_gradient_exponent_P": [
+            0.1,
+            0.5,
+            2.0,
+            1.0,
+            4.0
+        ]
+    },
+    "good_simulations": [],
+    "params_by_result_type": []
+}

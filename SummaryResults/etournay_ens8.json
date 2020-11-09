@@ -1,0 +1,345 @@
+{
+    "ensemble_name": "etournay_ens8",
+    "size": "80",
+    "date": "2020-09-24",
+    "purpose": "Try contraction without x or y axis variation; contraction only proggressive with time.",
+    "code_changed": "",
+    "from_condition": "",
+    "wings": [],
+    "result": "Only 2 wings did not crash before final time. Results were scored at time=10. Results at time=10 not very good: either too much contraction and weird shape or low contraction. However, continue testing in ens9 (with a new wing with more static vertices in the anterior part).",
+    "conditions_varied": {
+        "line_tension_border": [
+            "{'0': 5.8257419, '1': 12.944272, '2': 5.8257419, '3': 12.944272}",
+            "{'0': 10, '1': 24, '2': 10, '3': 24}"
+        ],
+        "preferred_area_final": [
+            "{'0': 45, '1': 10.0, '2': 45, '3': 10.0}",
+            "{'0': 55.0, '1': 10.0, '2': 55.0, '3': 10.0}"
+        ],
+        "preferred_area_initial": [
+            "{'0': 35.0, '1': 35.0, '2': 35.0, '3': 35.0}",
+            "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}"
+        ],
+        "spring_type_tension": [
+            "{'0': 2.5, '1': 2.0, '2': 1.5, '3': 1.5}",
+            "{'0': 0, '1': 0, '2': 1.5, '3': 0.75}"
+        ],
+        "time_decrease_exponent": [
+            0.2,
+            0.4,
+            2.0,
+            1.0,
+            0.7
+        ]
+    },
+    "good_simulations": [
+        "etournay_ens8_45",
+        "etournay_ens8_47",
+        "etournay_ens8_57",
+        "etournay_ens8_59"
+    ],
+    "params_by_result_type": {
+        "ok": {
+            "total_with_this_result": 4,
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 10, '1': 24, '2': 10, '3': 24}"
+                ],
+                "absent_values": [
+                    "{'0': 5.8257419, '1': 12.944272, '2': 5.8257419, '3': 12.944272}"
+                ],
+                "count": {
+                    "{'0': 10, '1': 24, '2': 10, '3': 24}": 4
+                }
+            },
+            "spring_type_tension": {
+                "present_values": [
+                    "{'0': 2.5, '1': 2.0, '2': 1.5, '3': 1.5}"
+                ],
+                "absent_values": [
+                    "{'0': 0, '1': 0, '2': 1.5, '3': 0.75}"
+                ],
+                "count": {
+                    "{'0': 2.5, '1': 2.0, '2': 1.5, '3': 1.5}": 4
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.7,
+                    1.0
+                ],
+                "absent_values": [
+                    0.2,
+                    0.4,
+                    2.0
+                ],
+                "count": {
+                    "0.7": 2,
+                    "1.0": 2
+                }
+            }
+        },
+        "low contraction": {
+            "total_with_this_result": 10,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.7,
+                    1.0,
+                    2.0
+                ],
+                "absent_values": [
+                    0.2,
+                    0.4
+                ],
+                "count": {
+                    "0.7": 2,
+                    "1.0": 1,
+                    "2.0": 7
+                }
+            }
+        },
+        "dpy": {
+            "total_with_this_result": 15,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.7,
+                    1.0,
+                    2.0
+                ],
+                "absent_values": [
+                    0.2,
+                    0.4
+                ],
+                "count": {
+                    "0.7": 1,
+                    "1.0": 7,
+                    "2.0": 7
+                }
+            }
+        },
+        "crashed": {
+            "total_with_this_result": 23,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.2,
+                    0.4,
+                    1.0
+                ],
+                "absent_values": [
+                    2.0,
+                    0.7
+                ],
+                "count": {
+                    "0.2": 15,
+                    "0.4": 6,
+                    "1.0": 2
+                }
+            }
+        },
+        "weird hinge-blade interface": {
+            "total_with_this_result": 9,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.2,
+                    0.4
+                ],
+                "absent_values": [
+                    2.0,
+                    1.0,
+                    0.7
+                ],
+                "count": {
+                    "0.2": 1,
+                    "0.4": 8
+                }
+            }
+        },
+        "anterior invagination": {
+            "total_with_this_result": 9,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.2,
+                    0.4
+                ],
+                "absent_values": [
+                    2.0,
+                    1.0,
+                    0.7
+                ],
+                "count": {
+                    "0.2": 1,
+                    "0.4": 8
+                }
+            }
+        },
+        "survived to 20": {
+            "total_with_this_result": 2,
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 5.8257419, '1': 12.944272, '2': 5.8257419, '3': 12.944272}"
+                ],
+                "absent_values": [
+                    "{'0': 10, '1': 24, '2': 10, '3': 24}"
+                ],
+                "count": {
+                    "{'0': 5.8257419, '1': 12.944272, '2': 5.8257419, '3': 12.944272}": 2
+                }
+            },
+            "preferred_area_final": {
+                "present_values": [
+                    "{'0': 45, '1': 10.0, '2': 45, '3': 10.0}"
+                ],
+                "absent_values": [
+                    "{'0': 55.0, '1': 10.0, '2': 55.0, '3': 10.0}"
+                ],
+                "count": {
+                    "{'0': 45, '1': 10.0, '2': 45, '3': 10.0}": 2
+                }
+            },
+            "preferred_area_initial": {
+                "present_values": [
+                    "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}"
+                ],
+                "absent_values": [
+                    "{'0': 35.0, '1': 35.0, '2': 35.0, '3': 35.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}": 2
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.4
+                ],
+                "absent_values": [
+                    0.2,
+                    2.0,
+                    1.0,
+                    0.7
+                ],
+                "count": {
+                    "0.4": 2
+                }
+            }
+        },
+        "Very low contraction": {
+            "total_with_this_result": 2,
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 10, '1': 24, '2': 10, '3': 24}"
+                ],
+                "absent_values": [
+                    "{'0': 5.8257419, '1': 12.944272, '2': 5.8257419, '3': 12.944272}"
+                ],
+                "count": {
+                    "{'0': 10, '1': 24, '2': 10, '3': 24}": 2
+                }
+            },
+            "preferred_area_initial": {
+                "present_values": [
+                    "{'0': 35.0, '1': 35.0, '2': 35.0, '3': 35.0}"
+                ],
+                "absent_values": [
+                    "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}"
+                ],
+                "count": {
+                    "{'0': 35.0, '1': 35.0, '2': 35.0, '3': 35.0}": 2
+                }
+            },
+            "spring_type_tension": {
+                "present_values": [
+                    "{'0': 2.5, '1': 2.0, '2': 1.5, '3': 1.5}"
+                ],
+                "absent_values": [
+                    "{'0': 0, '1': 0, '2': 1.5, '3': 0.75}"
+                ],
+                "count": {
+                    "{'0': 2.5, '1': 2.0, '2': 1.5, '3': 1.5}": 2
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    2.0
+                ],
+                "absent_values": [
+                    0.2,
+                    0.4,
+                    1.0,
+                    0.7
+                ],
+                "count": {
+                    "2.0": 2
+                }
+            }
+        },
+        "more contraction": {
+            "total_with_this_result": 2,
+            "line_tension_border": {
+                "present_values": [
+                    "{'0': 10, '1': 24, '2': 10, '3': 24}"
+                ],
+                "absent_values": [
+                    "{'0': 5.8257419, '1': 12.944272, '2': 5.8257419, '3': 12.944272}"
+                ],
+                "count": {
+                    "{'0': 10, '1': 24, '2': 10, '3': 24}": 2
+                }
+            },
+            "preferred_area_initial": {
+                "present_values": [
+                    "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}"
+                ],
+                "absent_values": [
+                    "{'0': 35.0, '1': 35.0, '2': 35.0, '3': 35.0}"
+                ],
+                "count": {
+                    "{'0': 30.0, '1': 30.0, '2': 30.0, '3': 30.0}": 2
+                }
+            },
+            "spring_type_tension": {
+                "present_values": [
+                    "{'0': 2.5, '1': 2.0, '2': 1.5, '3': 1.5}"
+                ],
+                "absent_values": [
+                    "{'0': 0, '1': 0, '2': 1.5, '3': 0.75}"
+                ],
+                "count": {
+                    "{'0': 2.5, '1': 2.0, '2': 1.5, '3': 1.5}": 2
+                }
+            },
+            "time_decrease_exponent": {
+                "present_values": [
+                    1.0
+                ],
+                "absent_values": [
+                    0.2,
+                    0.4,
+                    2.0,
+                    0.7
+                ],
+                "count": {
+                    "1.0": 2
+                }
+            }
+        },
+        "better": {
+            "total_with_this_result": 19,
+            "time_decrease_exponent": {
+                "present_values": [
+                    0.4,
+                    0.7,
+                    1.0
+                ],
+                "absent_values": [
+                    0.2,
+                    2.0
+                ],
+                "count": {
+                    "0.4": 2,
+                    "0.7": 13,
+                    "1.0": 4
+                }
+            }
+        }
+    }
+}

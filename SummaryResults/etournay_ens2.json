@@ -1,0 +1,105 @@
+{
+    "ensemble_name": "etournay_ens2",
+    "size": "90",
+    "date": "2020-09-11",
+    "purpose": "Set hinge contraction with real-sized wing, efter changing Energy equation for the one with the K parameter. In this ensemble, upper_time_bound was set to twice max_accepted_movements by mistake. See ens3, which solved this error. ",
+    "code_changed": "Hinge contraction can be affected by either X coordinate, Y coordinate or both, in addition to time. ",
+    "from_condition": "",
+    "wings": ["etournay1_3cpv"],
+    "result": "Good simulations were defined only by 1) time affects contraction and 2) Y or XY coords affect contraction. However, results are not very good. More hinge contraction would be ideal. Many simulations crashed. ",
+    "conditions_varied": {
+        "TIME_CONTROLS_SIZE": [
+            1,
+            -1
+        ],
+        "coord_controls_size": [
+            1,
+            2,
+            3
+        ],
+        "perimeter_contract": [
+            "{'0': 0.008, '1': 0.006, '2': 0.008, '3': 0.006}",
+            "{'0': 0.005, '1': 0.002, '2': 0.005, '3': 0.002}",
+            "{'0': 0.001, '1': 0.006, '2': 0.001, '3': 0.006}"
+        ],
+        "preferred_area_final": [
+            "{'0': 30.0, '1': 1.0, '2': 30.0, '3': 1.0}",
+            "{'0': 30.0, '1': 5.0, '2': 30.0, '3': 5.0}",
+            "{'0': 50, '1': 0.1, '2': 50, '3': 0.1}",
+            "{'0': 45, '1': 1.0, '2': 45, '3': 1.0}",
+            "{'0': 30.0, '1': 0.1, '2': 30.0, '3': 0.1}"
+        ]
+    },
+    "good_simulations": [
+        "etournay_ens2_60",
+        "etournay_ens2_61",
+        "etournay_ens2_62",
+        "etournay_ens2_63",
+        "etournay_ens2_64",
+        "etournay_ens2_73",
+        "etournay_ens2_74",
+        "etournay_ens2_75",
+        "etournay_ens2_76",
+        "etournay_ens2_77",
+        "etournay_ens2_78",
+        "etournay_ens2_79",
+        "etournay_ens2_80"
+    ],
+    "params_by_result_type": {
+        "no_contraction": {
+            "total_with_this_result": 45,
+            "TIME_CONTROLS_SIZE": {
+                "present_values": [
+                    -1
+                ],
+                "absent_values": [
+                    1
+                ],
+                "count": {
+                    "-1": 45
+                }
+            }
+        },
+        "too_much_AP_contraction": {
+            "total_with_this_result": 32,
+            "TIME_CONTROLS_SIZE": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    -1
+                ],
+                "count": {
+                    "1": 32
+                }
+            }
+        },
+        "ok": {
+            "total_with_this_result": 13,
+            "TIME_CONTROLS_SIZE": {
+                "present_values": [
+                    1
+                ],
+                "absent_values": [
+                    -1
+                ],
+                "count": {
+                    "1": 13
+                }
+            },
+            "coord_controls_size": {
+                "present_values": [
+                    2,
+                    3
+                ],
+                "absent_values": [
+                    1
+                ],
+                "count": {
+                    "2": 7,
+                    "3": 6
+                }
+            }
+        }
+    }
+}

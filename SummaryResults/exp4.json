@@ -1,0 +1,62 @@
+{
+    "ensemble_name": "exp4",
+    "size": "36",
+    "date": "2020-07-16",
+    "purpose": "Make expansion (isotropic growth) starting from small10 simulation 3 printed 4. The output should be fed into hinge contraction",
+    "code_changed": "",
+    "from_condition": "",
+    "wings": [
+        "s10-3-4"
+    ],
+    "result": "Some were good, most acceptable. Used simulation 20 of this ensemble to feed hinge contraction (ensembles starting with exp4_20_hc)",
+    "conditions_varied": {
+        "edge_angle_prop_maxangle": [
+            "{'0': 0.6, '1': 1.0, '2': 1.0, '3': 1.0}",
+            "{'0': 0.8, '1': 1.0, '2': 1.0, '3': 1.0}",
+            "{'0': 0.4, '1': 1.0, '2': 1.0, '3': 1.0}"
+        ],
+        "preferred_area_fina": [
+            "{'0': 100.0, '1': 12.0, '2': 12.0, '3': 12.0}",
+            "{'0': 60.0, '1': 12.0, '2': 12.0, '3': 12.0}"
+        ],
+        "temperature_positive_energy": [
+            0.05,
+            0.1
+        ],
+        "time_decrease_exponent": [
+            0.5,
+            1.0,
+            3.0
+        ]
+    },
+    "good_simulations": [
+        "exp4_2",
+        "exp4_8",
+        "exp4_11",
+        "exp4_14",
+        "exp4_17",
+        "exp4_20",
+        "exp4_26",
+        "exp4_32"
+    ],
+    "params_by_result_type": {
+        "ok": {
+            "total_with_this_result": 8,
+            "edge_angle_prop_maxangle": {
+                "present_values": [
+                    "{'0': 0.4, '1': 1.0, '2': 1.0, '3': 1.0}"
+                ],
+                "absent_values": [
+                    "{'0': 0.6, '1': 1.0, '2': 1.0, '3': 1.0}",
+                    "{'0': 0.8, '1': 1.0, '2': 1.0, '3': 1.0}"
+                ],
+                "count": {
+                    "{'0': 0.4, '1': 1.0, '2': 1.0, '3': 1.0}": 8
+                }
+            }
+        },
+        "bad": {
+            "total_with_this_result": 28
+        }
+    }
+}

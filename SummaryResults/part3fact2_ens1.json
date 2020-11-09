@@ -1,0 +1,28 @@
+{
+    "ensemble_name": "part3fact2_ens1",
+    "size": "16",
+    "date": "2020-09-17",
+    "purpose": "Set hinge contraction conditions with equation 2",
+    "code_changed": "",
+    "from_condition": "",
+    "wings": [],
+    "result": "",
+    "conditions_varied": {
+        "xcoord_controls_size": [
+            1,
+            2,
+            3,
+            -1
+        ],
+        "preferred_area_final": [
+            "{'0': 45.0, '1': 10.0, '2': 45.0, '3': 10.0}",
+            "{'0': 30.0, '1': 10.0, '2': 30.0, '3': 10.0}"
+        ],
+        "spring_type_tension": [
+            "{'0': 1.5, '1': 0.6, '2': 0.5, '3': 0.25}",
+            "{'0': 2.5, '1': 2.0, '2': 1.5, '3': 0.75}"
+        ]
+    },
+    "good_simulations": [],
+    "params_by_result_type": []
+}
