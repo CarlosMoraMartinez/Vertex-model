@@ -46,7 +46,8 @@ const float XCOORD_DECREASE_EXPONENT = 0.5; //Only active if XCOORD_CONTROLS_SIZ
 const float ENERGY_TERM1 = 1;
 const float ENERGY_TERM2 = 1;
 const float ENERGY_TERM3 = 1;
-//const float ENERGY_TERM4 = 0;
+const float ENERGY_TERM4 = 0;
+const bool USE_TERM4 = true;
 
 const float LENGTH_ROTATED_EDGE = 0.5*T1_TRANSITION_CRITICAL_DISTANCE*1.2; //after a t1 transition, rotated edge length is multiplied by twice this constant
 
@@ -259,6 +260,7 @@ class Tissue{
 		double distance(int v1, int v2);
 		double calculateEnergy(Vertex& v);
 		double calculateEnergy2(Vertex& v);
+		double calculateEnergy_term4(Vertex& v);
 		void derivativeVertexPos(const Vertex &v, pointDerivative & pd);
 		void moveVertex(Vertex& v, float x, float y);
 		void moveVertexBack(Vertex& v);
@@ -338,7 +340,7 @@ class Tissue{
 		cell_type_param K;
 		cell_type_param line_tension;
 		cell_type_param line_tension_tissue_boundary;
-		float energy_term1, energy_term2, energy_term3;//, energy_term4;
+		float energy_term1, energy_term2, energy_term3, energy_term4;
 		//float spring_constant;
         spring_type_param spring_type_constants; //Used if spring_tension_mode ==0
         spring_type_param spring_type_min_positions; //Used when going from expansion to hinge contraction

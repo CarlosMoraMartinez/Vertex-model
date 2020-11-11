@@ -236,6 +236,7 @@ void Tissue::set_default_simulation_params()
 	energy_term1 = ENERGY_TERM1;
 	energy_term2 = ENERGY_TERM2;
 	energy_term3 = ENERGY_TERM3;
+	energy_term4 = ENERGY_TERM4;
 	//energy_term4 = ENERGY_TERM4;
 	//difference_flow_rate = 0;
 
@@ -402,6 +403,7 @@ void Tissue::initialize_params(std::string params_file)
 	energy_term1 = read_real_par(it);
 	energy_term2 = read_real_par(it);
 	energy_term3 = read_real_par(it);
+	energy_term4 = read_real_par(it);
 	//energy_term4 = read_real_par(it);
 
 	//spring_constant = read_real_par(it);
@@ -915,7 +917,7 @@ void Tissue::setSpringTension_mode2(){
 		include[s.ind] = true;
  		 for(int i=0; i < CELLS_PER_VERTEX; i++){
 			if(vertices[vcell].cells[i] != EMPTY_CONNECTION){
-				if(cells[vertices[vcell].cells[i]].type == CellType::hinge){
+				if(cells[vertices[vcell].cells[i]].type == CellType::hinge || cells[vertices[vcell].cells[i]].type == CellType::vein_hinge){
 					include[s.ind] = false;
 					break;
 				}
@@ -1428,6 +1430,34 @@ inline double Tissue::calculateEnergy(Vertex &v)
 	}
 	return term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3;
 }//calcEnergy2
+inline double Tissue::calculateEnergy_term4(Vertex& v){
+	int n = 0, aux_nei, aux_ind;
+	float products[CELLS_PER_VERTEX];
+	double term4 = 0;
+	for (int i = 0; i < CELLS_PER_VERTEX; i++)
+	{
+		if (v.edges[i] != EMPTY_CONNECTION)
+		{
+			aux_ind = v.edges[i];
+			if(edges[aux_ind].type == EdgeType::tissue_boundary){
+				aux_nei = edges[aux_ind].vertices[0] == v.ind ? edges[aux_ind].vertices[1] : edges[aux_ind].vertices[0];
+				products[n] = ((vertices[aux_nei].x - v.x)/edges[aux_ind].length)*((vertices[aux_nei].x -bufferMovement.x)/bufferMovement.edge_lengths[i]);
+				products[n] += ((vertices[aux_nei].y - v.y)/edges[aux_ind].length)*((vertices[aux_nei].y -bufferMovement.y)/bufferMovement.edge_lengths[i]);
+				products[n] = abs(products[n]);
+				n++;
+			}
+		}
+	}
+	if(n > 0){
+		term4 = products[0];
+		for(int i = 1; i < n; n++){
+			if(products[i] > term4)
+				term4 = products[i];
+		}
+		term4 = energy_term4*(2-term4);
+	}
+	return term4;
+}
 void Tissue::moveVertexBack(Vertex &v)
 {
 	v.x = bufferMovement.x;
@@ -1523,6 +1553,8 @@ bool Tissue::tryMoveVertex()
 	new_y = vertices[vertex_to_move].movable_y ? bufferMovement.y + sin(angle) * radius : bufferMovement.y;
 	moveVertex(vertices[vertex_to_move], new_x, new_y);
 	vertices[vertex_to_move].energy = calculateEnergy(vertices[vertex_to_move]);
+	if(USE_TERM4)
+		vertices[vertex_to_move].energy += calculateEnergy_term4(vertices[vertex_to_move]);
 	//Prob of accepting unfavourable movement ins constant
 	move_prob = vertices[vertex_to_move].energy <= bufferMovement.energy ? temperature_negative_energy : temperature_positive_energy;
 	double move = unif(generator);
