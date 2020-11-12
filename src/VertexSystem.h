@@ -46,7 +46,6 @@ const float XCOORD_DECREASE_EXPONENT = 0.5; //Only active if XCOORD_CONTROLS_SIZ
 const float ENERGY_TERM1 = 1;
 const float ENERGY_TERM2 = 1;
 const float ENERGY_TERM3 = 1;
-const float ENERGY_TERM4 = 0;
 const bool USE_TERM4 = true;
 
 const float LENGTH_ROTATED_EDGE = 0.5*T1_TRANSITION_CRITICAL_DISTANCE*1.2; //after a t1 transition, rotated edge length is multiplied by twice this constant
@@ -340,13 +339,15 @@ class Tissue{
 		cell_type_param K;
 		cell_type_param line_tension;
 		cell_type_param line_tension_tissue_boundary;
-		float energy_term1, energy_term2, energy_term3, energy_term4;
+		float energy_term1, energy_term2, energy_term3;
+		cell_type_param energy_term4_posterior, energy_term4_anterior;
+		bool use_term4;
 		//float spring_constant;
         spring_type_param spring_type_constants; //Used if spring_tension_mode ==0
         spring_type_param spring_type_min_positions; //Used when going from expansion to hinge contraction
 		float add_static_to_hinge; //Used when going from expansion to hinge contraction, to set static vertices in anterior hinge
 		int spring_tension_mode; //0: with tension for each type, 1: A-P compartments, 2: PD gradient, 3: AP compartments and PD gradient, 4:Different gradients in A or P
-		float spring_posterior_comparment_region; //used if spring_tension_mode is 1 or 3
+		float posterior_comparment_region; //used if spring_tension_mode is 1 or 3
 		float spring_posterior_compartment_factor; //used if spring_tension_mode is 1 or 3
 		float spring_gradient_min_tension; //used if spring_tension_mode is 2 or 3
 		float spring_gradient_max_tension; //used if spring_tension_mode is 2 or 3
