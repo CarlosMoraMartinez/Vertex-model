@@ -10,6 +10,7 @@ cell_ext = '.cells'
 vert_ext = '.points'
 cent_ext = '.cent'
 spring_ext = '.spr'
+stredge_ext = '.stre'
 
 size = 2.5
 nrow = 10
@@ -54,6 +55,9 @@ class HexGrid:
         Each list has the ordered vertices of a cell
     springs : list of tuples of 2 integers
         Each tuple contains vertices forming the spring
+    stringEdges:
+        If springs type is negative, spring vertices are not static and are bound by stringEdges
+        If spring type < 0, spring type will be assigned as abs()%4. If <-3, point will ve static.
     celltypes : list of integers representing cell types:
         bladetype = 0
         hingetype = 1
@@ -129,6 +133,7 @@ class HexGrid:
         self.vertices = []
         self.cells = []
         self.springs = []
+        self.stringEdges = []
         self.celltypes = []
         self.vnum = 0
         self.plotcol = None
@@ -326,6 +331,8 @@ class HexGrid:
         for x, y, ind, mov in self.vertices:
             if(mov != 1):
                 ax.scatter(x, y, color = STATIC_COLS[mov], s = 2)
+        for a, b in self.stringEdges:
+            plt.plot( [self.vertices[a][0], self.vertices[b][0]] ,  [self.vertices[a][1], self.vertices[b][1]], c = "red")
         if(save):
             self.saveFig()
         return(fig, ax, pc)
@@ -420,6 +427,12 @@ class HexGrid:
         f = open(dirname + self.outname + add + spring_ext,  'w')
         f.write(str(len(self.springs)) + '\n')
         for c in self.springs:
+            f.write('\t'.join([str(i) for i in c]))
+            f.write('\n')
+        f.close()
+        f = open(dirname + self.outname + add + stredge_ext,  'w')
+        f.write(str(len(self.stringEdges)) + '\n')
+        for c in self.stringEdges:
             f.write('\t'.join([str(i) for i in c]))
             f.write('\n')
         f.close()
@@ -518,11 +531,17 @@ class HexGrid:
 
     def addSpring(self, v, x, y, kind=DEFAULT_SPRING_KIND):
         ind = len(self.vertices)
-        self.vertices.append([x, y, ind, 0])
-        self.springs.append([v, ind, kind]) 
-        self.vnum+=1
+        if(kind >= 0):
+            self.vertices.append([x, y, ind, 0])
+            self.springs.append([v, ind, kind]) 
+            self.vnum+=1
+        else:
+            self.vertices.append([x, y, ind, 0 if kind < -3 else 1])
+            self.springs.append([v, ind, abs(kind)%4]) 
+            self.vnum+=1            
         return ind       
-
+    def addStringEdge(self, a, b):
+        self.stringEdges.append([a, b]) 
     def getSpringWithVertex(self, v):
         res = -1
         for i, s in enumerate(self.springs):

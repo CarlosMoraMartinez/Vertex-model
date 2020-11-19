@@ -236,7 +236,6 @@ void Tissue::set_default_simulation_params()
 	energy_term1 = ENERGY_TERM1;
 	energy_term2 = ENERGY_TERM2;
 	energy_term3 = ENERGY_TERM3;
-	energy_term4 = ENERGY_TERM4;
 	//energy_term4 = ENERGY_TERM4;
 	//difference_flow_rate = 0;
 
@@ -275,7 +274,7 @@ void Tissue::set_default_simulation_params()
 	edge_temporal_angle_efect_min = vary_line_tension;
 
 	spring_tension_mode = 0; //0: with tension for each type, 1: A-P compartments, 2: PD gradient, 3: AP compartments and PD gradient, 4:Different gradients in A or P
-	spring_posterior_comparment_region = 0; //used if spring_tension_mode is 1 or 3
+	posterior_comparment_region = 0; //used if spring_tension_mode is 1 or 3
 	spring_posterior_compartment_factor = 0; //used if spring_tension_mode is 1 or 3
 	spring_gradient_min_tension = 0; //used if spring_tension_mode is 2 or 3
 	spring_gradient_max_tension = 0; //used if spring_tension_mode is 2 or 3
@@ -288,6 +287,11 @@ void Tissue::set_default_simulation_params()
 	line_tension_interstatic  = LINE_TENSION_INTERSTATIC;
 	hinge_blade_interface_tension = HINGE_BLADE_INTERFACE_TENSION;
 	for(int i = 0; i < NUM_SPRING_TYPES; i++) spring_type_min_positions.val[i] = 0.5;
+
+	use_term4 = USE_TERM4;
+	energy_term4_posterior = vary_line_tension;
+	energy_term4_anterior = vary_line_tension;
+
 	add_static_to_hinge = -1;
 }
 
@@ -403,7 +407,6 @@ void Tissue::initialize_params(std::string params_file)
 	energy_term1 = read_real_par(it);
 	energy_term2 = read_real_par(it);
 	energy_term3 = read_real_par(it);
-	energy_term4 = read_real_par(it);
 	//energy_term4 = read_real_par(it);
 
 	//spring_constant = read_real_par(it);
@@ -457,7 +460,7 @@ void Tissue::initialize_params(std::string params_file)
 	//difference_flow_rate = read_real_par(it);
 
 	spring_tension_mode = read_real_par(it); //0: with tension for each type, 1: A-P compartments, 2: PD gradient, 3: AP compartments and PD gradient, 4:Different gradients in A or P
-	spring_posterior_comparment_region = read_real_par(it); //used if spring_tension_mode is 1 or 3
+	posterior_comparment_region = read_real_par(it); //used if spring_tension_mode is 1 or 3
 	spring_posterior_compartment_factor = read_real_par(it); //used if spring_tension_mode is 1 or 3
 	spring_gradient_min_tension = read_real_par(it); //used if spring_tension_mode is 2 or 3
 	spring_gradient_max_tension = read_real_par(it); //used if spring_tension_mode is 2 or 3
@@ -476,6 +479,11 @@ void Tissue::initialize_params(std::string params_file)
 
 	hinge_blade_interface_tension = read_real_par(it);
 	line_tension_interstatic = read_real_par(it);
+
+	use_term4 = read_real_par(it) > 0;
+	energy_term4_anterior = read_celltype_par(it, sz);
+	energy_term4_posterior = read_celltype_par(it, sz);
+
 	random_seed = read_real_par(it);
 }
 
@@ -884,13 +892,13 @@ void Tissue::setEdgeTension(int e)
 
 // A-P compartments (uses tension determined by spring type)
 void Tissue::setSpringTension_mode1(){
-	//1) Calculate division point
-	float miny = vertices[0].y, maxy = vertices[0].y;
+	//1) Calculate division point (Now it is calculated in the set min/max points function)
+/* 	float miny = vertices[0].y, maxy = vertices[0].y;
 	for(Vertex v: vertices){
 		if(v.y > maxy) maxy = v.y;
 		if(v.y < miny) miny = v.y;
 	}
-	AP_compartment_limit = miny + (maxy - miny)*spring_posterior_comparment_region;
+	AP_compartment_limit = miny + (maxy - miny)*posterior_comparment_region; */
 	int vaux;
 	for(Edge &s: springs){
 		vaux = vertices[s.vertices[0]].movable ? s.vertices[1] : s.vertices[0];
@@ -901,7 +909,7 @@ void Tissue::setSpringTension_mode1(){
 } 
 // P-D gradient
 void Tissue::setSpringTension_mode2(){
-	AP_compartment_limit = 0;//To avoid future problems
+	//AP_compartment_limit = 0;//To avoid future problems
 	std::vector<int> vert_indices, spr_indices;
 	std::vector<float> gradient_factor;
 	int vaux, vcell;
@@ -953,13 +961,13 @@ void Tissue::setSpringTension_mode3(){
 } 
 // A different (independent) gradient in each compartment
 void Tissue::setSpringTension_mode4(){
-	//1) Calculate division point
+/* 	//1) Calculate division point
 	float miny = vertices[0].y, maxy = vertices[0].y;
 	for(Vertex v: vertices){
 		if(v.y > maxy) maxy = v.y;
 		if(v.y < miny) miny = v.y;
 	}
-	AP_compartment_limit = miny + (maxy - miny)*spring_posterior_comparment_region;
+	AP_compartment_limit = miny + (maxy - miny)*posterior_comparment_region; */
 	int vaux;
 	std::vector<int> vert_indices_anterior, vert_indices_posterior, anterior_springs, posterior_springs;
 	std::vector<float> gradient_factor_anterior, gradient_factor_posterior;	
@@ -1319,6 +1327,7 @@ void Tissue::setMinAndMaxPositions()
 	max_xpos = max;
 	min_ypos = miny;
 	max_ypos = maxy;
+	AP_compartment_limit = miny + (maxy - miny)*posterior_comparment_region;
 	cout << "Min wing x position: " << min_xpos << "; Max wing xposition: " << max_xpos << endl;
 }
 
@@ -1431,9 +1440,10 @@ inline double Tissue::calculateEnergy(Vertex &v)
 	return term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3;
 }//calcEnergy2
 inline double Tissue::calculateEnergy_term4(Vertex& v){
-	int n = 0, aux_nei, aux_ind;
+	int n = 0, aux_nei, aux_ind, aux_cell;
 	float products[CELLS_PER_VERTEX];
 	double term4 = 0;
+	cell_type_param *term4coef = v.y > AP_compartment_limit ? &energy_term4_anterior: &energy_term4_posterior;
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
 		if (v.edges[i] != EMPTY_CONNECTION)
@@ -1441,8 +1451,10 @@ inline double Tissue::calculateEnergy_term4(Vertex& v){
 			aux_ind = v.edges[i];
 			if(edges[aux_ind].type == EdgeType::tissue_boundary){
 				aux_nei = edges[aux_ind].vertices[0] == v.ind ? edges[aux_ind].vertices[1] : edges[aux_ind].vertices[0];
+				aux_cell = edges[aux_ind].cells[0] == EMPTY_CONNECTION ? edges[aux_ind].cells[1] : edges[aux_ind].cells[0];
 				products[n] = ((vertices[aux_nei].x - v.x)/edges[aux_ind].length)*((vertices[aux_nei].x -bufferMovement.x)/bufferMovement.edge_lengths[i]);
 				products[n] += ((vertices[aux_nei].y - v.y)/edges[aux_ind].length)*((vertices[aux_nei].y -bufferMovement.y)/bufferMovement.edge_lengths[i]);
+				products[n] = term4coef->val[static_cast<int>(cells[aux_cell].type)]*(2-abs(products[n]));
 				products[n] = abs(products[n]);
 				n++;
 			}
@@ -1451,10 +1463,12 @@ inline double Tissue::calculateEnergy_term4(Vertex& v){
 	if(n > 0){
 		term4 = products[0];
 		for(int i = 1; i < n; n++){
-			if(products[i] > term4)
-				term4 = products[i];
+				term4 += products[i];
+				//if(products[i]>term4)
+				//	term4 = products[i];
 		}
-		term4 = energy_term4*(2-term4);
+		term4 /= n;
+		//term4 = term4coef->val[static_cast<int>(cells[aux_cell].type)]*(2 - term4);
 	}
 	return term4;
 }
@@ -1553,7 +1567,7 @@ bool Tissue::tryMoveVertex()
 	new_y = vertices[vertex_to_move].movable_y ? bufferMovement.y + sin(angle) * radius : bufferMovement.y;
 	moveVertex(vertices[vertex_to_move], new_x, new_y);
 	vertices[vertex_to_move].energy = calculateEnergy(vertices[vertex_to_move]);
-	if(USE_TERM4)
+	if(use_term4)
 		vertices[vertex_to_move].energy += calculateEnergy_term4(vertices[vertex_to_move]);
 	//Prob of accepting unfavourable movement ins constant
 	move_prob = vertices[vertex_to_move].energy <= bufferMovement.energy ? temperature_negative_energy : temperature_positive_energy;

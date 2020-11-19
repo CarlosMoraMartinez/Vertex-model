@@ -175,8 +175,10 @@ class getBorders:
         self.staticPoints = []
         self.springPoints = []
         self.newSpringPoints = []
+        self.stringEdges = []
         self.springPlotRefs = dict()
         self.pointPlotRefs = dict()
+        self.stringEdgesPlotRefs = dict()
         self.springType = 0
         self.hx = hx
         self.borderpoints = [self.hx.vertices[i] for i in self.hx.getBorderPoints()]
@@ -292,16 +294,28 @@ class getBorders:
         for s in springs:
             snum = self.hx.addSpring(*s)
             self.newSpringPoints.append(snum)
+            if(self.springType < 0 and self.stringEdges):
+                self.stringEdges.append([self.stringEdges[-1][1], snum])
+            elif(self.springType < 0):
+                self.stringEdges.append([-1, snum])
+        for a, b in self.stringEdges:
+            self.hx.addStringEdge(a, b)
         self.updatePlot()
 
     def updatePlot(self):
         for sl in self.springPlotRefs.values():
             self.ax.lines.remove(sl)
+        for sl in self.stringEdgesPlotRefs.values():
+            self.ax.lines.remove(sl)
         self.springPlotRefs.clear()
         for i, s in enumerate(self.hx.springs):
             spref = self.ax.plot([self.hx.vertices[s[0]][0], self.hx.vertices[s[1]][0]], [self.hx.vertices[s[0]][1], self.hx.vertices[s[1]][1]], c=mhg.springcols[s[2]])
             self.springPlotRefs.setdefault(i, spref[0])
-
+        for i, s in enumerate(self.hx.stringEdges):
+            if(s[0] < 0):
+                continue
+            spref = self.ax.plot([self.hx.vertices[s[0]][0], self.hx.vertices[s[1]][0]], [self.hx.vertices[s[0]][1], self.hx.vertices[s[1]][1]], c=mhg.springcols[0])
+            self.stringEdgesPlotRefs.setdefault(i, spref[0])           
         for pp in self.pointPlotRefs.values():
             pp.set_visible(False)
         self.pointPlotRefs.clear()
