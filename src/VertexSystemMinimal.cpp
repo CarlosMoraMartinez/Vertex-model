@@ -23,15 +23,15 @@ Tissue::Tissue() : num_cells(0), num_vertices(0), num_edges(0), counter_move_tri
 	write_every_N_moves = 0;
 	step_mode = false;
 
+	setMinAndMaxPositions();
 	set_default_simulation_params();
 	setHingeMinAndMaxPositions();
-	setMinAndMaxPositions();
 }
 
 //Constructor that reads vertex positions and cells from two different files, and initializes all variables using constants defined in VertexSystem.h
 Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements, int write_every_N_moves, string simulname) : Tissue()
 {
-
+	cout << "Initializing Tissue object without params_file...\n";
 	this->simname = simulname == "" ? starting_tissue_file : simulname;
 	this->max_accepted_movements = max_accepted_movements;
 	this->upper_bound_movements = max_accepted_movements;
@@ -95,18 +95,43 @@ Tissue::Tissue(std::string starting_tissue_file, int max_accepted_movements, int
 		if (REPORT_OUT > 0)
 			cout << "No spring file\n";
 	}
+	try
+	{
+		string strefile = starting_tissue_file + STRINGEDGE_FILE_EXTENSION;
+		ifstream fin_stre(strefile);
+		if (fin_stre.good())
+		{
+			if (REPORT_OUT > 0)
+				cout << "reading .stre file...\n";
+			initialize_stringedges(fin_stre);
+			if (REPORT_OUT > 0)
+				cout << ".stre file read...\n";
+		}
+		else
+		{
+			cout << "No stre file\n";
+		}
+		fin_stre.close();
+	}
+	catch (const char *msg)
+	{
+		if (REPORT_OUT > 0){
+			cout << msg << endl;
+			cout << "No stre file\n";
+		}
+	}
 	//No file with parameters, therefore use constants defined in VertexSystem.h.
 	//Also initializes cell area and vertex energy
+	setMinAndMaxPositions();
 	set_default_params();
+	setHingeMinAndMaxPositions();
 	if (REPORT_OUT > 0)
 		cout << "parameters set to cells\n";
-	setHingeMinAndMaxPositions();
-	setMinAndMaxPositions();
 }
 
 Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int max_accepted_movements, int write_every_N_moves, string simulname) : num_cells(0), num_vertices(0), num_edges(0), counter_move_trials(0), written_files(0), counter_moves_accepted(0), counter_favorable_accepted(0), counter_favorable_rejected(0), counter_unfav_accepted(0), counter_unfav_rejected(0), counter_t1(0), counter_t1_abortions(0), counter_edges_removed(0), counter_divisions(0), counter_t2(0), counter_t1_outwards(0), counter_t1_inwards(0)
 {
-	cout << "Initializing Tissue object...\n";
+	cout << "Initializing Tissue object with params_file...\n";
 	this->simname = simulname == "" ? starting_tissue_file : simulname;
 	this->max_accepted_movements = 0; //max_accepted_movements; //Will be overwritten by Parameter File unless value in file is 0!! (only conserved for compatibility with elder scripts)
 	this->upper_bound_movements = max_accepted_movements; //Will be overwritten
@@ -197,13 +222,40 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 			cout << "No spring file\n";
 		}
 	}
+	//Get string edges
+	try
+	{
+		string strefile = starting_tissue_file + STRINGEDGE_FILE_EXTENSION;
+		ifstream fin_stre(strefile);
+		if (fin_stre.good())
+		{
+			if (REPORT_OUT > 0)
+				cout << "reading .stre file...\n";
+			initialize_stringedges(fin_stre);
+			if (REPORT_OUT > 0)
+				cout << ".stre file read...\n";
+		}
+		else
+		{
+			cout << "No stre file\n";
+		}
+		fin_stre.close();
+	}
+	catch (const char *msg)
+	{
+		if (REPORT_OUT > 0){
+			cout << msg << endl;
+			cout << "No stre file\n";
+		}
+	}
 	//No file with parameters, therefore use constants defined in VertexSystem.h.
 	//Also initializes cell area and vertex energy
+	
+	setMinAndMaxPositions();
 	set_default_params();
+	setHingeMinAndMaxPositions();
 	if (REPORT_OUT > 0)
 		cout << "parameters set to cells\n";
-	setHingeMinAndMaxPositions();
-	setMinAndMaxPositions();
 }
 
 void Tissue::set_default_simulation_params()
@@ -293,14 +345,17 @@ void Tissue::set_default_simulation_params()
 	energy_term4_anterior = vary_line_tension;
 
 	add_static_to_hinge = -1;
+	line_tension_interstatic = LINE_TENSION_INTERSTATIC;
+	line_tension_stringedge = LINE_TENSION_TISSUE_BOUNDARY;
+	tension_stringedge_posterior_prop = 1;
 }
 
 void Tissue::readNewParameters(std::string filename)
 {
 	initialize_params(filename);
-	set_default_params();
-	setHingeMinAndMaxPositions();
-	setMinAndMaxPositions();
+	setMinAndMaxPositions(); //uses vertices
+	set_default_params(); //Sets also cell centroids
+	setHingeMinAndMaxPositions(); //uses centroids
 }
 
 double Tissue::read_real_par(std::vector<std::string>::iterator &it)
@@ -483,7 +538,8 @@ void Tissue::initialize_params(std::string params_file)
 	use_term4 = read_real_par(it) > 0;
 	energy_term4_anterior = read_celltype_par(it, sz);
 	energy_term4_posterior = read_celltype_par(it, sz);
-
+	line_tension_stringedge = read_real_par(it);
+	tension_stringedge_posterior_prop = read_real_par(it);
 	random_seed = read_real_par(it);
 }
 
@@ -608,6 +664,43 @@ void Tissue::initialize_springs(std::ifstream &inp)
 	cout << "Spring tension set\n";
 }
 
+void Tissue::initialize_stringedges(std::ifstream& inp){
+//Create new edges
+	string s;
+	getline(inp, s);
+	int num_stringedges = stoi(s);
+	if (num_stringedges == 0)
+		return;
+	Edge e;
+	e.dead = false;
+	e.type = EdgeType::stringedge;
+	e.cells[0] = EMPTY_CONNECTION;
+	e.cells[1] = EMPTY_CONNECTION;
+	e.tension = line_tension_stringedge;
+	e.can_transition = false;
+	e.base_tension = e.tension;
+	
+	std::string::size_type sz;
+	int i = num_edges;
+	while (getline(inp, s))
+	{
+		e.vertices[0] = stoi(s, &sz);
+		if(e.vertices[0] < 0)
+			continue;
+		s = s.substr(sz);
+		e.vertices[1] = stoi(s, &sz);
+		s = s.substr(sz);
+		e.ind = i;
+		e.length = distance(e.vertices[0], e.vertices[1]);
+		vertices[e.vertices[0]].neighbour_vertices[which(EMPTY_CONNECTION, vertices[e.vertices[0]].neighbour_vertices, CELLS_PER_VERTEX)] = e.vertices[1];
+		vertices[e.vertices[1]].neighbour_vertices[which(EMPTY_CONNECTION, vertices[e.vertices[1]].neighbour_vertices, CELLS_PER_VERTEX)] = e.vertices[0];
+		vertices[e.vertices[0]].edges[which(EMPTY_CONNECTION, vertices[e.vertices[0]].edges, CELLS_PER_VERTEX)] = i;
+		vertices[e.vertices[1]].edges[which(EMPTY_CONNECTION, vertices[e.vertices[0]].edges, CELLS_PER_VERTEX)] = i;
+
+		this->edges.push_back(e);
+		i++;
+	}
+}
 /*
 Initializes cells from file; adds cells to vertices
 Input: ifstream pointing to a file defining vertex identifiers (starting from 0) for each cell
@@ -766,8 +859,17 @@ void Tissue::set_default_params()
 
 	for (int e = 0; e < edges.size(); e++)
 	{
-		setEdgeType(e);
-		setEdgeTension(e);
+		if(edges[e].type != EdgeType::stringedge){
+			setEdgeType(e);
+			setEdgeTension(e);
+		}else{
+			if(0.5*(vertices[edges[e].vertices[0]].y + vertices[edges[e].vertices[1]].y) >= AP_compartment_limit ){
+				edges[e].tension = line_tension_stringedge; //Redundant at start, but useful when changing parameter files
+			}else{
+				edges[e].tension = line_tension_stringedge*tension_stringedge_posterior_prop;
+			}
+			edges[e].base_tension = edges[e].tension;
+		}
 	}
 	for (int v = 0; v < vertices.size(); v++)
 	{
@@ -851,7 +953,7 @@ void Tissue::setEdgeType(int e)
 
 void Tissue::setEdgeTension(int e)
 {
-	if (edges[e].type == EdgeType::tissue_boundary)
+	if (edges[e].type == EdgeType::tissue_boundary || edges[e].type == EdgeType::stringedge)
 		return;
 	if (!(cells[edges[e].cells[0]].vary_line_tension && cells[edges[e].cells[1]].vary_line_tension))
 		return;
@@ -1287,7 +1389,7 @@ void Tissue::setHingeMinAndMaxPositions()
 	cout << "Min hinge position: " << hinge_min_xpos << "; Max hinge position: " << hinge_max_xpos << endl;
 }//end set hinge max and min positions
 
-void Tissue::setMinAndMaxPositions()
+/* void Tissue::setMinAndMaxPositions()
 {
 	calculateCellCentroid(cells[0]);
 	double min, max, miny, maxy;
@@ -1328,9 +1430,52 @@ void Tissue::setMinAndMaxPositions()
 	min_ypos = miny;
 	max_ypos = maxy;
 	AP_compartment_limit = miny + (maxy - miny)*posterior_comparment_region;
-	cout << "Min wing x position: " << min_xpos << "; Max wing xposition: " << max_xpos << endl;
+	cout << "Min wing x position: " << min_xpos << "; Max wing xposition: " << max_xpos << "; A-P limit: " << AP_compartment_limit<< endl;
+} */
+void Tissue::setMinAndMaxPositions()
+{
+	calculateCellCentroid(cells[0]);
+	double min, max, miny, maxy;
+	bool set = false;
+	for (Vertex v : vertices)
+	{
+		if(v.cells[0] == EMPTY_CONNECTION)
+			continue;
+		if (set)
+		{
+			if (v.x < min)
+			{
+				min = v.x;
+			}
+			else if (v.x > max)
+			{
+				max = v.x;
+			}
+			if (v.y < miny)
+			{
+				miny = v.y;
+			}
+			else if (v.y > maxy)
+			{
+				maxy = v.y;
+			}
+		}
+		else
+		{
+			min = v.x;
+			max = v.x;
+			miny = v.y;
+			maxy = v.y;
+			set = true;
+		}
+	}
+	min_xpos = min;
+	max_xpos = max;
+	min_ypos = miny;
+	max_ypos = maxy;
+	AP_compartment_limit = miny + (maxy - miny)*posterior_comparment_region;
+	cout << "Min wing x position: " << min_xpos << "; Max wing xposition: " << max_xpos << "; A-P limit: " << AP_compartment_limit<< endl;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 //Area of a polygon using Shoelace formula
@@ -3338,14 +3483,15 @@ void Tissue::make_join_limit_edges(Rearrangement &r)
 		{
 			//cout << "Deleted vertex and substitute vertex have springs. v2(dead): " << v2->ind << ", v1 (substitute): " << v1->ind << ", v2 spring: " << v2->spring <<  ", v1 spring: " << v1->spring <<endl;
 			springs[v2->spring].dead = true;
-			int dead_vert = springs[v2->spring].vertices[0] == v2->ind ? springs[v2->spring].vertices[1] : springs[v2->spring].vertices[0];
+			//Removed after added stringEdges
+/* 			int dead_vert = springs[v2->spring].vertices[0] == v2->ind ? springs[v2->spring].vertices[1] : springs[v2->spring].vertices[0];
 			int other_vert = springs[v1->spring].vertices[0] == v1->ind ? springs[v1->spring].vertices[1] : springs[v1->spring].vertices[0];
 			vertices[other_vert].x = (vertices[other_vert].x + vertices[dead_vert].x) * 0.5;
 			vertices[other_vert].y = (vertices[other_vert].y + vertices[dead_vert].y) * 0.5;
 			springs[v1->spring].length = distance(springs[v1->spring].vertices[0], springs[v1->spring].vertices[1]);
 			vertices[dead_vert].dead = true;
 			dead_vertices.push(dead_vert);
-			this->num_vertices--;
+			this->num_vertices--; */
 			this->num_springs--;
 		}
 		else

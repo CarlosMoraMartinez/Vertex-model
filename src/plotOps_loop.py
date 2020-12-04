@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import sys
 import argparse
 import os
@@ -30,7 +31,7 @@ wingcols = ['dodgerblue', 'lawngreen', 'crimson', 'yellow']
 #wingcols = ['dodgerblue', 'black', 'indigo', 'dimgray']
 #wingcols = ['blue', 'green', 'black', 'gray']
 wingcols_comp = [['red', 'darkred', 'lightsalmon', 'mistyrose'], ['olivedrab', 'darkgreen', 'yellowgreen', 'yellowgreen']]
-springcols = ['red', 'yellow', 'purple', 'pink', 'brown']
+springcols = ['red', 'yellow', 'purple', 'pink', 'brown','crimson', 'gold', 'violet', 'magenta', 'brown']
 EDGE_COLOR = 'black'
 
 GM = (sqrt(5)-1.0)/2.0
@@ -109,7 +110,7 @@ def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, n
     plt.clf()
 
 ##Not tested, probably doesn't works
-def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, name, limits, figg=None, printsvg=False, comparewing=[]):
+def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, edg, name, limits, figg=None, printsvg=False, comparewing=[]):
     from matplotlib.collections import PolyCollection
     if(figg is None):
         fig, ax = plt.subplots()
@@ -120,7 +121,7 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     plt.xlim(limits[0], limits[2])
     plt.ylim(limits[1], limits[3])
     #col = np.zeros((len(grid), 6, 2))
-    lww = 5000/len(celltypes) if(len(celltypes)>1000) else 1
+    lww = 5000/len(celltypes) if(len(celltypes)>5000) else 1
     if(expr):
         alphas = expr
     else:
@@ -130,7 +131,7 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     ax.add_collection(pc)
     if(not comparewing):
         for s in sprList:
-            spcolor = springcols[int(s[2])] if len(s) > 2 else RED
+            spcolor = springcols[abs(int(s[2]))] if len(s) > 2 else RED
             ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color = spcolor)
         for p in pointsList.keys():
             if(pointsList[p][2] != 1):
@@ -138,6 +139,11 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
         if(add_vnums):
             for i in pointsList.keys():
                 ax.annotate(i, pointsList[i][0:2], size=1)
+        if(isinstance(edg, pd.DataFrame)):
+            stringedges = [[v for v in vv.split(',') if v] for vv in edg.loc[edg.type == 7]["vertices"].tolist()]
+            for s in stringedges:
+                ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color="black")
+                ax.scatter([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color="red", s = 2)
     else:
         for cw in range(len(comparewing)):
             thiscomparewing = comparewing[cw]
@@ -199,7 +205,14 @@ def readSprings(name):
     except:
         print("no springs (.spr) file")
     return (numsprings, sprList)
-
+def readEdges(name):
+    edges = []
+    import pandas as pd
+    try:
+        edges = pd.read_csv(name + '.edges', sep="\t")
+    except:
+        print("no edges (.edges) file")  
+    return edges 
 
 def readExpr(name):
     xprList = np.loadtxt(name + '.expr') #just in case
@@ -269,10 +282,12 @@ parser.add_argument('-f', '--PlotSVG', metavar='plot_svg', type=bool, default = 
                     help='Print .svg additionally to .png')
 parser.add_argument('-c', '--Compare', metavar='compare_wing', type=str, default = "", 
                     help='Second wing to compare with. Both wings will be plotted on the top of each other')                    
-
+parser.add_argument('-d', '--StringEdges', metavar='read_string_edges', type=bool, default = False, 
+                    help='Read .edges file and plot string edges (between spring points)')
 def main():
     args = parser.parse_args()
     plot_cell_types = args.plotCellTypes
+    plotStringEdges = args.StringEdges
     add_vnums = args.write_vertex_number
     color_expr = [int(i) for i in args.genes_to_plot_expression.split(',') if i != '']
     fig = None
@@ -283,6 +298,7 @@ def main():
     limsSet = False
     secondName = args.Compare
     cwings = []
+    edg = []
     if(secondName):
         secondName = secondName.split(",")
         for s in secondName:
@@ -301,6 +317,8 @@ def main():
         numPoints, pointsList = readPointsFile(name)
         numCells, polygonList, celltypes = readCellsFile(name, plot_cell_types, pointsList)
         numsprings, sprList = readSprings(name)
+        if(plotStringEdges):
+            edg = readEdges(name)
         comparewingMod = [positionCompareWing(cw, polygonList) for cw in cwings]
         ########################################################################################################################
         # Plotting the final polygons
@@ -310,7 +328,7 @@ def main():
             limits = getLimits(pointsList)
             limsSet = True
         try:
-            fig = plot_grid2(111, polygonList, pointsList, sprList, add_vnums, celltypes, [] ,name, limits, printsvg=args.PlotSVG, comparewing=comparewingMod)  
+            fig = plot_grid2(111, polygonList, pointsList, sprList, add_vnums, celltypes, [], edg, name, limits, printsvg=args.PlotSVG, comparewing=comparewingMod)  
             if(len(color_expr) > 0 and args.Input_expr != ""):
                 xprList = readExpr(args.Input_expr + str(fnum))
                 plot_expr(111, polygonList, pointsList, sprList, add_vnums, celltypes, xprList, name, color_expr, limits)

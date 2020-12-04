@@ -23,6 +23,7 @@ const float LINE_TENSION_HINGE = -0.01;
 const float LINE_TENSION_VEIN_HINGE = 7.0;
 const float LINE_TENSION_VEIN_BLADE = 1.0;
 const float LINE_TENSION_TISSUE_BOUNDARY = 4.0;//4.0;
+const float LINE_TENSION_STRINGEDGE = 10.0;
 const float HINGE_BLADE_INTERFACE_TENSION = 1.0;
 const float LINE_TENSION_INTERSTATIC = -0.5;
 const float SPRING_CONSTANT = 2;
@@ -71,6 +72,7 @@ const std::string CELLTAB_FILE_EXTENSION = ".celltab";
 const std::string EDGE_FILE_EXTENSION = ".edges";
 const std::string POINTTAB_FILE_EXTENSION = ".ptab";
 const std::string SPRING_FILE_EXTENSION = ".spr";
+const std::string STRINGEDGE_FILE_EXTENSION = ".stre";
 const std::string SPRINGTAB_FILE_EXTENSION = ".sprtab";
 const std::string PARAMS_FILE_EXTENSION = ".vp";
 
@@ -109,7 +111,7 @@ const std::string SPR_HEADER = "ind\ttype\ttension\tlength\tcompartment\tstatic_
 enum class CellType{blade = 0, hinge = 1, vein_blade = 2, vein_hinge = 3};
 
 //Enum class to define types of edges
-enum class EdgeType{blade = 0, hinge = 1, vein_hinge = 2, vein_blade = 3, tissue_boundary = 4, spring = 5, vein = 6};
+enum class EdgeType{blade = 0, hinge = 1, vein_hinge = 2, vein_blade = 3, tissue_boundary = 4, spring = 5, vein = 6, stringedge = 7};
 
 //Enum class to define types of transitions
 enum class RearrangementType{t1 = 0, t2 = 1, divide_cell = 2, divide_edge = 3, join_limit_edges = 4, t1_at_border_outwards = 5, t1_at_border_inwards = 6, rotate_inwards = 7, random_t1 = 8};
@@ -358,7 +360,7 @@ class Tissue{
 		float line_tension_interstatic;
 		float AP_compartment_limit;	
 		int mode_to_order_springs_PD; //used if spring_tension_mode is 2 or 3
-
+		float line_tension_stringedge, tension_stringedge_posterior_prop;
 		
 		cell_type_param perimeter_contract;
 
@@ -415,6 +417,7 @@ class Tissue{
 		void initialize_cells(std::ifstream& inp);  
 		void initialize_edges();
 		void initialize_springs(std::ifstream&);
+		void initialize_stringedges(std::ifstream&);
 		void addEdge(int v1, int v2, int cell);		//Creates single edge
 		void set_default_params();			//Sets model parameters for each vertex, cell and edge, from constants defined in this file
 		void setEdgeType(int e);
