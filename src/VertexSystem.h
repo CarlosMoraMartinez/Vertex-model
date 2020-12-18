@@ -96,6 +96,8 @@ const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
 const int REPORT_OUT = 0;//SET THIS TO 0 IF EVOLUTION IS GOING TO BE USED OR IN CASE OF LONG SIMULATIONS
 const bool WRITE_DATA_TABLES = true;
+const bool STRING_EQUILIBRIUM_DISTANCE = false;
+const bool ONLY_ONE_CONTACT = true; //Only 1 contact edge is allowed between 2 cells; T1 is not performed when it will compromise this condition
 
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tmoves_accepted\tmoves_rejected\tcells\tedges\tneighbour_vertices\n";
 const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\t" +
@@ -174,6 +176,7 @@ struct Edge{
 	double tension;
 	float base_tension;
 	double length;
+	float optimal_length;
 	int vertices[VERTEX_PER_EDGE];
 	int cells[VERTEX_PER_EDGE];
 	bool can_transition;
@@ -360,7 +363,8 @@ class Tissue{
 		float line_tension_interstatic;
 		float AP_compartment_limit;	
 		int mode_to_order_springs_PD; //used if spring_tension_mode is 2 or 3
-		float line_tension_stringedge, tension_stringedge_posterior_prop;
+		float line_tension_stringedge, tension_stringedge_posterior_prop, string_edge_tension_min, string_edge_tension_exponent;
+		bool string_anterior_gradient, string_posterior_gradient;
 		
 		cell_type_param perimeter_contract;
 
@@ -422,6 +426,7 @@ class Tissue{
 		void set_default_params();			//Sets model parameters for each vertex, cell and edge, from constants defined in this file
 		void setEdgeType(int e);
 		void setEdgeTension(int e);
+		void setStringTension(int e); //For outer strings (cuticle)
 		void addCellToVertex(int vertex, int cell); 	//Adds one cell to the array of cells in a vertex structure
 		void addNeighbourVertex(int vertex1, int vertex2);
 		void addEdgeToVertex(int vertex, int edge); 	//Adds one edge to the array of edges in a vertex structure
@@ -468,6 +473,7 @@ class Tissue{
 		std::vector<float> getSpringGradientFactor_mode1(std::vector<int> &vert_indices);
 		std::vector<float> getSpringGradientFactor_mode2(std::vector<int> &vert_indices);
 		void addRandomTransition();
+		bool checkCellConsistency(int cell);
 		//double calculateTerm4Energy(Vertex &v, double old_x, double old_y);
 };
 

@@ -346,8 +346,13 @@ void Tissue::set_default_simulation_params()
 
 	add_static_to_hinge = -1;
 	line_tension_interstatic = LINE_TENSION_INTERSTATIC;
+	
 	line_tension_stringedge = LINE_TENSION_TISSUE_BOUNDARY;
 	tension_stringedge_posterior_prop = 1;
+	string_edge_tension_min = LINE_TENSION_TISSUE_BOUNDARY;
+	string_edge_tension_exponent = 1;
+	string_anterior_gradient = false;
+	string_posterior_gradient = false;
 }
 
 void Tissue::readNewParameters(std::string filename)
@@ -540,6 +545,10 @@ void Tissue::initialize_params(std::string params_file)
 	energy_term4_posterior = read_celltype_par(it, sz);
 	line_tension_stringedge = read_real_par(it);
 	tension_stringedge_posterior_prop = read_real_par(it);
+	string_edge_tension_min =  read_real_par(it);
+	string_edge_tension_exponent =  read_real_par(it);
+	string_anterior_gradient = read_real_par(it) > 0;
+	string_posterior_gradient = read_real_par(it) > 0;
 	random_seed = read_real_par(it);
 }
 
@@ -695,7 +704,7 @@ void Tissue::initialize_stringedges(std::ifstream& inp){
 		vertices[e.vertices[0]].neighbour_vertices[which(EMPTY_CONNECTION, vertices[e.vertices[0]].neighbour_vertices, CELLS_PER_VERTEX)] = e.vertices[1];
 		vertices[e.vertices[1]].neighbour_vertices[which(EMPTY_CONNECTION, vertices[e.vertices[1]].neighbour_vertices, CELLS_PER_VERTEX)] = e.vertices[0];
 		vertices[e.vertices[0]].edges[which(EMPTY_CONNECTION, vertices[e.vertices[0]].edges, CELLS_PER_VERTEX)] = i;
-		vertices[e.vertices[1]].edges[which(EMPTY_CONNECTION, vertices[e.vertices[0]].edges, CELLS_PER_VERTEX)] = i;
+		vertices[e.vertices[1]].edges[which(EMPTY_CONNECTION, vertices[e.vertices[1]].edges, CELLS_PER_VERTEX)] = i;
 
 		this->edges.push_back(e);
 		i++;
@@ -863,18 +872,35 @@ void Tissue::set_default_params()
 			setEdgeType(e);
 			setEdgeTension(e);
 		}else{
-			if(0.5*(vertices[edges[e].vertices[0]].y + vertices[edges[e].vertices[1]].y) >= AP_compartment_limit ){
-				edges[e].tension = line_tension_stringedge; //Redundant at start, but useful when changing parameter files
-			}else{
-				edges[e].tension = line_tension_stringedge*tension_stringedge_posterior_prop;
-			}
-			edges[e].base_tension = edges[e].tension;
+			setStringTension(e);
 		}
 	}
 	for (int v = 0; v < vertices.size(); v++)
 	{
 		vertices[v].energy = calculateEnergy(vertices[v]);
 	}
+}
+
+void Tissue::setStringTension(int e){
+			double position = 0.5*(vertices[edges[e].vertices[0]].x + vertices[edges[e].vertices[1]].x);
+			double position_factor = (position - min_xpos)/(max_xpos - min_xpos);
+			//position_factor = expAdvance(position_factor, string_edge_tension_exponent);
+			double pos_tension = string_edge_tension_min + (line_tension_stringedge - string_edge_tension_min)*position_factor;
+			if(0.5*(vertices[edges[e].vertices[0]].y + vertices[edges[e].vertices[1]].y) >= AP_compartment_limit ){
+				if(string_anterior_gradient){
+					edges[e].tension = pos_tension; //Redundant at start, but useful when changing parameter files
+				}else{
+					edges[e].tension = line_tension_stringedge;
+				}
+			}else{
+				if(string_posterior_gradient){
+					edges[e].tension = pos_tension*tension_stringedge_posterior_prop;
+				}else{
+					edges[e].tension = line_tension_stringedge * tension_stringedge_posterior_prop;
+				}
+			}
+			edges[e].base_tension = edges[e].tension;
+			edges[e].optimal_length = edges[e].length;
 }
 
 void Tissue::setEdgeType(int e)
@@ -1576,7 +1602,13 @@ inline double Tissue::calculateEnergy(Vertex &v)
 		if (v.edges[i] != EMPTY_CONNECTION)
 		{
 			aux_ind = v.edges[i];
-			term2 += edges[aux_ind].tension * edges[aux_ind].length;
+			if(edges[aux_ind].type == EdgeType::stringedge && STRING_EQUILIBRIUM_DISTANCE){
+				//cout << "Eq. Distance" << endl;
+				term2 += edges[aux_ind].tension * pow(edges[aux_ind].length - edges[aux_ind].optimal_length, 2);
+				
+			}else{
+				term2 += edges[aux_ind].tension * edges[aux_ind].length;
+			}
 		}
 	}
 	if (v.spring != EMPTY_CONNECTION){
@@ -1751,6 +1783,11 @@ bool Tissue::tryMoveVertex()
 		{
 			counter_unfav_accepted++;
 		} //Counters
+/* 		for(int vv; vv < CELLS_PER_VERTEX; vv++){
+			if(vertices[vertex_to_move].cells[vv] == 7998 || vertices[vertex_to_move].cells[vv] == 8397){
+				checkCellConsistency(vertices[vertex_to_move].cells[vv]);
+			}
+		} */
 		return true;
 	}
 	else
@@ -2055,7 +2092,7 @@ void Tissue::simulateMonteCarlo()
 		{ //Tries a random movement; if accepted:
 			counter_moves_accepted++;
 			performRearrangements(); // Performs any transition/rearrangement needed
-			if (counter_moves_accepted % write_every_N_moves == 0 && !step_mode)
+			if ((counter_moves_accepted % write_every_N_moves == 0 && !step_mode) || counter_moves_accepted == 149080160) //88206084
 				produceOutputs(); //&& counter_moves_accepted > 70000
 		}						  //End if move accepted
 		counter_move_trials++;
@@ -2172,6 +2209,8 @@ void Tissue::detectChangesAfterMove(int vertex_moved)
 		if (vertices[vertex_moved].edges[i] == EMPTY_CONNECTION)
 			continue;
 		ee = &edges[vertices[vertex_moved].edges[i]];
+		//if(ee->type == EdgeType::stringedge)//Redundant: can_transition = False in these edges (strings/cuticle)
+		//	continue;
 		Vertex *v1 = &vertices[ee->vertices[0]];
 		Vertex *v2 = &vertices[ee->vertices[1]];
 		if (ee->length <= t1_transition_critical_distance && v1->movable && v2->movable && ee->can_transition)
@@ -2904,8 +2943,18 @@ void Tissue::make_t1(Rearrangement &r)
 
 	Vertex *v1 = &vertices[edges[edge].vertices[0]];
 	Vertex *v2 = &vertices[edges[edge].vertices[1]];
-
-	if (contains(EMPTY_CONNECTION, v1->cells, CELLS_PER_VERTEX) || contains(EMPTY_CONNECTION, v2->cells, CELLS_PER_VERTEX) || contains(EMPTY_CONNECTION, v1->edges, CELLS_PER_VERTEX) || contains(EMPTY_CONNECTION, v2->edges, CELLS_PER_VERTEX))
+/* 	bool scrutiny = false;
+	if(counter_moves_accepted == 149070349){scrutiny=true;}
+	//if(edge == 23729 || v1->ind == 15595 || v2->ind ==15595 || v1->ind == 15864 || v2->ind ==15864  ){scrutiny=true;}
+ 	if(scrutiny){
+		cout << "scrut A\n"<<endl;
+		checkCellConsistency(7998);
+		checkCellConsistency(8397);
+	}  */
+	if (contains(EMPTY_CONNECTION, v1->cells, CELLS_PER_VERTEX) || 
+		contains(EMPTY_CONNECTION, v2->cells, CELLS_PER_VERTEX) || 
+		contains(EMPTY_CONNECTION, v1->edges, CELLS_PER_VERTEX) || 
+		contains(EMPTY_CONNECTION, v2->edges, CELLS_PER_VERTEX))
 		return;
 
 	double old_x1 = v1->x, old_x2 = v2->x, old_y1 = v1->y, old_y2 = v2->y, old_length = edges[edge].length;
@@ -2918,11 +2967,25 @@ void Tissue::make_t1(Rearrangement &r)
 	Cell *sp1 = &this->cells[only_v1];
 	Cell *sp2 = &this->cells[only_v2];
 
-	if (cc1->num_vertices < 4 || cc2->num_vertices < 4 || sp1->num_vertices >= MAX_SIDES_PER_CELL || sp2->num_vertices >= MAX_SIDES_PER_CELL)
+	if (cc1->num_vertices < 4 || cc2->num_vertices < 4 || 
+		sp1->num_vertices >= MAX_SIDES_PER_CELL || sp2->num_vertices >= MAX_SIDES_PER_CELL)
 		return; //One of the cells can't lose any other vertex
+	if(ONLY_ONE_CONTACT){
+		for(int s1e = 0; s1e < sp1->num_vertices; s1e++){
+			for(int s2e = 0; s2e < sp2->num_vertices; s2e++){
+				if(sp1->edges[s1e] == sp2->edges[s2e]){
+					if (REPORT_OUT > 1)
+						cout << ">> Error in t1 transition: Would set more than 1 contact between cells: v1=" << v1->ind << 
+						" v2=" << v2->ind << " cell s2:" << sp2->ind << " cell s1:" << sp1->ind << 
+						" cell cc2:" << cc2->ind << " cell cc1:" << cc2->ind <<
+						" movements:" << counter_moves_accepted << endl;
+						return;
+				}
+			}
+		}
+	}
 	//t1_rotate_edge(v1, v2, edge, cc1, cc2, sp1, sp2);
 	t1_rotate_edge90degrees(v1, v2, edge);
-
 	//Determine which cell goes with which point. Compare new point locations of v1 and v2 with all the neighbours of v1 and v2.
 
 	double dist1 = t1_get_dist_sum(v1, v2, cc1, cc2, sp1, sp2);
@@ -2945,29 +3008,31 @@ void Tissue::make_t1(Rearrangement &r)
 		cc1->edges[i] = i == MAX_SIDES_PER_CELL - 1 ? EMPTY_CONNECTION : cc1->edges[i + 1];
 	for (int i = which(edge, cc2->edges, MAX_SIDES_PER_CELL); i < cc2->num_vertices; i++)
 		cc2->edges[i] = i == MAX_SIDES_PER_CELL - 1 ? EMPTY_CONNECTION : cc2->edges[i + 1];
-
+	
 	//3) Remove one of the vertices from each of the cells that were common to both vertices
 	for (int i = which(v2->ind, cc1->vertices, cc1->num_vertices); i < cc1->num_vertices; i++)
 		cc1->vertices[i] = i == MAX_SIDES_PER_CELL - 1 ? EMPTY_CONNECTION : cc1->vertices[i + 1];
 	cc1->num_vertices--;
+	
 	for (int i = which(v1->ind, cc2->vertices, cc2->num_vertices); i < cc2->num_vertices; i++)
 		cc2->vertices[i] = i == MAX_SIDES_PER_CELL - 1 ? EMPTY_CONNECTION : cc2->vertices[i + 1];
 	cc2->num_vertices--;
-
+	
 	//4) Add edge to cells that were touched only by one of the vertices
 	sp1->edges[sp1->num_vertices] = edge;
 	sp2->edges[sp2->num_vertices] = edge;
-
+	
 	//5) Update neighbours
 	int remove_from_v1, remove_from_v2;
 	t1_update_neighbours(v1, v2, edge, common_cell1, common_cell2, only_v1, only_v2, remove_from_v1, remove_from_v2);
-
+	
 	//6) Update edges
 	int e_remove_from_v1 = -1, e_remove_from_v2 = -1;
 	t1_update_edges(v1, v2, edge, remove_from_v1, remove_from_v2, e_remove_from_v1, e_remove_from_v2); //Careful! after update edges, number of vertices still not updated
-
+	
 	//7) Add v1 to cell that was specific to v2, and v2 to cell that was specific to v1.
 	t1_add_vertices_to_cells(v1, v2, sp2, remove_from_v2);
+	
 	t1_add_vertices_to_cells(v2, v1, sp1, remove_from_v1);
 
 	//8)Update edge lengths, areas and tension.
@@ -2976,10 +3041,15 @@ void Tissue::make_t1(Rearrangement &r)
 	//9) Update cells in edge
 	edges[edge].cells[0] = sp1->ind;
 	edges[edge].cells[1] = sp2->ind;
-
+	
 	setEdgeTension(edge); //Tension depends on angle and on values of neighboring cells
 	this->counter_t1++;
 
+/*  	if(scrutiny){
+		cout << "scrut B\n"<<endl;
+		checkCellConsistency(7998);
+		checkCellConsistency(8397);
+	} */
 	if (REPORT_OUT > 1){
 		double cent_x = 0.5*(v1->x + v2->x);
 		double cent_y = 0.5*(v1->y + v2->y);	
@@ -4260,8 +4330,60 @@ void Tissue::emptyDivisions()
 	std::swap(aux, this->past_divisions);
 }
 
+bool Tissue::checkCellConsistency(int cell){
+	bool consistent = true;
+	Cell *c = &cells[cell];
+	Edge *e;
+	Vertex *v;
+	int edge_in_vertices = 0, vertex_in_edges = 0;
+
+	for(int i = 0; i < c->num_vertices; i++){
+		if(c->vertices[i] == EMPTY_CONNECTION){
+			consistent = false;
+			cout << "__ vertices[i] empty when i < num_vertices. Cell: " << c->ind  << ", moves: " << counter_moves_accepted << endl;
+		}
+		if(c->edges[i] == EMPTY_CONNECTION){
+			consistent = false;
+			cout << "__ edges[i] empty when i < num_vertices. Cell: " << c->ind  << ", moves: " << counter_moves_accepted << endl;
+		}
+		//Check that all edges are in cell vertices
+		for(int j = 0; j < c->num_vertices; j++){
+			v = &vertices[c->vertices[j]];
+			if(v->edges[0]==c->edges[i] || v->edges[1]==c->edges[i] || v->edges[2]==c->edges[i]){
+				edge_in_vertices++;
+			}
+		}
+		if(edge_in_vertices != 2){
+			consistent = false;
+			cout << "__ edges[i] not in 2 vertices. Cell: " << c->ind << ", moves: " << counter_moves_accepted << ", edges[i]: " << c->edges[i] << ", i: " << i << ", edge count: "<< edge_in_vertices << endl; 
+		}
+		edge_in_vertices = 0;
+
+		//Check that all vertices are present in 2 edges
+		for(int j = 0; j < c->num_vertices; j++){
+			e = &edges[c->edges[j]];
+			if(e->vertices[0]==c->vertices[i] || e->vertices[1]==c->vertices[i]){
+				vertex_in_edges++;
+			}
+		}
+		if(vertex_in_edges != 2){
+			consistent = false;
+			cout << "__ vertices[i] not in 2 edges. Cell: " << c->ind << ", moves: " << counter_moves_accepted << ", vertices[i]: " << c->vertices[i] << ", i: " << i << ", vert count: "<< vertex_in_edges << endl; 
+		}
+		vertex_in_edges = 0;
+
+	}
+	if(!consistent){
+		produceOutputs("not_consistent" + to_string(cell));
+	}
+	return consistent;
+} //check cell consistency
+
 void Tissue::printLine(std::string name, int ind1, int ind2, double centroid_x, double centroid_y, int type){
-	cout << ">name:" << name <<";v1:"<<ind1<<";v2:"<<ind2<<";centroid_x:"<<centroid_x<<";centroid_y:"<<centroid_y<<";type:"<<type<<endl;
+	cout << ">name:" << name <<
+	";v1:"<<ind1<<";v2:"<<ind2<<
+	";centroid_x:"<<centroid_x<<";centroid_y:"<<
+	centroid_y<<";type:"<<type<<";moves_accepted:"<<counter_moves_accepted<<endl;
 }
 
 
