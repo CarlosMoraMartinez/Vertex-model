@@ -1,7 +1,9 @@
 library(tidyverse)
 setwd("/home/carmoma/vertex/Vertex-model/dpygrad_mode41_intervein/dpygrad_mode41_intervein_0/etournay1_intervein1/")
 setwd("etournay1_unmoveX7/")
-a <- read_tsv("etournay1_unmoveX7_moved_40.ptab")
+setwd("/home/carmoma/vertex/Vertex-model/dpygrad_mode120/dpygrad_mode120_1/etournay1_nosprings3/")
+
+a <- read_tsv("etournay1_nosprings3_moved_40.ptab")
 a <- a %>% mutate(ratio = moves_accepted/(moves_accepted+moves_rejected))
 
 a$cols =  colorRampPalette(c('red', 'blue'))(length(a$ratio))[rank(a$ratio)]

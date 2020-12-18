@@ -4,7 +4,10 @@
 
 maxCPU=10
 i=0
-wingarray=(etournay1_vein1e) 
+wingarray=(etournay1_strings3) #etournay1_strings3
+#etournay1_3cpv_3 etournay1_3cpv_4
+# etournay1_strings3 etournay1_strings4
+#etournay1_vein1d etournay1_vein1a etournay1_nosprings etournay1_nosprings3 etournay1_strings etournay1_nosprings 
 #small7-16df s10-3-4 bud5_3y etournay1_unmoveX7
 #strechbig1_3cpv (bud0 hex2020_1_s5.0_20x20_n0.4) #(wing2E wing2Edumpy) #(wing1D wingDumpy2) #wing2F wing2Edumpy #bud3b bud2 iso20_3_df gr1
 

@@ -111,7 +111,7 @@ def multiplot(c2, diff_conds, ca, cb, current_cond, images, absence, plotFun=plo
     c_thiscond=c2.iloc[ [np.all([c2[j].iloc[i] == diff_conds[j].iloc[current_cond] for j in diff_conds.columns]) for i in range(c2.shape[0])] ]
     nrows = np.unique(c2[ca]).shape[0]
     ncols = np.unique(c2[cb]).shape[0]
-    fig, ax =plt.subplots(nrows=nrows, ncols=ncols,figsize=(5*nrows,5*ncols)) ##Added figsize 201202
+    fig, ax =plt.subplots(nrows=nrows, ncols=ncols) ##Added figsize 201202 ,figsize=(5*nrows,5*ncols)
     fig.text(0.5, 0.04, cb.split(" ")[0], ha='center', va='center')
     fig.text(0.06, 0.5, ca.split(" ")[0], ha='center', va='center', rotation='vertical')
     for xpos, va in enumerate(np.unique(c2[ca])):
@@ -122,7 +122,7 @@ def multiplot(c2, diff_conds, ca, cb, current_cond, images, absence, plotFun=plo
                 ax[xpos][ypos].set_xlabel(str(vb))
             if(ypos == 0):
                 ax[xpos][ypos].set_ylabel(str(va))
-            ax[xpos][ypos].set_title(iname)
+            ax[xpos][ypos].set_title(iname.split('_')[-1])
             #ax[xpos][ypos].set_title( str(va) + ", " + str(vb))
             #ax[xpos][ypos].set_title(ca.split(" ")[0] + "=" + str(va) + ", " + cb.split(" ")[0] + "=" + str(vb))
     if(plot):

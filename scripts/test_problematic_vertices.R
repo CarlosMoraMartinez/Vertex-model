@@ -1,6 +1,8 @@
 library(tidyverse)
 
 setwd("/home/carmoma/vertex/Vertex-model/test_border")
+setwd("/home/carmoma/vertex/Vertex-model/dpygrad_mode120/dpygrad_mode120_1/etournay1_nosprings3/")
+
 
 a <- read_tsv("v23693.tsv")
 table(a$Accepted)

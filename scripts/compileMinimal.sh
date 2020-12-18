@@ -18,7 +18,7 @@ g++ -o vertex vertex_cmm.o VertexSystemMinimal.o
 ./vertex $1 $2 $3 $4 #>$1'.log' 
 #sleep 20
 #python3 plotOps_loop.py -i $1'_moved_' -s 0 -e "$(($3 / $4 + 1))"
-python plotOps_loop.py -i $1'_moved_' -s "$(($3 / $4 ))" -e -1 -l 1
+python plotOps_loop.py -i $1'_moved_' -s "$(($3 / $4 ))" -e -1 -l 1 -d 1
 ffmpeg -framerate 10 -i $1'_moved_'%d.png -codec copy $1'_moved_'.avi
 
 rm *.o

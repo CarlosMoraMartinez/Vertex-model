@@ -172,6 +172,7 @@ class HexGrid:
         self.cells, self.celltypes = self.readCellsFile()
         #print("CELLS: ", self.cells)
         self.springs = self.readSprings()
+        self.stringEdges = self.readStringEdges()
         #print("sprs", self.springs)
         self.centers = self.readCenters()
         os.chdir("../")
@@ -212,6 +213,16 @@ class HexGrid:
         except:
             print("no springs (.spr) file")
         return sprList
+    def readStringEdges(self):
+        sprList = []
+        try:
+            springsfile = open(self.inputname + ".stre", "r")
+            numsprings = int(springsfile.readline())
+            sprList = [[int(j) for j in springsfile.readline().split('\t')] for i in range(numsprings) ]
+            springsfile.close()
+        except:
+            print("no string edges (.stre) file")  
+        return sprList     
     def readCenters(self):  
         try:    
             centFile = open(self.inputname + ".cent", "r")   
@@ -542,6 +553,8 @@ class HexGrid:
         return ind       
     def addStringEdge(self, a, b):
         self.stringEdges.append([a, b]) 
+    def setStringEdges(self, stredges):
+        self.stringEdges = stredges
     def getSpringWithVertex(self, v):
         res = -1
         for i, s in enumerate(self.springs):

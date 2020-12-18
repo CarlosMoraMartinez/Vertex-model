@@ -298,8 +298,7 @@ class getBorders:
                 self.stringEdges.append([self.stringEdges[-1][1], snum])
             elif(self.springType < 0):
                 self.stringEdges.append([-1, snum])
-        for a, b in self.stringEdges:
-            self.hx.addStringEdge(a, b)
+        self.hx.setStringEdges(self.stringEdges)
         self.updatePlot()
 
     def updatePlot(self):
