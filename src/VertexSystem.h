@@ -109,6 +109,11 @@ const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tper
 	std::string("edge_maxangle\tedge_spatialmax_tension\tedge_spatialmin_tension\n");
 const std::string EDGE_HEADER = "ind\ttype\tlength\ttension\tbase_tension\tvertices\tcells\n";
 const std::string SPR_HEADER = "ind\ttype\ttension\tlength\tcompartment\tstatic_vertex\tmovable_vertex\tx_static\ty_static\tx_movable\ty_movable\n";
+
+const std::string T1_HEADER = ">T1_name\tmoves_accepted\ttype\tv1\v2\tx1_before\tx1_after\tx2_before\tx2_after\ty1_before\ty1_after\ty2_before\ty2_after\tangle";
+const std::string T2_HEADER = ">T2_name\tcell\tvert_survivor\tx\ty\ttype";
+const std::string DIV_HEADER = ">DIV_name\tind1\tind2\tcentroid_1x\tcentroid_1y\tcentroid_2x\tcentroid_2y\ttype\tcounter_moves_accepted";
+
 //Enum class to define types of cells 
 enum class CellType{blade = 0, hinge = 1, vein_blade = 2, vein_hinge = 3};
 
@@ -303,6 +308,12 @@ class Tissue{
 		void produceOutputs(std::string add_to_name="moved");
 		std::string getStats();
 		void printLine(std::string name, int ind1, int ind2, double centroid_x, double centroid_y, int type);
+		void printLine_t1(std::string name, int ind1, int ind2, 
+			double v1_x0, double v2_x0, double v1_y0, double v2_y0, 
+			double v1_x1, double v2_x1, double v1_y1, double v2_y1, int type);
+		void printLine_t2(std::string name, int ind1, int ind2, double centroid_x, double centroid_y, int type);
+		void printLine_div(std::string name, int ind1, int ind2, double centroid_1x, double centroid_1y, 
+		double centroid_2x, double centroid_2y, int type);
 		int getCounterT1();
 		void printCelltypeParam(cell_type_param par, std::string name);
 	 	//Methods to transition from expansion to hinge contraction (adding springs etc)
@@ -364,6 +375,7 @@ class Tissue{
 		float AP_compartment_limit;	
 		int mode_to_order_springs_PD; //used if spring_tension_mode is 2 or 3
 		float line_tension_stringedge, tension_stringedge_posterior_prop, string_edge_tension_min, string_edge_tension_exponent;
+		float string_distal_transition_tension, string_distal_transition_prop;
 		bool string_anterior_gradient, string_posterior_gradient;
 		
 		cell_type_param perimeter_contract;
