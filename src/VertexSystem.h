@@ -110,7 +110,7 @@ const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tper
 const std::string EDGE_HEADER = "ind\ttype\tlength\ttension\tbase_tension\tvertices\tcells\n";
 const std::string SPR_HEADER = "ind\ttype\ttension\tlength\tcompartment\tstatic_vertex\tmovable_vertex\tx_static\ty_static\tx_movable\ty_movable\n";
 
-const std::string T1_HEADER = ">T1_name\tmoves_accepted\ttype\tv1\v2\tx1_before\tx1_after\tx2_before\tx2_after\ty1_before\ty1_after\ty2_before\ty2_after\tangle";
+const std::string T1_HEADER = ">T1_name\tmoves_accepted\ttype\tv1\tv2\tx1_before\tx1_after\tx2_before\tx2_after\ty1_before\ty1_after\ty2_before\ty2_after\tangle";
 const std::string T2_HEADER = ">T2_name\tcell\tvert_survivor\tx\ty\ttype";
 const std::string DIV_HEADER = ">DIV_name\tind1\tind2\tcentroid_1x\tcentroid_1y\tcentroid_2x\tcentroid_2y\ttype\tcounter_moves_accepted";
 
@@ -375,8 +375,8 @@ class Tissue{
 		float AP_compartment_limit;	
 		int mode_to_order_springs_PD; //used if spring_tension_mode is 2 or 3
 		float line_tension_stringedge, tension_stringedge_posterior_prop, string_edge_tension_min, string_edge_tension_exponent;
-		float string_distal_transition_tension, string_distal_transition_prop;
-		bool string_anterior_gradient, string_posterior_gradient;
+		float string_distal_transition_tension, string_distal_transition_prop, hinge_string_tension;
+		bool string_anterior_gradient, string_posterior_gradient, set_hinge_string_tension, include_hinge_in_spring_gradient;
 		
 		cell_type_param perimeter_contract;
 
@@ -385,12 +385,12 @@ class Tissue{
 		float active_t1_prob,min_angle_for_active_t1, max_angle_for_active_t1, minsin2rant1, maxsin2rant1; //To make T1s at random
 		//float max_cell_area;	
 		float max_edge_length; 
-		cell_type_param preferred_area_initial, preferred_area_final, max_cell_area;
-
+		cell_type_param preferred_area_initial, preferred_area_initial_gradient, preferred_area_final, max_cell_area;
 		cell_type_param division_angle_longest_axis, division_angle_random_noise, division_angle_external, division_angle_external_degrees;
-
 		cell_type_param cell_cycle_limit, xcoord_size_control_factor;
-		bool autonomous_cell_cycle, start_cell_cycle_at_random, cell_cycle_controls_size, time_controls_size, xcoord_controls_size, ycoord_controls_size, keep_area_after_division;
+		bool autonomous_cell_cycle, start_cell_cycle_at_random, cell_cycle_controls_size;
+		bool time_controls_size, xcoord_controls_size, ycoord_controls_size, use_blade_area_for_coord_gradient;
+		bool keep_area_after_division;
 		float time_decrease_exponent, xcoord_decrease_exponent;
 		int random_seed;
 		//float difference_flow_rate;
