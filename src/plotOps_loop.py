@@ -132,23 +132,25 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     if(not comparewing):
         for s in sprList:
             spcolor = springcols[abs(int(s[2]))] if len(s) > 2 else RED
-            ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color = spcolor)
+            ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color = spcolor, linewidth=0.5)
         for p in pointsList.keys():
             if(pointsList[p][2] != 1):
                 ax.scatter(pointsList[p][0], pointsList[p][1], color = STATIC_COLS[pointsList[p][2] ], s = 2)       
         if(add_vnums):
             for i in pointsList.keys():
-                ax.annotate(i, pointsList[i][0:2], size=1)
+                ax.annotate(i, pointsList[i][0:2], size=0.05, color="red")
         if(isinstance(edg, pd.DataFrame)):
             stringedges = [[v for v in vv.split(',') if v] for vv in edg.loc[edg.type == 7]["vertices"].tolist()]
             for s in stringedges:
                 ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color="black")
                 ax.scatter([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color="red", s = 2)
+                ax.annotate(s[0], pointsList[s[0]][0:2], size=0.05, color="purple")
+                ax.annotate(s[1], pointsList[s[1]][0:2], size=0.05, color="purple")
     else:
         for cw in range(len(comparewing)):
             thiscomparewing = comparewing[cw]
             thiscolors = [wingcols_comp[cw][thiscomparewing[3][j]] for j in range(len(thiscomparewing[2]))]
-            pc2 = PolyCollection(thiscomparewing[2], facecolors= thiscolors, alpha = 0.3, edgecolors='black', linewidths = 0)
+            pc2 = PolyCollection(thiscomparewing[2], facecolors= thiscolors, alpha = 0.3, edgecolors='black', linewidth = 0)
             ax.add_collection(pc2)
             name = name + '_vs_'  + thiscomparewing[0]
     plt.savefig(name + '.png')
@@ -332,8 +334,9 @@ def main():
             if(len(color_expr) > 0 and args.Input_expr != ""):
                 xprList = readExpr(args.Input_expr + str(fnum))
                 plot_expr(111, polygonList, pointsList, sprList, add_vnums, celltypes, xprList, name, color_expr, limits)
-        except:
+        except Exception as e:
             print("Error while plotting")
+            print(e)
         print("%d printed"%fnum)
 
 

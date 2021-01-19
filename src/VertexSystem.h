@@ -96,7 +96,7 @@ const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
 const int REPORT_OUT = 0;//SET THIS TO 0 IF EVOLUTION IS GOING TO BE USED OR IN CASE OF LONG SIMULATIONS
 const bool WRITE_DATA_TABLES = true;
-const bool STRING_EQUILIBRIUM_DISTANCE = false;
+const bool STRING_EQUILIBRIUM_DISTANCE = true;
 const bool ONLY_ONE_CONTACT = true; //Only 1 contact edge is allowed between 2 cells; T1 is not performed when it will compromise this condition
 
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tmoves_accepted\tmoves_rejected\tcells\tedges\tneighbour_vertices\n";
