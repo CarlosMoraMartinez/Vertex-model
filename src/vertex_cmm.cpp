@@ -27,7 +27,8 @@ int main(int argc, char *argv[]){
 	cout << "Reading arguments"<<endl;
 	std::string inputfile = argv[1];
 	std::string paramfile = argv[2];
-	cout << "Reading from file\n\n"<<endl;
+	cout << "Initializing Tissue\n\n"<<endl;
+	cout << "inputfile: " << inputfile << ", paramfile: " << paramfile << endl;
 	Tissue t = Tissue(inputfile, paramfile, moves, print_step, inputfile);
 
 	srand(RANDOM_SEED);

@@ -94,13 +94,13 @@ const int MOVE_TRIALS = 100;  //Times it tries to move a vertex before it quits 
 const bool UPDATE_EDGE_TENSION_EVERY_MOVE = true; //Update edge tension if tension is dependent on edge angle (if true, do it in every iteration, if false do it only in transitions and start)
 const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
-const int REPORT_OUT = 0;//SET THIS TO 0 IF EVOLUTION IS GOING TO BE USED OR IN CASE OF LONG SIMULATIONS
+const int REPORT_OUT = 1;//SET THIS TO 0 IF EVOLUTION IS GOING TO BE USED OR IN CASE OF LONG SIMULATIONS
 const bool WRITE_DATA_TABLES = true;
-const bool STRING_EQUILIBRIUM_DISTANCE = true;
+const bool STRING_EQUILIBRIUM_DISTANCE = false;
 const bool ONLY_ONE_CONTACT = true; //Only 1 contact edge is allowed between 2 cells; T1 is not performed when it will compromise this condition
 
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tmoves_accepted\tmoves_rejected\tcells\tedges\tneighbour_vertices\n";
-const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tperimeter\tperim_contract\t" +
+const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tK\tperimeter\tperim_contract\t" +
 	std::string("centroid_x\tcentroid_y\tangle_longest\tangle_signal\t")+
 	std::string("angle_random\tdegrees_signal\tmax_area\tcell_cycle_state\tcell_cycle_limit\tcan_divide\tnum_vertices\t")+
 	std::string("vertices\tedges\tnum_divisions\t")+
@@ -148,6 +148,7 @@ struct Cell{
 	CellType type;
 	double area;
 	double preferred_area;
+	float K;
 	double perimeter;
 	double perimeter_contractility;
 	float division_angle_random_noise; 
@@ -352,7 +353,9 @@ class Tissue{
 		float temperature_positive_energy;
 		float temperature_negative_energy; 
 		bool temperature_means_proportion_of_acceptance;
-		cell_type_param K;
+		cell_type_param K, K_final;
+		bool K_gradient_x, K_gradient_y;
+		float K_grad_exponent;
 		cell_type_param line_tension;
 		cell_type_param line_tension_tissue_boundary;
 		float energy_term1, energy_term2, energy_term3;
@@ -482,6 +485,8 @@ class Tissue{
 		void advanceSizeWithTime(int vertex_moved);
 		void advanceSizeWithCoordsAndTime(int vertex_moved);
 		void advanceSizeWithCoords(int vertex_moved);
+		void advanceKWithCoords(int vertex_moved);
+		void setKWithCoords(int cell);
 		std::vector<float> getSpringGradientFactor_mode1(std::vector<int> &vert_indices);
 		std::vector<float> getSpringGradientFactor_mode2(std::vector<int> &vert_indices);
 		void addRandomTransition();
