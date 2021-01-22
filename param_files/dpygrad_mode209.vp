@@ -1,4 +1,4 @@
-# dpygrad_mode180_0
+# dpygrad_mode208_0
 >t1_active #
 1
 >t1_inwards_active #
@@ -62,13 +62,13 @@
 >time_decrease_exponent #(at each move, a cell proportion of (final size - starting size) is multiplied by exp(-(x**THIS_PARAM))), where x is current_move/final_moves
 1
 >coord_controls_size #>=0: no; 1=x only; 2=y only; 3=both
-0
->use_blade_area_for_coord_gradient #Old mode (yes) == 1; if -1, use the parameter preferred_area_initial_gradient instead
 1
+>use_blade_area_for_coord_gradient #Old mode (yes) == 1; if -1, use the parameter preferred_area_initial_gradient instead
+-1
 >xcoord_decrease_exponent #
 2
 >use_K_spatial_gradient #>=0: no; 1=x only; 2=y only; 3=both
-1
+-1
 >K_change_exponent
 2
 >>K #
@@ -77,11 +77,12 @@
 2:0.00111111
 3:0.04
 <
+
 >>K_final #
 0:0.00111111
-1:0.04,0.03,0.02,0.01,0.005,0.00111
+1:0.004
 2:0.00111111
-3:0.04,0.03,0.02,0.01,0.005,0.00111
+3:0.004
 <
 
 >>line_tension #tension
@@ -272,9 +273,9 @@
 >posterior_compartment_factor #If spring_tension_mode = 1 or 3, multiply posterior tension by this number
 0.5
 >spring_gradient_min_tension #
-0.75
+10
 >spring_gradient_max_tension #
-5
+10
 >spring_gradient_exponent #
 5
 >spring_gradient_min_tension_P # If spring_tension_mode == 4, for posterior compartment gradient
@@ -305,22 +306,24 @@
 2:0.6
 3:0.6
 <
+
 >>ENERGY_TERM4_posterior #(rigidity)
 0:0.01
 1:0.01
 2:0.01
 3:0.01
 <
+
 >string_edge_tension
 800
 >string_edge_tension_posterior_compartment_proportion
 0.01
 >string_edge_tension_min
-800
+0.1
 >string_tension_exponent
 1
 >string_anterior_gradient
-1
+-1
 >string_posterior_gradient
 -1
 >set_string_tension_hinge #boolean

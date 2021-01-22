@@ -110,7 +110,7 @@ def plot_grid(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, n
     plt.clf()
 
 ##Not tested, probably doesn't works
-def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, edg, name, limits, figg=None, printsvg=False, comparewing=[]):
+def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, edg, name, limits, cellproperty, celltab, figg=None, printsvg=False, comparewing=[]):
     from matplotlib.collections import PolyCollection
     if(figg is None):
         fig, ax = plt.subplots()
@@ -124,6 +124,16 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     lww = 5000/len(celltypes) if(len(celltypes)>5000) else 1
     if(expr):
         alphas = expr
+    elif(cellproperty != ''):
+        alphas= celltab[cellproperty]
+        alphas = 0.5 + 0.5*(alphas/(np.max(alphas)))
+        alphas = alphas.to_numpy()
+        alphas = alphas.tolist()
+        #alphas = alphas.to_list()
+        print(celltab.shape)
+        print(len(celltypes))
+        print(type(alphas))
+        #print(alphas)
     else:
         alphas = 1 #0.85
     pc = PolyCollection(grid, facecolors= [wingcols[celltypes[j]] for j in range(len(grid))], alpha = alphas, edgecolors=EDGE_COLOR, linewidths = lww)
@@ -286,12 +296,15 @@ parser.add_argument('-c', '--Compare', metavar='compare_wing', type=str, default
                     help='Second wing to compare with. Both wings will be plotted on the top of each other')                    
 parser.add_argument('-d', '--StringEdges', metavar='read_string_edges', type=bool, default = False, 
                     help='Read .edges file and plot string edges (between spring points)')
+parser.add_argument('-p', '--PropertyFromCelltab', metavar='property_for_celltab', type=str, default = "", 
+                    help='Read .celltab file and plot alpha according to this property (column) of .celltab file')                    
 def main():
     args = parser.parse_args()
     plot_cell_types = args.plotCellTypes
     plotStringEdges = args.StringEdges
     add_vnums = args.write_vertex_number
     color_expr = [int(i) for i in args.genes_to_plot_expression.split(',') if i != '']
+    prop_from_celltab = args.PropertyFromCelltab
     fig = None
     if(args.Start_index < args.End_index):
         step = 1
@@ -319,6 +332,10 @@ def main():
         numPoints, pointsList = readPointsFile(name)
         numCells, polygonList, celltypes = readCellsFile(name, plot_cell_types, pointsList)
         numsprings, sprList = readSprings(name)
+        if(prop_from_celltab is not ''):
+            celltab = pd.read_table(name + '.celltab', sep="\t")
+        else:
+            celltab = None
         if(plotStringEdges):
             edg = readEdges(name)
         comparewingMod = [positionCompareWing(cw, polygonList) for cw in cwings]
@@ -330,7 +347,7 @@ def main():
             limits = getLimits(pointsList)
             limsSet = True
         try:
-            fig = plot_grid2(111, polygonList, pointsList, sprList, add_vnums, celltypes, [], edg, name, limits, printsvg=args.PlotSVG, comparewing=comparewingMod)  
+            fig = plot_grid2(111, polygonList, pointsList, sprList, add_vnums, celltypes, [], edg, name, limits, prop_from_celltab, celltab, printsvg=args.PlotSVG, comparewing=comparewingMod)  
             if(len(color_expr) > 0 and args.Input_expr != ""):
                 xprList = readExpr(args.Input_expr + str(fnum))
                 plot_expr(111, polygonList, pointsList, sprList, add_vnums, celltypes, xprList, name, color_expr, limits)

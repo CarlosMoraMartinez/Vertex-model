@@ -2807,6 +2807,7 @@ void Tissue::make_divide_cell(Rearrangement &r)
 	cells[newcind].edge_maxangle = cells[cell].edge_maxangle;
 	cells[newcind].edge_spatialmax_tension = cells[cell].edge_spatialmax_tension;
 	cells[newcind].edge_spatialmin_tension = cells[cell].edge_spatialmin_tension;
+	cells[newcind].K = cells[cell].K;
 
 	int newe = newEdge();
 
