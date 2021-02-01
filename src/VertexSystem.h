@@ -255,6 +255,7 @@ class Tissue{
 
 		void initialize_params(std::string params_file="");
 		double read_real_par(std::vector<std::string>::iterator& it);
+		double read_longint_par(std::vector<std::string>::iterator& it);
 		cell_type_param read_celltype_par(std::vector<std::string>::iterator& it, std::string::size_type sz);
         spring_type_param read_springtype_par(std::vector<std::string>::iterator& it, std::string::size_type sz);
 		void set_default_simulation_params();
@@ -345,7 +346,7 @@ class Tissue{
 		int integration_mode;
 		bool step_mode; //If the simulation is controlled by an external source, set this to true in order to avoid excessive printing of outputs
 		//parameters
-		bool t1_active , t1_inwards_active, t1_outwards_active, division_active, t2_active, join_edges_active, control_cells_2sides, check_if_edges_cross_opt;
+		bool t1_active, t1_inwards_active, t1_outwards_active, division_active, t2_active, join_edges_active, control_cells_2sides, check_if_edges_cross_opt;
 		bufferRejectMovement bufferMovement;
 		float min_range_vertex_movement; 
 		float max_range_vertex_movement; //In case of Monte Carlo integration
@@ -381,7 +382,8 @@ class Tissue{
 		float string_distal_transition_tension, string_distal_transition_prop, hinge_string_tension;
 		bool string_anterior_gradient, string_posterior_gradient, set_hinge_string_tension, include_hinge_in_spring_gradient;
 		
-		cell_type_param perimeter_contract;
+		cell_type_param perimeter_contract, perimeter_contract_final;
+		bool time_controls_perim, xcoord_controls_perim, ycoord_controls_perim; //Exponent will be the same as for area
 
 		float t1_transition_critical_distance; 
 		float t2_transition_critical_area;
@@ -392,7 +394,7 @@ class Tissue{
 		cell_type_param division_angle_longest_axis, division_angle_random_noise, division_angle_external, division_angle_external_degrees;
 		cell_type_param cell_cycle_limit, xcoord_size_control_factor;
 		bool autonomous_cell_cycle, start_cell_cycle_at_random, cell_cycle_controls_size;
-		bool time_controls_size, xcoord_controls_size, ycoord_controls_size, use_blade_area_for_coord_gradient;
+		bool time_controls_size, xcoord_controls_size, ycoord_controls_size, use_blade_area_for_coord_gradient, gradient_with_same_final_area;
 		bool keep_area_after_division;
 		float time_decrease_exponent, xcoord_decrease_exponent;
 		int random_seed;
@@ -426,8 +428,8 @@ class Tissue{
 		rearrangement_q rearrangements_needed;
 		divisionrecord_q past_divisions;
 		//counters
-		int counter_move_trials, counter_moves_accepted, counter_favorable_accepted, counter_favorable_rejected, counter_unfav_accepted, counter_unfav_rejected, counter_edges_removed, counter_t1, counter_t1_abortions, counter_divisions, counter_t2, counter_t1_outwards, counter_t1_inwards;
-		int max_accepted_movements, write_every_N_moves, upper_bound_movements;
+		long unsigned int counter_move_trials, counter_moves_accepted, counter_favorable_accepted, counter_favorable_rejected, counter_unfav_accepted, counter_unfav_rejected, counter_edges_removed, counter_t1, counter_t1_abortions, counter_divisions, counter_t2, counter_t1_outwards, counter_t1_inwards;
+		long unsigned int max_accepted_movements, write_every_N_moves, upper_bound_movements;
 		int written_files;
 		std::default_random_engine generator;
 		std::uniform_real_distribution<double> unif;
@@ -483,8 +485,12 @@ class Tissue{
 		double expAdvance(double x, float exponent);
 		void advanceCellCycle(int vertex_moved);
 		void advanceSizeWithTime(int vertex_moved);
+		void advancePerimWithTime(int vertex_moved);
 		void advanceSizeWithCoordsAndTime(int vertex_moved);
+		void advancePerimWithCoordsAndTime(int vertex_moved);
+		void advanceSizeWithCoordsAndTime_v2(int vertex_moved);
 		void advanceSizeWithCoords(int vertex_moved);
+		void advancePerimWithCoords(int vertex_moved);
 		void advanceKWithCoords(int vertex_moved);
 		void setKWithCoords(int cell);
 		std::vector<float> getSpringGradientFactor_mode1(std::vector<int> &vert_indices);
