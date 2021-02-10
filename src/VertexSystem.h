@@ -272,6 +272,7 @@ class Tissue{
 		double calculateEnergy(Vertex& v);
 		double calculateEnergy2(Vertex& v);
 		double calculateEnergy_term4(Vertex& v);
+		double calculateEnergy_term4_cuticle(Vertex& v);
 		void derivativeVertexPos(const Vertex &v, pointDerivative & pd);
 		void moveVertex(Vertex& v, float x, float y);
 		void moveVertexBack(Vertex& v);

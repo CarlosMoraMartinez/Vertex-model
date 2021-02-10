@@ -1777,6 +1777,38 @@ inline double Tissue::calculateEnergy_term4(Vertex& v){
 	}
 	return term4;
 }
+inline double Tissue::calculateEnergy_term4_cuticle(Vertex& v){
+	int n = 0, aux_nei, aux_ind;
+	float products[CELLS_PER_VERTEX];
+	double term4 = 0;
+	float term4coef = energy_term4_anterior.val[static_cast<int>(CellType::blade)]; //a default value
+	for (int i = 0; i < CELLS_PER_VERTEX; i++)
+	{
+		if (v.edges[i] != EMPTY_CONNECTION)
+		{
+			aux_ind = v.edges[i];
+			if(edges[aux_ind].type == EdgeType::stringedge){
+				aux_nei = edges[aux_ind].vertices[0] == v.ind ? edges[aux_ind].vertices[1] : edges[aux_ind].vertices[0];
+				products[n] = ((vertices[aux_nei].x - v.x)/edges[aux_ind].length)*((vertices[aux_nei].x -bufferMovement.x)/bufferMovement.edge_lengths[i]);
+				products[n] += ((vertices[aux_nei].y - v.y)/edges[aux_ind].length)*((vertices[aux_nei].y -bufferMovement.y)/bufferMovement.edge_lengths[i]);
+				products[n] = term4coef*(2-abs(products[n]));
+				products[n] = abs(products[n]);
+				n++;
+			}
+		}
+	}
+	if(n > 0){
+		term4 = products[0];
+		for(int i = 1; i < n; n++){
+				term4 += products[i];
+				//if(products[i]>term4)
+				//	term4 = products[i];
+		}
+		term4 /= n;
+		//term4 = term4coef->val[static_cast<int>(cells[aux_cell].type)]*(2 - term4);
+	}
+	return term4;
+}
 void Tissue::moveVertexBack(Vertex &v)
 {
 	v.x = bufferMovement.x;
@@ -1872,8 +1904,22 @@ bool Tissue::tryMoveVertex()
 	new_y = vertices[vertex_to_move].movable_y ? bufferMovement.y + sin(angle) * radius : bufferMovement.y;
 	moveVertex(vertices[vertex_to_move], new_x, new_y);
 	vertices[vertex_to_move].energy = calculateEnergy(vertices[vertex_to_move]);
-	if(use_term4)
+	//REMOVE LATER
+	/*bool in_cuticle = false;
+	 for(int i = 0; i < CELLS_PER_VERTEX; i++){
+		if(vertices[vertex_to_move].edges[i] != EMPTY_CONNECTION){
+			if(edges[vertices[vertex_to_move].edges[i]].type == EdgeType::stringedge){
+				in_cuticle = true;
+				break;
+			}
+
+		}
+	} */
+
+	if(use_term4) /// UNTIL HERE
 		vertices[vertex_to_move].energy += calculateEnergy_term4(vertices[vertex_to_move]);
+	/* else if(in_cuticle)
+		vertices[vertex_to_move].energy += calculateEnergy_term4_cuticle(vertices[vertex_to_move]); */
 	//Prob of accepting unfavourable movement ins constant
 	move_prob = vertices[vertex_to_move].energy <= bufferMovement.energy ? temperature_negative_energy : temperature_positive_energy;
 	double move = unif(generator);
@@ -5043,7 +5089,11 @@ std::ostream &operator<<(std::ostream &out, const Cell &c)
 //Overloading of << operator for EDGES. Useful to print
 std::ostream &operator<<(std::ostream &out, const Edge &e)
 {
-	out << e.ind << "\t" << int(e.type) << "\t" << e.length << "\t" << e.tension << "\t" << e.base_tension<< "\t";
+	out << e.ind << "\t" 
+	<< int(e.type) << "\t" 
+	<< e.length << "\t" 
+	<< e.tension << "\t" 
+	<< e.base_tension<< "\t";
 	for (int i = 0; i < sizeof(e.vertices) / sizeof(e.vertices[0]); i++)
 	{ //print vertices touching edge separated by ','
 		out << e.vertices[i] << ",";

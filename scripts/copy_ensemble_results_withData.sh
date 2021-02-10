@@ -19,6 +19,7 @@ do
         cp ./$p/$wing/$wing'_moved_'$2'.cells' ./$newdir/$p'_'$wing'.cells'
         cp ./$p/$wing/$wing'_moved_'$2'.edges' ./$newdir/$p'_'$wing'.edges'
         cp ./$p/$wing/$wing'_moved_'$2'.celltab' ./$newdir/$p'_'$wing'.celltab'
+	cp ./$p/$wing/$wing'_moved_'$2'.ptab' ./$newdir/$p'_'$wing'.ptab'
         cp ./$p/$wing/$wing'_moved_'$2'.spr' ./$newdir/$p'_'$wing'.spr'
     done
 done 
