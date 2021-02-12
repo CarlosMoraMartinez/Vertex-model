@@ -928,12 +928,13 @@ void Tissue::set_default_params()
 	{
 		int celltype = static_cast<int>(cells[c].type);
 		cells[c].perimeter_contractility = perimeter_contract.val[celltype];
-		cells[c].preferred_area = preferred_area_initial.val[celltype];
+		//cells[c].preferred_area = preferred_area_initial.val[celltype];
 		cells[c].area = calculateCellArea(cells[c]);
 		cells[c].perimeter = calculateCellPerimeter(cells[c]);
 		calculateCellCentroid(cells[c]); 
-
+		calculateBasePrefAreaAndPerim(cells[c]);
 		setKWithCoords(c);
+
 		cells[c].division_angle_random_noise = division_angle_random_noise.val[celltype];
 		cells[c].division_angle_longest = division_angle_longest_axis.val[celltype];
 		cells[c].division_angle_external = division_angle_external.val[celltype];
@@ -1936,7 +1937,7 @@ bool Tissue::tryMoveVertex()
 		{ //NOTE: Maybe make this before detecting changes so the effect is immediate? Otherwise cells have to wait until next round
 			advanceCellCycle(vertex_to_move);
 		}
-		if(time_controls_size && gradient_with_same_final_area){
+		/* if(time_controls_size && gradient_with_same_final_area){
 			advanceSizeWithCoordsAndTime_v2(vertex_to_move);
 		}
 		else if (time_controls_size && !(xcoord_controls_size || ycoord_controls_size))
@@ -1950,9 +1951,9 @@ bool Tissue::tryMoveVertex()
 		else if (xcoord_controls_size || ycoord_controls_size)
 		{
 			advanceSizeWithCoords(vertex_to_move);
-		}
-		
-		if (time_controls_perim && !(xcoord_controls_perim || ycoord_controls_perim))
+		} */
+
+		/* if (time_controls_perim && !(xcoord_controls_perim || ycoord_controls_perim))
 		{
 			advancePerimWithTime(vertex_to_move);
 		}
@@ -1963,11 +1964,14 @@ bool Tissue::tryMoveVertex()
 		else if (xcoord_controls_perim || ycoord_controls_perim)
 		{
 			advancePerimWithCoords(vertex_to_move);
-		}
+		} */
 		/* if(K_gradient_x || K_gradient_y){
 			advanceKWithCoords(vertex_to_move);
 		} */
 		//Counters
+		if(time_controls_size || time_controls_perim){
+			advanceSizeAndPerimWithTime_new(vertex_to_move);
+		}
 		if (vertices[vertex_to_move].energy <= bufferMovement.energy)
 		{
 			counter_favorable_accepted++;
@@ -2343,6 +2347,35 @@ void Tissue::advanceCellCycle(int vertex_moved)
 	}
 } //advanceCellCycle
 
+void Tissue::advanceSizeAndPerimWithTime_new(int vertex_moved)
+{
+	int caux;
+	double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
+	float initial;
+	time_factor = time_factor >= 1? 1.0 : expAdvance(time_factor, time_decrease_exponent);
+	//time_factor = expAdvance(time_factor, time_decrease_exponent); //(1 - exp(-pow(time_factor, time_decrease_exponent)))/EXP_FACTOR;
+	for (int i = 0; i < CELLS_PER_VERTEX; i++)
+	{
+		caux = vertices[vertex_moved].cells[i];
+		if (caux == EMPTY_CONNECTION)
+			continue;
+		if(time_controls_size){
+			initial = preferred_area_initial.val[static_cast<int>(cells[caux].type)];
+			cells[caux].preferred_area = initial + (cells[caux].base_preferred_area - initial) * time_factor; //Caution: problems if step_mode is on
+			//cout << "cell="<<caux <<"; type="<<static_cast<int>(cells[caux].type) << "; time factor= " << time_factor << ", init=" << preferred_area_initial[cells[caux].type] << "; final=" << preferred_area_final[cells[caux].type] << "; area=" << cells[caux].preferred_area << endl;
+			if (keep_area_after_division)
+			{
+				cells[caux].preferred_area /= pow(2, cells[caux].num_divisions);
+			}
+		}
+		if(time_controls_perim){
+			initial = perimeter_contract.val[static_cast<int>(cells[caux].type)];
+			cells[caux].perimeter_contractility = initial + (cells[caux].base_perimeter - initial) * time_factor; //Caution: problems if step_mode is on			
+		}
+
+	}
+} //advanceSizeAndPerimWithTime_new
+
 void Tissue::advanceSizeWithTime(int vertex_moved)
 {
 	int caux;
@@ -2379,10 +2412,72 @@ void Tissue::advancePerimWithTime(int vertex_moved)
 	}
 } //advancePerimWithTime
 
+void Tissue::calculateBasePrefAreaAndPerim(Cell& cell){
+	if(cell.type == CellType::blade || cell.type == CellType::vein_blade){
+		cell.base_perimeter = perimeter_contract_final.val[static_cast<int>(cell.type)];
+		cell.base_preferred_area = preferred_area_final.val[static_cast<int>(cell.type)];
+		cell.perimeter_contractility = perimeter_contract.val[static_cast<int>(cell.type)];		
+		cell.preferred_area = preferred_area_initial.val[static_cast<int>(cell.type)];
+		return;
+	}
+	float pos_factor_x = 0, pos_factor_y = 0, ini_perim, ini_area, fin_perim, fin_area, factor_area, factor_perim;
+	pos_factor_x = cell.centroid_x - hinge_min_xpos;
+	pos_factor_x = pos_factor_x < 0 ? 0 : pos_factor_x / (hinge_max_xpos - hinge_min_xpos);
+	pos_factor_y = cell.centroid_y - hinge_min_ypos;
+	pos_factor_y = pos_factor_y < 0 ? 0 : pos_factor_y / (hinge_max_ypos - hinge_min_ypos);
+
+	if(xcoord_controls_perim & ycoord_controls_perim)
+		factor_perim = 0.5*(pos_factor_x + pos_factor_y);
+	else if(xcoord_controls_perim)
+		factor_perim = pos_factor_x;
+	else if(ycoord_controls_perim)
+		factor_perim = pos_factor_y;
+	else
+		factor_perim = 0;
+
+	if(xcoord_controls_size & ycoord_controls_size)
+		factor_area = 0.5*(pos_factor_x + pos_factor_y);
+	else if(xcoord_controls_size)
+		factor_area = pos_factor_x;
+	else if(ycoord_controls_size)
+		factor_area = pos_factor_y;
+	else
+		factor_area = 0;		
+
+	if (cell.type == CellType::hinge) //Ini and Fin mean proximo-distal (or antero-posterior)
+	{
+		ini_perim = perimeter_contract_final.val[static_cast<int>(CellType::hinge)];
+		fin_perim = perimeter_contract_final.val[static_cast<int>(CellType::blade)];
+		ini_area = preferred_area_final.val[static_cast<int>(CellType::hinge)];
+		fin_area = preferred_area_final.val[static_cast<int>(CellType::blade)];
+		cell.perimeter_contractility = time_controls_perim ? perimeter_contract.val[static_cast<int>(CellType::blade)] : ini_perim;
+		cell.preferred_area = time_controls_size ? preferred_area_initial.val[static_cast<int>(CellType::blade)] : ini_area;
+	}
+	else //if (cells[caux].type == CellType::vein_hinge) //not necessary
+	{
+		ini_perim = perimeter_contract_final.val[static_cast<int>(CellType::vein_hinge)];
+		fin_perim = perimeter_contract_final.val[static_cast<int>(CellType::vein_blade)];
+		ini_area = preferred_area_final.val[static_cast<int>(CellType::vein_hinge)];
+		fin_area = preferred_area_final.val[static_cast<int>(CellType::vein_blade)];
+		cell.perimeter_contractility = time_controls_perim ? perimeter_contract.val[static_cast<int>(CellType::vein_blade)] : ini_perim;
+		cell.preferred_area = time_controls_size ? preferred_area_initial.val[static_cast<int>(CellType::vein_blade)] : ini_area;
+	}
+
+	cell.base_perimeter = ini_perim + (fin_perim - ini_perim) * expAdvance(factor_perim, xcoord_decrease_exponent); //(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
+	cell.base_preferred_area = ini_area + (fin_area - ini_area) * expAdvance(factor_area, xcoord_decrease_exponent); //(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
+	//cell.perimeter_contractility = time_controls_perim ? fin_perim : ini_perim;
+	//cell.preferred_area = time_controls_size ? fin_area : ini_area;
+	
+}
+
 void Tissue::produceOutputs(std::string add_to_name)
 {
 
 	std:string fname = simname + "_" + add_to_name + "_" + std::to_string(written_files);
+	if(RECALCULATE_CENTROIDS_FOR_PRINTING){
+		for(Cell c: cells)
+			calculateCellCentroid(c);
+	}
 	writeCellsFile(fname);
 	writePointsFile(fname);
 	if (num_springs > 0)
@@ -3134,6 +3229,7 @@ void Tissue::make_divide_cell(Rearrangement &r)
 
 	//Now update cell areas and perimeters
 	cells[newcind].perimeter_contractility = cells[cell].perimeter_contractility;
+	cells[newcind].base_perimeter = cells[cell].base_perimeter; //most proximal perim contract to calculate spatial gradient
 	cells[newcind].cell_cycle_limit = cells[cell].cell_cycle_limit;
 
 	cells[newcind].max_area = cells[cell].max_area;
@@ -3163,6 +3259,8 @@ void Tissue::make_divide_cell(Rearrangement &r)
 		cells[newcind].preferred_area = preferred_area_initial.val[static_cast<int>(cells[cell].type)];
 	}
 	cells[newcind].preferred_area = cells[cell].preferred_area;
+	cells[newcind].base_preferred_area = cells[cell].base_preferred_area;
+
 
 
 	//Finally, check whether new vertices should be static
@@ -5054,6 +5152,7 @@ std::ostream &operator<<(std::ostream &out, const Cell &c)
 {
 	out << c.ind << "\t" << int(c.type) << "\t" << c.area << "\t" << c.preferred_area << "\t" << c.K << "\t" << c.perimeter << "\t" << c.perimeter_contractility << "\t";
 	out << c.centroid_x << "\t" << c.centroid_y << "\t";
+	out << c.base_preferred_area << "\t" << c.base_perimeter << "\t";
 	out << c.division_angle_longest << "\t";
 	out << c.division_angle_external << "\t";
 	out << c.division_angle_random_noise << "\t";
