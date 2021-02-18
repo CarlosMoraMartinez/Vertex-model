@@ -2,46 +2,105 @@
 library(tidyverse)
 library(wesanderson)
 
-
-dirs <- c("/home/carmoma/vertex/Vertex-model/dpygrad_mode227/dpygrad_mode227_0/etournay1_strings8b",
-          "/home/carmoma/vertex/Vertex-model/dpygrad_mode227/dpygrad_mode227_1/etournay1_strings8b",
-          "/home/carmoma/vertex/Vertex-model/dpygrad_mode227/dpygrad_mode227_2/etournay1_strings8b",
-          "/home/carmoma/vertex/Vertex-model/dpygrad_mode227/dpygrad_mode227_3/etournay1_strings8b",
-          "/home/carmoma/vertex/Vertex-model/dpygrad_mode227/dpygrad_mode227_4/etournay1_strings8b")
-
-dirs <- c("/home/carmoma/vertex/Vertex-model/dpygrad_mode229/dpygrad_mode229_0/etournay1_strings8b",
-          "/home/carmoma/vertex/Vertex-model/dpygrad_mode229/dpygrad_mode229_1/etournay1_strings8b",
-          "/home/carmoma/vertex/Vertex-model/dpygrad_mode229/dpygrad_mode229_2/etournay1_strings8b"
-          )
+nums <- 268:265
+wing <- "/etournay1_strings8b"
+sims <- 0:5
+timesteps <- c(0, 1, 5, 10, 20, 40)
+dirbase <- "/home/carmoma/vertex/Vertex-model/dpygrad_mode%NUMBER%/dpygrad_mode%NUMBER%_"
 
 
-names <- c("Only temporal gradient", "temporal + PD gradient", "temporal + AP gradient", 
-           "temporal + PD + AP gradients", "temporal + PD Isaac's way")
+for(num in nums){
+  dirsims <- dirbase %>% gsub("%NUMBER%", as.character(num), .)
+  cat(dirsims, "******")
+  names <- paste(as.character(num), as.character(sims), sep="_")
+  dirs <- paste(dirsims, as.character(sims), wing, sep="")
+  plotAll(dirs) #Defined below
+}
+# names <- c("Only temporal gradient", "temporal + PD gradient", "temporal + AP gradient", 
+#            "temporal + PD + AP gradients", "temporal + PD Isaac's way")
+# #names <- c("No area, no perim grad", 
+#           "No area, perim X grad", 
+#           "No area, perim Y grad", 
+#            "No area, perim XY grad", 
+#            "Area X grad, no perim grad", 
+#            "Area X grad, perim X grad", 
+#            "Area X grad, perim Y grad", 
+#            "Area X grad, perim XY grad", 
+#            "Area Y grad, no perim grad", 
+#            "Area Y grad, perim X grad", 
+#            "Area Y grad, perim Y grad", 
+#            "Area Y grad, perim XY grad", 
+#            "Area XY grad, no perim grad", 
+#            "Area XY grad, perim X grad", 
+#            "Area XY grad, perim Y grad", 
+#            "Area XY grad, perim XY grad")
 
-names <- paste("perim_grad", as.character(c(0.5, 1.0, 2.0)), sep="_")
 
-
-setwd("/home/carmoma/vertex/Vertex-model/dpygrad_mode229/")
+plotAll <- function(dirs){
 for(d in dirs){
   
   setwd(d)
   f<-list.files() %>%subset(grepl(".celltab", .)) %>% subset(grepl("moved",.))
+  fpoints<-list.files() %>%subset(grepl(".ptab", .)) %>% subset(grepl("moved",.))
   time <- gsub("etournay1_strings8b_moved_", "", f) %>% gsub(".celltab", "", .)
+  ind2read <- which(time %in% as.character(timesteps))
+  time <- time[ind2read]
+  f <- f[ind2read]
   res<-data.frame();
   for(i in 1:length(f)){
-    aux<-read_tsv(f[i]);
+
+    aux<-read.table(f[i], head=T, sep="\t", dec=".", stringsAsFactors = F) %>% tibble() 
+    #To update centroid positions 
+    #points <- read.table(fpoints[i], head=T, sep="\t", dec=".", stringsAsFactors = F) %>% tibble()
+    #aux <- aux %>% mutate(vertices = sapply(vertices, function(x)as.integer(strsplit(x, ",")[[1]])),
+    #          current_x = sapply(vertices, function(indicesthiscell){
+    #            points %>% filter(ind %in% indicesthiscell) %>% select(x) %>% pull %>% mean
+    #            }),
+    #         current_y = sapply(vertices, function(indicesthiscell){
+    #           points %>% filter(ind %in% indicesthiscell) %>% select(y) %>% pull %>% mean
+    # }))
+    
+
+    
    aux$time <- time[i]
    res<-rbind(res, aux)
   };
-  res$time<-as.character(res$time)
+  #res$time<-as.character(res$time)
   res<-res %>% mutate(type = recode(type+1, "blade", "hinge", "vein blade", "vein hinge"))
-  res2 <- res %>%filter(time %in% c("1", "5", "10", "20") & preferred_area > 0 & type %in% c("blade", "hinge") )
-
+  res2 <- res %>%
+    filter(time %in% timesteps & preferred_area > 0 & type %in% c("blade", "hinge") ) %>% 
+    mutate(preferred_area_norm = preferred_area*(num_divisions+1))
   res3 <- res2 %>% gather("coordinate", "centroid_position", centroid_x, centroid_y)
   res3$time <- as.numeric(res3$time)
+  #b <- res2 %>% filter(type == "hinge")
+  g0a <- ggplot(res2, aes(x=centroid_x, y=centroid_y, fill=perim_contract, col=perim_contract)) + 
+    geom_point() + 
+    facet_wrap(factor(time, levels = timesteps)~.) +
+    xlim(0, 1100) +
+    ylim(0, 450) +
+    ggtitle("perim_contract")
+  g0b <- ggplot(res2, aes(x=centroid_x, y=centroid_y, fill=preferred_area_norm, col=preferred_area_norm)) + 
+    geom_point() + 
+    facet_wrap(factor(time, levels = timesteps)~.)+
+    xlim(0, 1100) +
+    ylim(0, 450) +
+    ggtitle("preferred_area")
+  g0c <- ggplot(res2, aes(x=centroid_x, y=centroid_y, fill=base_eq_perimcontr, col=base_eq_perimcontr)) + 
+    geom_point() + 
+    facet_wrap(factor(time, levels = timesteps)~.)+
+    xlim(0, 1100) +
+    ylim(0, 450) +
+    ggtitle("base_perim_contract")
+  g0d <- ggplot(res2, aes(x=centroid_x, y=centroid_y, fill=base_eq_area, col=base_eq_area)) + 
+    geom_point() + 
+    facet_wrap(factor(time, levels = timesteps)~.)+
+    xlim(0, 1100) +
+    ylim(0, 450) +
+    ggtitle("base_preferred_area")
   g1 <- ggplot(res3, aes(x=centroid_position, y=(preferred_area*(num_divisions+1)), 
                        fill=time, color=time, shape=type))+
     geom_point(size=0.5, stroke=0.5)+
+    xlim(0, 1100) +
     facet_grid(coordinate~.)+
     ggtitle(names[which(dirs == d)]) +
     ylab("Equilibrium Area") +
@@ -56,6 +115,7 @@ for(d in dirs){
   g2 <- ggplot(res3, aes(x=centroid_position, y=(perim_contract), 
                        fill=time, color=time, shape=type))+
     geom_point(size=0.5, stroke=0.5)+
+    xlim(0, 1100) +
     facet_grid(coordinate~.)+
     ggtitle(names[which(dirs == d)]) +
     ylab("Perimeter contractility") +
@@ -71,6 +131,7 @@ for(d in dirs){
   g3 <- ggplot(res3, aes(x=centroid_position, y=K, 
                        fill=time, color=time, shape=type))+
     geom_point(size=0.5, stroke=0.5, alpha=0.5)+
+    xlim(0, 1100) +
     facet_grid(coordinate~.)+
     ggtitle(names[which(dirs == d)]) +
     ylab("K") +
@@ -92,6 +153,7 @@ for(d in dirs){
                  fill=time, color=time, shape=type))+
     geom_point(size=0.5, stroke=0.5)+
     geom_hline(yintercept=1, linetype = 2) +
+    xlim(0, 1100) +
     facet_grid(coordinate~.)+
     ggtitle(names[which(dirs == d)]) +
     xlab("Centroid position") +
@@ -110,7 +172,11 @@ for(d in dirs){
   print(g2)
   print(g3)
   print(g4)
+  print(g0a)
+  print(g0b)
+  print(g0c)
+  print(g0d)
   dev.off()
 }##for directories
-
+}
 

@@ -98,10 +98,12 @@ const int REPORT_OUT = 1;//SET THIS TO 0 IF EVOLUTION IS GOING TO BE USED OR IN 
 const bool WRITE_DATA_TABLES = true;
 const bool STRING_EQUILIBRIUM_DISTANCE = false;
 const bool ONLY_ONE_CONTACT = true; //Only 1 contact edge is allowed between 2 cells; T1 is not performed when it will compromise this condition
+const bool RECALCULATE_CENTROIDS_FOR_PRINTING = true;
+const bool TAKE_FROINTIER_AS_REFERENCE_FOR_GRADIENT = true;
 
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tmoves_accepted\tmoves_rejected\tcells\tedges\tneighbour_vertices\n";
 const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tK\tperimeter\tperim_contract\t" +
-	std::string("centroid_x\tcentroid_y\tangle_longest\tangle_signal\t")+
+	std::string("centroid_x\tcentroid_y\tbase_eq_area\tbase_eq_perimcontr\tangle_longest\tangle_signal\t")+
 	std::string("angle_random\tdegrees_signal\tmax_area\tcell_cycle_state\tcell_cycle_limit\tcan_divide\tnum_vertices\t")+
 	std::string("vertices\tedges\tnum_divisions\t")+
 	std::string("vary_line_tension\tedge_angle_prop_external\tedge_angle_prop_uniform\tedge_angle_prop_maxangl\t")+
@@ -148,8 +150,10 @@ struct Cell{
 	CellType type;
 	double area;
 	double preferred_area;
-	float K;
+	double base_preferred_area;
+	double K;
 	double perimeter;
+	double base_perimeter;
 	double perimeter_contractility;
 	float division_angle_random_noise; 
 	float division_angle_longest;
@@ -484,8 +488,10 @@ class Tissue{
 
 		//Other
 		double expAdvance(double x, float exponent);
+		void calculateBasePrefAreaAndPerim(Cell& cell);
 		void advanceCellCycle(int vertex_moved);
 		void advanceSizeWithTime(int vertex_moved);
+		void advanceSizeAndPerimWithTime_new(int vertex_moved);
 		void advancePerimWithTime(int vertex_moved);
 		void advanceSizeWithCoordsAndTime(int vertex_moved);
 		void advancePerimWithCoordsAndTime(int vertex_moved);
@@ -496,6 +502,8 @@ class Tissue{
 		void setKWithCoords(int cell);
 		std::vector<float> getSpringGradientFactor_mode1(std::vector<int> &vert_indices);
 		std::vector<float> getSpringGradientFactor_mode2(std::vector<int> &vert_indices);
+		std::vector<int> getHingeBladeFrontier();
+		double getXgradFromFrontier(float xpos, float ypos, std::vector<int> & frontier);
 		void addRandomTransition();
 		bool checkCellConsistency(int cell);
 		//double calculateTerm4Energy(Vertex &v, double old_x, double old_y);
