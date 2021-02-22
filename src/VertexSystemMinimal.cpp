@@ -393,6 +393,9 @@ void Tissue::set_default_simulation_params()
 	set_hinge_string_tension = false;
 	hinge_string_tension = LINE_TENSION_TISSUE_BOUNDARY;
 	string_distal_transition_prop = 0.0;
+	reference_for_gradient = REFERENCE_FOR_GRADIENT;
+	wing_proportion_in_gradient = DEFAULT_PROPORTION_FOR_GRADIENT;
+	random_seed = RANDOM_SEED;
 }
 
 void Tissue::readNewParameters(std::string filename)
@@ -636,6 +639,8 @@ void Tissue::initialize_params(std::string params_file)
 	cout << "Param file reading... breakpoint 9" << endl;
 	std::flush(cout);
 	string_distal_transition_prop = read_real_par(it);
+	reference_for_gradient = read_real_par(it);
+	wing_proportion_in_gradient = read_real_par(it);
 	random_seed = read_real_par(it);
 	cout << "Param file reading... final" << endl;
 	std::flush(cout);
@@ -2421,7 +2426,10 @@ void Tissue::advancePerimWithTime(int vertex_moved)
 } //advancePerimWithTime
 
 void Tissue::calculateBasePrefAreaAndPerim(Cell& cell){
-	if(cell.type == CellType::blade || cell.type == CellType::vein_blade){
+	float pos_factor_x = (cell.centroid_x - min_xpos)/(max_xpos - min_xpos);
+	float pos_factor_y = 0, ini_perim, ini_area, fin_perim, fin_area, factor_area, factor_perim;
+	if((cell.type == CellType::blade || cell.type == CellType::vein_blade) && 
+			(reference_for_gradient != USE_PROPORTION_OF_WING || pos_factor_x >= wing_proportion_in_gradient)){
 		cell.base_perimeter = perimeter_contract_final.val[static_cast<int>(cell.type)];
 		cell.base_preferred_area = preferred_area_final.val[static_cast<int>(cell.type)];
 		cell.perimeter_contractility = perimeter_contract.val[static_cast<int>(cell.type)];		
@@ -2429,13 +2437,14 @@ void Tissue::calculateBasePrefAreaAndPerim(Cell& cell){
 		return;
 	}
 
-	float pos_factor_x = 0, pos_factor_y = 0, ini_perim, ini_area, fin_perim, fin_area, factor_area, factor_perim;
-	if(TAKE_FROINTIER_AS_REFERENCE_FOR_GRADIENT){
+	if(reference_for_gradient == USE_HINGE_BLADE_FRONTIER){
 		std::vector<int> edges_frontier = getHingeBladeFrontier();
 		pos_factor_x = getXgradFromFrontier(cell.centroid_x, cell.centroid_y, edges_frontier);
-	}else{
+	}else if(reference_for_gradient == USE_MAX_HINGE_POSITION){
 		pos_factor_x = cell.centroid_x - hinge_min_xpos;
 		pos_factor_x = pos_factor_x < 0 ? 0 : pos_factor_x / (hinge_max_xpos - hinge_min_xpos);
+	}else{
+		pos_factor_x = pos_factor_x > wing_proportion_in_gradient ? 1: pos_factor_x/wing_proportion_in_gradient;
 	}
 	pos_factor_y = cell.centroid_y - hinge_min_ypos;
 	pos_factor_y = pos_factor_y < 0 ? 0 : pos_factor_y / (hinge_max_ypos - hinge_min_ypos);

@@ -99,7 +99,11 @@ const bool WRITE_DATA_TABLES = true;
 const bool STRING_EQUILIBRIUM_DISTANCE = false;
 const bool ONLY_ONE_CONTACT = true; //Only 1 contact edge is allowed between 2 cells; T1 is not performed when it will compromise this condition
 const bool RECALCULATE_CENTROIDS_FOR_PRINTING = true;
-const bool TAKE_FROINTIER_AS_REFERENCE_FOR_GRADIENT = true;
+const int USE_HINGE_BLADE_FRONTIER = 1;
+const int USE_MAX_HINGE_POSITION = 2;
+const int USE_PROPORTION_OF_WING = 3;
+const float DEFAULT_PROPORTION_FOR_GRADIENT = 0.7;
+const int REFERENCE_FOR_GRADIENT = USE_PROPORTION_OF_WING;
 
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tmoves_accepted\tmoves_rejected\tcells\tedges\tneighbour_vertices\n";
 const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tK\tperimeter\tperim_contract\t" +
@@ -403,7 +407,8 @@ class Tissue{
 		bool autonomous_cell_cycle, start_cell_cycle_at_random, cell_cycle_controls_size;
 		bool time_controls_size, xcoord_controls_size, ycoord_controls_size, use_blade_area_for_coord_gradient, gradient_with_same_final_area;
 		bool keep_area_after_division;
-		float time_decrease_exponent, xcoord_decrease_exponent;
+		int reference_for_gradient;
+		float time_decrease_exponent, xcoord_decrease_exponent, wing_proportion_in_gradient;
 		int random_seed;
 		//float difference_flow_rate;
 
