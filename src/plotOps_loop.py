@@ -21,7 +21,10 @@ WHITE = '#ffffff'
 BLACK = '#000000'
 
 STATIC_COLS=[RED, WHITE, BLUE, GRAY]
-
+COLORMAP_FOR_CELL_PROPERTY_BINNED = plt.cm.Set1
+COLORMAP_FOR_CELL_PROPERTY = plt.cm.prism #flag
+COLORMAP_FOR_CELL_PROPERTY_DIVERGING = plt.cm.seismic
+COLORMAPS = [COLORMAP_FOR_CELL_PROPERTY, COLORMAP_FOR_CELL_PROPERTY_BINNED, COLORMAP_FOR_CELL_PROPERTY_DIVERGING, plt.cm.bwr, plt.cm.hot, plt.cm.Blues, plt.cm.Reds]
 
 bladetype = 0
 hingetype = 1
@@ -120,23 +123,18 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
         ax.collections.clear()
     plt.xlim(limits[0], limits[2])
     plt.ylim(limits[1], limits[3])
-    #col = np.zeros((len(grid), 6, 2))
-    lww = 5000/len(celltypes) if(len(celltypes)>5000) else 1
+    #col = np.zeros((len(grid), 6, 2))  
     if(expr):
         alphas = expr
-    elif(cellproperty != ''):
-        alphas= celltab[cellproperty]
-        alphas = 0.5 + 0.5*(alphas/(np.max(alphas)))
-        alphas = alphas.to_numpy()
-        alphas = alphas.tolist()
-        #alphas = alphas.to_list()
-        print(celltab.shape)
-        print(len(celltypes))
-        print(type(alphas))
-        #print(alphas)
     else:
         alphas = 1 #0.85
-    pc = PolyCollection(grid, facecolors= [wingcols[celltypes[j]] for j in range(len(grid))], alpha = alphas, edgecolors=EDGE_COLOR, linewidths = lww)
+    if(cellproperty != ''):
+        lww = 0
+        polygoncolors = getColorFromProperty(celltab, cellproperty)
+    else:
+        lww = 5000/len(celltypes) if(len(celltypes)>5000) else 1
+        polygoncolors = [wingcols[celltypes[j]] for j in range(len(grid))]
+    pc = PolyCollection(grid, facecolors= polygoncolors, alpha = alphas, edgecolors=EDGE_COLOR, linewidths = lww)
     #pc.set_edgecolors("black")
     ax.add_collection(pc)
     if(not comparewing):
@@ -269,6 +267,33 @@ def getFilename(inputname, fnum):
     else:
         name = inputname + str(fnum)
     return name
+
+def getColorFromProperty(celltab, cellproperty):
+    import matplotlib
+    if(':' in cellproperty or ';' in cellproperty):
+        symbol = ':' if ':' in cellproperty else ';'
+        n_bins = int(cellproperty.split(symbol)[1])
+        cellproperty = cellproperty.split(symbol)[0]
+        values = celltab[cellproperty].tolist()
+        max_val = int(max(values))
+        bin_interval = int(max_val/n_bins)
+        values = np.digitize(values, [i for i in range(0, max_val, bin_interval)]).tolist()
+        cmap = COLORMAP_FOR_CELL_PROPERTY_BINNED if(symbol == ':') else COLORMAP_FOR_CELL_PROPERTY_DIVERGING
+        values = [i%cmap.N for i in values]
+    else:
+        if('__' in cellproperty):
+            num_colormap = int(cellproperty.split('__')[1])
+            if(num_colormap > len(COLORMAPS)-1):
+                print("Color map not defined. Using matplotlib.cm.prism. ")
+                num_colormap = 0
+            cellproperty = cellproperty.split('__')[0]
+        else:
+            num_colormap = 0
+        values = celltab[cellproperty].tolist()
+        cmap = COLORMAPS[num_colormap]
+    norm = matplotlib.colors.Normalize(vmin=np.min(values), vmax=np.max(values))
+    colors = cmap(norm(values))
+    return colors
 ########################################################################################################################
 # Generating the multipolygon object
 ########################################################################################################################
@@ -297,7 +322,8 @@ parser.add_argument('-c', '--Compare', metavar='compare_wing', type=str, default
 parser.add_argument('-d', '--StringEdges', metavar='read_string_edges', type=bool, default = False, 
                     help='Read .edges file and plot string edges (between spring points)')
 parser.add_argument('-p', '--PropertyFromCelltab', metavar='property_for_celltab', type=str, default = "", 
-                    help='Read .celltab file and plot alpha according to this property (column) of .celltab file')                    
+                    help='Read .celltab file and plot color according to this property (column) of .celltab file. If using "<cellproperty>:<n>" or "<cellproperty>;<n>", the values are binned in n bins. Using ":" or ";" changes the color scale. If not binning, using "<cellproperty>__<n> changes the color scale. Use 0 or 1 for stripe-like scales and 2-6 for more gradual scales."')   
+                 
 def main():
     args = parser.parse_args()
     plot_cell_types = args.plotCellTypes
@@ -325,7 +351,7 @@ def main():
             print("Wing to compare read")
     else:
         comparewing = []
-    for fnum in range(args.Start_index, args.End_index, step):
+    for fnum in range(args.Start_index, args.End_index + 1, step):
         name = getFilename(args.Inputname, fnum)
         if(not os.path.isfile(name + ".points") or not os.path.isfile(name + ".cells")):
             continue

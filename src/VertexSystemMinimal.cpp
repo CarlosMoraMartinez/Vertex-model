@@ -520,6 +520,10 @@ void Tissue::initialize_params(std::string params_file)
 	energy_term1 = read_real_par(it);
 	energy_term2 = read_real_par(it);
 	energy_term3 = read_real_par(it);
+	double sum_terms = (energy_term1 + energy_term2 + energy_term3)/3;
+	energy_term1 /= sum_terms;
+	energy_term2 /= sum_terms;
+	energy_term3 /= sum_terms;
 	//energy_term4 = read_real_par(it);
 	cout << "Param file reading... breakpoint 2" << endl;
 	std::flush(cout);
@@ -934,6 +938,8 @@ void Tissue::set_default_params()
 		calculateCellCentroid(cells[c]); 
 		calculateBasePrefAreaAndPerim(cells[c]);
 		setKWithCoords(c);
+		cells[c].father = c;
+		cells[c].x_at_start = cells[c].centroid_x;
 
 		cells[c].division_angle_random_noise = division_angle_random_noise.val[celltype];
 		cells[c].division_angle_longest = division_angle_longest_axis.val[celltype];
@@ -1193,7 +1199,7 @@ void Tissue::setSpringTension_mode2(){
 	}
 	for(int i = 0; i < spr_indices.size(); i++){
 			//cout << i <<": tension before: " << springs[spr_indices[i]].tension;
-			springs[spr_indices[i]].tension = spring_gradient_min_tension + (spring_gradient_max_tension - spring_gradient_min_tension)*gradient_factor[i]; //*expAdvance(gradient_factor[i], spring_gradient_exponent);
+			springs[spr_indices[i]].tension = spring_gradient_min_tension + (spring_gradient_max_tension - spring_gradient_min_tension)*expAdvance(gradient_factor[i], spring_gradient_exponent); //gradient_factor[i]; //*
 			//cout << ", tension after: " << springs[spr_indices[i]].tension << ", grad fact: " << gradient_factor[i] << ", exp: " << expAdvance(gradient_factor[i], spring_gradient_exponent)<< endl;
 
 	}
@@ -1416,6 +1422,8 @@ int Tissue::newCell()
 		cells[c].edges[i] = EMPTY_CONNECTION;
 	}
 	cells[c].dead = false;
+	cells[c].father = -1;
+	cells[c].x_at_start = 0;
 	cells[c].num_vertices = 0;
 	cells[c].cell_cycle_state = 0;
 	cells[c].can_divide = !autonomous_cell_cycle;
@@ -2519,8 +2527,8 @@ void Tissue::produceOutputs(std::string add_to_name)
 
 	std:string fname = simname + "_" + add_to_name + "_" + std::to_string(written_files);
 	if(RECALCULATE_CENTROIDS_FOR_PRINTING){
-		for(Cell c: cells)
-			calculateCellCentroid(c);
+		for(int i = 0; i < cells.size(); i++)
+			calculateCellCentroid(cells[i]);
 	}
 	writeCellsFile(fname);
 	writePointsFile(fname);
@@ -3304,6 +3312,8 @@ void Tissue::make_divide_cell(Rearrangement &r)
 	}
 	cells[newcind].preferred_area = cells[cell].preferred_area;
 	cells[newcind].base_preferred_area = cells[cell].base_preferred_area;
+	cells[newcind].father = cells[cell].father;
+	cells[newcind].x_at_start = cells[cell].x_at_start;
 
 
 
@@ -5225,6 +5235,8 @@ std::ostream &operator<<(std::ostream &out, const Cell &c)
 	out << "\t" << c.edge_maxangle;
 	out << "\t" << c.edge_spatialmax_tension;
 	out << "\t" << c.edge_spatialmin_tension;
+	out << "\t" << c.father;
+	out << "\t" << c.x_at_start;
 
 	return out;
 }

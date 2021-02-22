@@ -108,7 +108,7 @@ const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tK\tperimeter\t
 	std::string("vertices\tedges\tnum_divisions\t")+
 	std::string("vary_line_tension\tedge_angle_prop_external\tedge_angle_prop_uniform\tedge_angle_prop_maxangl\t")+
 	std::string("edge_angle_prop_random\tedge_tension_external\t")+
-	std::string("edge_maxangle\tedge_spatialmax_tension\tedge_spatialmin_tension\n");
+	std::string("edge_maxangle\tedge_spatialmax_tension\tedge_spatialmin_tension\tfather\tinitial_xpos\n");
 const std::string EDGE_HEADER = "ind\ttype\tlength\ttension\tbase_tension\tvertices\tcells\n";
 const std::string SPR_HEADER = "ind\ttype\ttension\tlength\tcompartment\tstatic_vertex\tmovable_vertex\tx_static\ty_static\tx_movable\ty_movable\n";
 
@@ -178,6 +178,8 @@ struct Cell{
 	int num_vertices; 
 	bool dead;
 	int num_divisions;
+	int father;
+	float x_at_start;
 };
 // Structure for Edge
 struct Edge{

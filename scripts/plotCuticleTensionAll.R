@@ -22,8 +22,9 @@ getEdgeData <- function(this_f){
   return(edges)
 }
 
+EDGE_TYPES <- c(7) # 5 = springs, 7 = cuticle strings
 
-d <- "/home/carmoma/vertex/Vertex-model/dpygrad_mode247/etournay1_strings8b_all_final/"
+d <- "/home/carmoma/vertex/Vertex-model/dpygrad_mode271/etournay1_strings8b_all_final/"
 setwd(d)
 f <- list.files() %>% subset(grepl("dpygrad", .) & !grepl("png$|avi$", .))
 time <- str_match(f, "_[0-9]+_") %>% gsub("_", "", .) %>% as.numeric
@@ -34,7 +35,7 @@ res<-data.frame();
 for(i in unique(time)){
   this_f <- f[time==i] %>% subset(!is.na(.))
   edges <- getEdgeData(this_f)
-  edges2 <- edges %>% filter(type %in% c(7) & ! is.na(tension))
+  edges2 <- edges %>% filter(type %in% EDGE_TYPES & ! is.na(tension))
   res <- rbind(res, edges2)
 }  
 

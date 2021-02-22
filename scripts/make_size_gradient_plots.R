@@ -2,7 +2,7 @@
 library(tidyverse)
 library(wesanderson)
 
-nums <- 268:265
+nums <- 275:276
 wing <- "/etournay1_strings8b"
 sims <- 0:5
 timesteps <- c(0, 1, 5, 10, 20, 40)
