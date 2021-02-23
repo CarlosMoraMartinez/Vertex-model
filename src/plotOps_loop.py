@@ -131,6 +131,7 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     if(cellproperty != ''):
         lww = 0
         polygoncolors = getColorFromProperty(celltab, cellproperty)
+        name = name + '_' + cellproperty
     else:
         lww = 5000/len(celltypes) if(len(celltypes)>5000) else 1
         polygoncolors = [wingcols[celltypes[j]] for j in range(len(grid))]
@@ -161,7 +162,7 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
             pc2 = PolyCollection(thiscomparewing[2], facecolors= thiscolors, alpha = 0.3, edgecolors='black', linewidth = 0)
             ax.add_collection(pc2)
             name = name + '_vs_'  + thiscomparewing[0]
-    plt.savefig(name + '.png')
+    plt.savefig(name + '.png', pad_inches=0.0, bbox_inches = 'tight')
     if(printsvg):
         plt.savefig(name + '.svg', format='svg', dpi=1200)
     return (fig, ax)
