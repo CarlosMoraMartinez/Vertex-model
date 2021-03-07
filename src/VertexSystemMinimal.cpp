@@ -1852,6 +1852,8 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 {
 	v.x = x;
 	v.y = y;
+	float tension_sum = 0;  //REMOVE LATER
+	int num_edges = 0;  //REMOVE LATER
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
 		if (v.edges[i] != EMPTY_CONNECTION)
@@ -1863,10 +1865,21 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 				//setEdgeType(v.edges[i]); not needed since there is base_tension
 				bufferMovement.edge_tensions[i] = edges[v.edges[i]].tension;
 				setEdgeTension(v.edges[i]);
+				tension_sum+=edges[v.edges[i]].tension;  //REMOVE LATER
+				num_edges++;  //REMOVE LATER
 				//cout <<edges[v.edges[i]].tension<<endl;
 			}
 		}
 	}
+	if(NORMALIZE_EDGE_TENSION && UPDATE_EDGE_TENSION_EVERY_MOVE && num_edges==3){  //REMOVE LATER
+		for (int i = 0; i < CELLS_PER_VERTEX; i++)  //REMOVE LATER
+	{
+		if (v.edges[i] != EMPTY_CONNECTION)  //REMOVE LATER
+		{
+			edges[v.edges[i]].tension /= tension_sum;  //REMOVE LATER
+		}
+	}
+
 	if (v.spring != EMPTY_CONNECTION)
 	{
 		bufferMovement.spring_length = springs[v.spring].length;
@@ -2429,7 +2442,8 @@ void Tissue::calculateBasePrefAreaAndPerim(Cell& cell){
 	float pos_factor_x = (cell.centroid_x - min_xpos)/(max_xpos - min_xpos);
 	float pos_factor_y = 0, ini_perim, ini_area, fin_perim, fin_area, factor_area, factor_perim;
 	if((cell.type == CellType::blade || cell.type == CellType::vein_blade) && 
-			(reference_for_gradient != USE_PROPORTION_OF_WING || pos_factor_x >= wing_proportion_in_gradient)){
+			(reference_for_gradient != USE_PROPORTION_OF_WING || pos_factor_x >= wing_proportion_in_gradient) &&
+			(reference_for_gradient != USE_BARE_EXPONENTIAL_GRADIENT)){
 		cell.base_perimeter = perimeter_contract_final.val[static_cast<int>(cell.type)];
 		cell.base_preferred_area = preferred_area_final.val[static_cast<int>(cell.type)];
 		cell.perimeter_contractility = perimeter_contract.val[static_cast<int>(cell.type)];		
@@ -2437,6 +2451,19 @@ void Tissue::calculateBasePrefAreaAndPerim(Cell& cell){
 		return;
 	}
 
+	if(reference_for_gradient == USE_BARE_EXPONENTIAL_GRADIENT){
+		pos_factor_x = exp(- xcoord_decrease_exponent * (cell.centroid_x - min_xpos)/(max_xpos - min_xpos));
+		cell.base_perimeter = perimeter_contract_final.val[static_cast<int>(cell.type)];
+		cell.base_preferred_area = preferred_area_final.val[static_cast<int>(cell.type)];
+		if(xcoord_controls_perim)
+			cell.base_perimeter *= pos_factor_x;
+		if(xcoord_controls_size)
+			cell.base_preferred_area *= (1 - pos_factor_x);
+		cell.perimeter_contractility = time_controls_perim ? perimeter_contract.val[static_cast<int>(CellType::blade)] : cell.base_perimeter;
+		cell.preferred_area = time_controls_size ? preferred_area_initial.val[static_cast<int>(CellType::blade)] : cell.base_preferred_area;
+		return;
+	}
+	
 	if(reference_for_gradient == USE_HINGE_BLADE_FRONTIER){
 		std::vector<int> edges_frontier = getHingeBladeFrontier();
 		pos_factor_x = getXgradFromFrontier(cell.centroid_x, cell.centroid_y, edges_frontier);
@@ -3313,7 +3340,7 @@ void Tissue::make_divide_cell(Rearrangement &r)
 
 	if (keep_area_after_division)
 	{
-		cells[cell].preferred_area /= pow(2, cells[cell].num_divisions);
+		cells[cell].preferred_area /= 2; //pow(2, cells[cell].num_divisions);
 	}
 	else if (this->cell_cycle_controls_size)
 	{

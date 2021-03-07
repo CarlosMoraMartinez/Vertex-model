@@ -8,6 +8,7 @@ from shapely.geometry import Polygon, MultiPoint, Point
 from descartes.patch import PolygonPatch
 from math import sqrt
 import matplotlib.pyplot as plt
+import matplotlib
 
 ########################################################################################################################
 # Plotting operations in general
@@ -129,15 +130,31 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     else:
         alphas = 1 #0.85
     if(cellproperty != ''):
+        cellproperty_name = cellproperty.split("__")[0].split(":")[0].split(";")[0]
+        if("preferred_area_norm" in cellproperty):
+            celltab["preferred_area_norm"] = celltab.preferred_area*np.power(2, celltab.num_divisions)
+        elif("ratio_area" in cellproperty or "area_ratio" in cellproperty):
+            celltab["preferred_area_norm"] = celltab.preferred_area*np.power(2, celltab.num_divisions)
+            celltab[cellproperty_name] = celltab["area"]/celltab["preferred_area_norm"]
         lww = 0
-        polygoncolors = getColorFromProperty(celltab, cellproperty)
+        polygoncolors, cmap, norm = getColorFromProperty(celltab, cellproperty)
+        print(cellproperty_name)
         name = name + '_' + cellproperty
+        edge_color = BLACK
     else:
         lww = 5000/len(celltypes) if(len(celltypes)>5000) else 1
         polygoncolors = [wingcols[celltypes[j]] for j in range(len(grid))]
-    pc = PolyCollection(grid, facecolors= polygoncolors, alpha = alphas, edgecolors=EDGE_COLOR, linewidths = lww)
+        edge_color = EDGE_COLOR
+    pc = PolyCollection(grid, facecolors= polygoncolors, alpha = alphas, edgecolors=edge_color, linewidths = lww)
     #pc.set_edgecolors("black")
     ax.add_collection(pc)
+    if(cellproperty != "" and "__" in cellproperty):
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes('right', size='5%', pad=0.05)
+        cb1 = matplotlib.colorbar.ColorbarBase(cax, cmap=cmap, norm=norm, orientation='vertical')
+        cb1.set_label(cellproperty_name)
+        #ax.add_artist(legend1)
     if(not comparewing):
         for s in sprList:
             spcolor = springcols[abs(int(s[2]))] if len(s) > 2 else RED
@@ -294,7 +311,7 @@ def getColorFromProperty(celltab, cellproperty):
         cmap = COLORMAPS[num_colormap]
     norm = matplotlib.colors.Normalize(vmin=np.min(values), vmax=np.max(values))
     colors = cmap(norm(values))
-    return colors
+    return (colors, cmap, norm)
 ########################################################################################################################
 # Generating the multipolygon object
 ########################################################################################################################

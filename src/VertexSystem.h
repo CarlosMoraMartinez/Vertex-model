@@ -102,8 +102,10 @@ const bool RECALCULATE_CENTROIDS_FOR_PRINTING = true;
 const int USE_HINGE_BLADE_FRONTIER = 1;
 const int USE_MAX_HINGE_POSITION = 2;
 const int USE_PROPORTION_OF_WING = 3;
+const int USE_BARE_EXPONENTIAL_GRADIENT = 4;
 const float DEFAULT_PROPORTION_FOR_GRADIENT = 0.7;
 const int REFERENCE_FOR_GRADIENT = USE_PROPORTION_OF_WING;
+const bool NORMALIZE_EDGE_TENSION = false;
 
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tmoves_accepted\tmoves_rejected\tcells\tedges\tneighbour_vertices\n";
 const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tK\tperimeter\tperim_contract\t" +

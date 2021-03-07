@@ -2,20 +2,12 @@
 library(tidyverse)
 library(wesanderson)
 
-nums <- 275:276
+nums <- c(305)
 wing <- "/etournay1_strings8b"
-sims <- 0:5
-timesteps <- c(0, 1, 5, 10, 20, 40)
+sims <- c(0:5)
+timesteps <- c(0)
 dirbase <- "/home/carmoma/vertex/Vertex-model/dpygrad_mode%NUMBER%/dpygrad_mode%NUMBER%_"
 
-
-for(num in nums){
-  dirsims <- dirbase %>% gsub("%NUMBER%", as.character(num), .)
-  cat(dirsims, "******")
-  names <- paste(as.character(num), as.character(sims), sep="_")
-  dirs <- paste(dirsims, as.character(sims), wing, sep="")
-  plotAll(dirs) #Defined below
-}
 # names <- c("Only temporal gradient", "temporal + PD gradient", "temporal + AP gradient", 
 #            "temporal + PD + AP gradients", "temporal + PD Isaac's way")
 # #names <- c("No area, no perim grad", 
@@ -177,6 +169,20 @@ for(d in dirs){
   print(g0c)
   print(g0d)
   dev.off()
+  ggsave(paste(gsub(" ", "_", names[which(dirs == d)]), "_onlyAreaGrad.png", sep="", collapse = ""), g1)
+  ggsave(paste(gsub(" ", "_", names[which(dirs == d)]), "_onlyPerimGrad.png", sep="", collapse = ""), g2)
 }##for directories
 }
 
+
+
+
+######MAIN
+
+for(num in nums){
+  dirsims <- dirbase %>% gsub("%NUMBER%", as.character(num), .)
+  cat(dirsims, "******")
+  names <- paste(as.character(num), as.character(sims), sep="_")
+  dirs <- paste(dirsims, as.character(sims), wing, sep="")
+  plotAll(dirs) #Defined below
+}

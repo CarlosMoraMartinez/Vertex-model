@@ -24,7 +24,7 @@ getEdgeData <- function(this_f){
 
 
 
-dirs <- c("/home/carmoma/vertex/Vertex-model/dpygrad_mode239/dpygrad_mode239_0/etournay1_strings8b",
+dirs <- c("/home/carmoma/vertex/Vertex-model/dpygrad_mode291/dpygrad_mode291/etournay1_strings8b",
           "/home/carmoma/vertex/Vertex-model/dpygrad_mode239/dpygrad_mode239_1/etournay1_strings8b",
           "/home/carmoma/vertex/Vertex-model/dpygrad_mode239/dpygrad_mode239_2/etournay1_strings8b",
           "/home/carmoma/vertex/Vertex-model/dpygrad_mode239/dpygrad_mode239_3/etournay1_strings8b",

@@ -21,5 +21,6 @@ do
         cp ./$p/$wing/$wing'_moved_'$2'.celltab' ./$newdir/$p'_'$wing'.celltab'
 	cp ./$p/$wing/$wing'_moved_'$2'.ptab' ./$newdir/$p'_'$wing'.ptab'
         cp ./$p/$wing/$wing'_moved_'$2'.spr' ./$newdir/$p'_'$wing'.spr'
+        cp ./$p/$wing/$wing'_moved_'$2'.sprtab' ./$newdir/$p'_'$wing'.sprtab'
     done
 done 
