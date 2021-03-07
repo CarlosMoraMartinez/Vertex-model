@@ -1852,8 +1852,8 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 {
 	v.x = x;
 	v.y = y;
-	float tension_sum = 0;  //REMOVE LATER
-	int num_edges = 0;  //REMOVE LATER
+	//float tension_sum = 0;  //REMOVE LATER
+	//int num_edges = 0;  //REMOVE LATER
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
 		if (v.edges[i] != EMPTY_CONNECTION)
@@ -1865,20 +1865,20 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 				//setEdgeType(v.edges[i]); not needed since there is base_tension
 				bufferMovement.edge_tensions[i] = edges[v.edges[i]].tension;
 				setEdgeTension(v.edges[i]);
-				tension_sum+=edges[v.edges[i]].tension;  //REMOVE LATER
-				num_edges++;  //REMOVE LATER
+				//tension_sum+=edges[v.edges[i]].tension;  //REMOVE LATER
+				//num_edges++;  //REMOVE LATER
 				//cout <<edges[v.edges[i]].tension<<endl;
 			}
 		}
 	}
-	if(NORMALIZE_EDGE_TENSION && UPDATE_EDGE_TENSION_EVERY_MOVE && num_edges==3){  //REMOVE LATER
+	/* if(NORMALIZE_EDGE_TENSION && UPDATE_EDGE_TENSION_EVERY_MOVE && num_edges==3){  //REMOVE LATER
 		for (int i = 0; i < CELLS_PER_VERTEX; i++)  //REMOVE LATER
 	{
 		if (v.edges[i] != EMPTY_CONNECTION)  //REMOVE LATER
 		{
 			edges[v.edges[i]].tension /= tension_sum;  //REMOVE LATER
 		}
-	}
+	} */
 
 	if (v.spring != EMPTY_CONNECTION)
 	{
@@ -2570,12 +2570,12 @@ void Tissue::produceOutputs(std::string add_to_name)
 	writePointsFile(fname);
 	if (num_springs > 0)
 		writeSpringsFile(fname);
-	//writeAllData(fname); //THIS IS USEFUL TO DEBUG, BUT THE FORMAT IS NOT READ BY PLOTTING PROGRAM
+	//writeAllData(fname); //THIS MIGHT USEFUL TO DEBUG, BUT THE FORMAT IS NOT READ BY PLOTTING PROGRAM
 	if(WRITE_DATA_TABLES){
-		writeEdgeDataTable(fname);
+		//writeEdgeDataTable(fname);
 		writeCellDataTable(fname);
-		writeSpringDataTable(fname);
-		writePointsDataTable(fname);
+		//writeSpringDataTable(fname);
+		//writePointsDataTable(fname);
 	}
 	if (REPORT_OUT > 0)
 		cout << "\nWritting file: " << written_files << " at move " << counter_moves_accepted << endl;
