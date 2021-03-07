@@ -16,9 +16,9 @@
 >check_if_edges_cross_opt #
 0
 >number_of_accepted_movements #this overwrites line command argument if > 0
-400000000
+600000000
 >write_Every_N #overwrites line command if > 0
-10000000
+100000000
 >upper_bound #
 200000000
 >Integration_mode #0 = MonteCarlo, 1=Euler
