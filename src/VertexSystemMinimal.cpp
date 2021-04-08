@@ -408,11 +408,17 @@ void Tissue::readNewParameters(std::string filename)
 
 double Tissue::read_real_par(std::vector<std::string>::iterator &it)
 {
-	while (it->at(0) != '>')
+	cout << "Reading real parameter... " << endl;
+	cout << *it << endl;
+	while (it->at(0) != '>'){
 		it++;
+		cout << "line: ";
+		cout << *it << endl;
+	}
+		
 	it++;
 	double res = stod(*it);
-	//cout << res << endl;
+	cout << res << endl;
 	return res;
 }
 double Tissue::read_longint_par(std::vector<std::string>::iterator &it)
@@ -502,6 +508,8 @@ void Tissue::initialize_params(std::string params_file)
 	join_edges_active = read_real_par(it) > 0;
 	control_cells_2sides = static_cast<bool>(read_real_par(it));
 	check_if_edges_cross_opt = read_real_par(it) > 0;
+	cout << "Param file reading... breakpoint 1b" << endl;
+	std::flush(cout);
 	long unsigned int temp_num_moves = read_longint_par(it);
 	upper_bound_movements = max_accepted_movements;
 	if(temp_num_moves > 0)
@@ -519,7 +527,8 @@ void Tissue::initialize_params(std::string params_file)
 	temperature_positive_energy = read_real_par(it);
 	temperature_negative_energy = read_real_par(it);
 	temperature_means_proportion_of_acceptance = read_real_par(it) > 0;
-
+cout << "Param file reading... breakpoint 1c" << endl;
+	std::flush(cout);
 	energy_term1 = read_real_par(it);
 	energy_term2 = read_real_par(it);
 	energy_term3 = read_real_par(it);
@@ -564,7 +573,7 @@ void Tissue::initialize_params(std::string params_file)
 	aux = read_real_par(it);
 	xcoord_controls_perim = (aux == 1 || aux == 3);
 	ycoord_controls_perim = (aux == 2 || aux == 3);
-
+	cout << "B" << endl;
 	perimeter_contract = read_celltype_par(it, sz);
 	perimeter_contract_final = read_celltype_par(it, sz);
 	preferred_area_initial = read_celltype_par(it, sz);
@@ -596,7 +605,7 @@ void Tissue::initialize_params(std::string params_file)
 	spring_type_min_positions = read_springtype_par(it, sz);
 	add_static_to_hinge = read_real_par(it);
 	//difference_flow_rate = read_real_par(it);
-	cout << "Param file reading... breakpoint 5" << endl;
+	std::cout << "Param file reading... breakpoint 5" << endl;
 	std::flush(cout);
 	spring_tension_mode = read_real_par(it); //0: with tension for each type, 1: A-P compartments, 2: PD gradient, 3: AP compartments and PD gradient, 4:Different gradients in A or P
 	posterior_comparment_region = read_real_par(it); //used if spring_tension_mode is 1 or 3
@@ -609,14 +618,14 @@ void Tissue::initialize_params(std::string params_file)
 	spring_gradient_exponent_P = read_real_par(it); //used if spring_tension_mode is 4
 	mode_to_order_springs_PD = read_real_par(it);
 	include_hinge_in_spring_gradient = read_real_par(it) > 0;
-
+	cout << "C" << endl;
 	//For random ("active") T1 transitions
 	active_t1_prob = read_real_par(it);
 	min_angle_for_active_t1 = read_real_par(it);
 	max_angle_for_active_t1 = read_real_par(it);
 	minsin2rant1 = sin(M_PI * min_angle_for_active_t1/180);
 	maxsin2rant1 = sin(M_PI * max_angle_for_active_t1/180);
-	cout << "Param file reading... breakpoint 6" << endl;
+	std::cout << "Param file reading... breakpoint 6" << endl;
 	std::flush(cout);
 	hinge_blade_interface_tension = read_real_par(it);
 	line_tension_interstatic = read_real_par(it);
@@ -624,7 +633,7 @@ void Tissue::initialize_params(std::string params_file)
 	std::flush(cout);
 	use_term4 = read_real_par(it) > 0;
 	energy_term4_anterior = read_celltype_par(it, sz);
-	cout << "Param file reading... breakpoint 8" << endl;
+	std::cout << "Param file reading... breakpoint 8" << endl;
 	std::flush(cout);
 	energy_term4_posterior = read_celltype_par(it, sz);
 	line_tension_stringedge = read_real_par(it);
@@ -636,19 +645,20 @@ void Tissue::initialize_params(std::string params_file)
 	set_hinge_string_tension = read_real_par(it) > 0;
 	hinge_string_tension = read_real_par(it);
 	string_distal_transition_tension = read_real_par(it);
-	cout << "Param file reading... breakpoint 9" << endl;
+	std::cout << "Param file reading... breakpoint 9" << endl;
 	std::flush(cout);
 	string_distal_transition_prop = read_real_par(it);
 	reference_for_gradient = read_real_par(it);
 	wing_proportion_in_gradient = read_real_par(it);
 	random_seed = read_real_par(it);
-	cout << "Param file reading... final" << endl;
+	std::cout << "Param file reading... final" << endl;
 	std::flush(cout);
+	cout << "D" << endl;
 }
 
 /*
-Initializes vertices from file
-Input: ifstream pointing to a file defining vertex coordinates
+InitiDlizes vertices from file
+Input: ifstreDm pointing to a file defining vertex coordinates
 */
 void Tissue::initialize_vertices(std::ifstream &inp)
 {
@@ -739,28 +749,32 @@ void Tissue::initialize_springs(std::ifstream &inp)
 			this->num_springs--; //The input file has more springs
 		}
 	}
-	//Now set spring tension in case it is not directly set by spring_type_constants
+
+}
+
+void Tissue::setSpringTension(){
+		//Now set spring tension in case it is not directly set by spring_type_constants
 	cout << "Setting spring tension... \n";
 	switch (spring_tension_mode)
 	{
 	case 1:
-		cout << "Spring tension mode : 1\n";
+		if(REPORT_OUT > 0) cout << "Spring tension mode : 1\n";
 		setSpringTension_mode1();
 		break;
 	case 2:
-		cout << "Spring tension mode : 2\n";
+		if(REPORT_OUT > 0) cout << "Spring tension mode : 2\n";
 		setSpringTension_mode2();
 		break;
 	case 3:
-		cout << "Spring tension mode : 3\n";
+		if(REPORT_OUT > 0) cout << "Spring tension mode : 3\n";
 		setSpringTension_mode3();
 		break;
 	case 4:
-		cout << "Spring tension mode : 4\n";
+		if(REPORT_OUT > 0) cout << "Spring tension mode : 4\n";
 		setSpringTension_mode4();
 		break;
 	case 0:
-		cout << "Spring tension mode : 0\n";
+		if(REPORT_OUT > 0) cout << "Spring tension mode : 0\n";
 	default:
 		break;
 	}
@@ -974,6 +988,9 @@ void Tissue::set_default_params()
 			setStringTension(e);
 		}
 	}
+
+	setSpringTension();
+
 	for (int v = 0; v < vertices.size(); v++)
 	{
 		vertices[v].energy = calculateEnergy(vertices[v]);
@@ -1121,8 +1138,10 @@ void Tissue::setEdgeTension(int e)
 		double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
 		time_factor = time_factor >= 1? 1.0 : expAdvance(time_factor, vary_edge_tension_time_exponent);
 		//time_factor = expAdvance(time_factor, vary_edge_tension_time_exponent);
-		double mint = (edge_temporal_angle_efect_min.val[static_cast<int>(cells[edges[e].cells[0]].type)] + edge_temporal_angle_efect_min.val[static_cast<int>(cells[edges[e].cells[1]].type)]) * 0.5;
-		double maxt = (edge_temporal_angle_efect_max.val[static_cast<int>(cells[edges[e].cells[0]].type)] + edge_temporal_angle_efect_max.val[static_cast<int>(cells[edges[e].cells[1]].type)]) * 0.5;
+		double mint = (edge_temporal_angle_efect_min.val[static_cast<int>(cells[edges[e].cells[0]].type)] + 
+		edge_temporal_angle_efect_min.val[static_cast<int>(cells[edges[e].cells[1]].type)]) * 0.5;
+		double maxt = (edge_temporal_angle_efect_max.val[static_cast<int>(cells[edges[e].cells[0]].type)] + 
+		edge_temporal_angle_efect_max.val[static_cast<int>(cells[edges[e].cells[1]].type)]) * 0.5;
 		pmaxan = mint + (maxt - mint) * time_factor;
 		punif = abs(1.0 - pmaxan);
 /* 		if(counter_moves_accepted % 1000000 == 0) {
@@ -1871,14 +1890,15 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 			}
 		}
 	}
-	/* if(NORMALIZE_EDGE_TENSION && UPDATE_EDGE_TENSION_EVERY_MOVE && num_edges==3){  //REMOVE LATER
+	 /* if(NORMALIZE_EDGE_TENSION && UPDATE_EDGE_TENSION_EVERY_MOVE && num_edges==3){  //REMOVE LATER
 		for (int i = 0; i < CELLS_PER_VERTEX; i++)  //REMOVE LATER
-	{
-		if (v.edges[i] != EMPTY_CONNECTION)  //REMOVE LATER
 		{
-			edges[v.edges[i]].tension /= tension_sum;  //REMOVE LATER
+			if (v.edges[i] != EMPTY_CONNECTION)  //REMOVE LATER
+			{
+				edges[v.edges[i]].tension /= tension_sum;  //REMOVE LATER
+			}
 		}
-	} */
+	}  */
 
 	if (v.spring != EMPTY_CONNECTION)
 	{
@@ -1948,7 +1968,66 @@ bool Tissue::tryMoveVertex()
 	/* else if(in_cuticle)
 		vertices[vertex_to_move].energy += calculateEnergy_term4_cuticle(vertices[vertex_to_move]); */
 	//Prob of accepting unfavourable movement ins constant
-	move_prob = vertices[vertex_to_move].energy <= bufferMovement.energy ? temperature_negative_energy : temperature_positive_energy;
+	//move_prob = vertices[vertex_to_move].energy <= bufferMovement.energy ? temperature_negative_energy : temperature_positive_energy;
+	if (temperature_means_proportion_of_acceptance)
+		{ //Prob of accepting unfavourable movement ins constant
+			move_prob = vertices[vertex_to_move].energy <= bufferMovement.energy ? temperature_negative_energy : temperature_positive_energy;
+		}
+		else
+		{ //Prob of accepting unfavourable movement depends on how much unfavourable the movement is
+			move_prob = vertices[vertex_to_move].energy <= bufferMovement.energy ? 
+				temperature_negative_energy : 
+				exp(-(vertices[vertex_to_move].energy - bufferMovement.energy) / temperature_positive_energy);
+			//cout << "e_old:e_new:diff\t"<< bufferMovement.energy << "\t" << vertices[vertex_to_move].energy << "\t" << vertices[vertex_to_move].energy - bufferMovement.energy << "\n";
+		}
+	/* if(counter_move_trials == 2){
+		cout << ">idextra\tid\tnew_x\tnew_y\tx\ty\txdif\tydif\te\tnew_e\tedif\tmove_prob\ttime\t" << 
+		"old_elen0\told_elen1\told_elen2\told_eten0\told_eten1\told_eten2\t"<<
+		"new_elen0\tnew_elen1\tnew_elen2\tnew_eten0\tnew_eten1\tnew_eten2\t"<<
+		"old_cellarea0\told_cellarea1\told_cellarea2\told_cellper0\told_cellper1\told_cellper2\t"<<
+		"new_cellarea0\tnew_cellarea1\tnew_cellarea2\tnew_cellper0\tnew_cellper1\tnew_cellper2\n";
+	} */
+ 	 
+	/* if(vertex_to_move == 440 || vertex_to_move == 441){
+		cout << ">idd\t" <<
+		vertex_to_move <<
+	"\t" << vertices[vertex_to_move].x <<
+	"\t" << vertices[vertex_to_move].y <<
+	"\t" <<  bufferMovement.x <<
+	"\t" <<  bufferMovement.y << 
+	"\t" <<  vertices[vertex_to_move].x - bufferMovement.x <<
+	"\t" <<  vertices[vertex_to_move].y - bufferMovement.y <<
+	"\t" << bufferMovement.energy << 
+	"\t" << vertices[vertex_to_move].energy << 
+	"\t" << vertices[vertex_to_move].energy - bufferMovement.energy << 
+	"\t" << move_prob <<
+	"\t" << counter_move_trials <<
+	"\t" << bufferMovement.edge_lengths[0] <<
+	"\t" << bufferMovement.edge_lengths[1] <<
+	"\t" << bufferMovement.edge_lengths[2] <<
+	"\t" << bufferMovement.edge_tensions[0] <<
+	"\t" << bufferMovement.edge_tensions[1] <<
+	"\t" << bufferMovement.edge_tensions[2] <<
+	"\t" << edges[vertices[vertex_to_move].edges[0]].length << 
+	"\t" << edges[vertices[vertex_to_move].edges[1]].length << 
+	"\t" << edges[vertices[vertex_to_move].edges[2]].length << 
+	"\t" << edges[vertices[vertex_to_move].edges[0]].tension << 
+	"\t" << edges[vertices[vertex_to_move].edges[1]].tension << 
+	"\t" << edges[vertices[vertex_to_move].edges[2]].tension << 
+	"\t" << bufferMovement.cell_areas[0] <<
+	"\t" << bufferMovement.cell_areas[1] <<
+	"\t" << bufferMovement.cell_areas[2] <<
+	"\t" << bufferMovement.cell_perimeters[0] <<
+	"\t" << bufferMovement.cell_perimeters[1] <<
+	"\t" << bufferMovement.cell_perimeters[2] <<
+	"\t" << cells[vertices[vertex_to_move].cells[0]].area << 
+	"\t" << cells[vertices[vertex_to_move].cells[1]].area << 
+	"\t" << cells[vertices[vertex_to_move].cells[2]].area << 
+	"\t" << cells[vertices[vertex_to_move].cells[0]].perimeter << 
+	"\t" << cells[vertices[vertex_to_move].cells[1]].perimeter << 
+	"\t" << cells[vertices[vertex_to_move].cells[2]].perimeter << 
+	"\n";  
+	} */
 	double move = unif(generator);
 	if (move < move_prob) //|| vertices[vertex_to_move].moves_rejected/vertices[vertex_to_move].moves_accepted > 5
 	{
@@ -2361,14 +2440,20 @@ void Tissue::advanceCellCycle(int vertex_moved)
 		caux = vertices[vertex_moved].cells[i];
 		if (caux == EMPTY_CONNECTION)
 			continue;
-		cells[caux].cell_cycle_state += 1;
+		cells[caux].cell_cycle_state += 1; //cell cycle state is float
 		if (cells[caux].cell_cycle_state >= cells[caux].cell_cycle_limit)
 		{
 			cells[caux].can_divide = true;
 		}
-		if (cell_cycle_controls_size && !(keep_area_after_division && (cells[caux].type == CellType::blade || cells[caux].type == CellType::vein_blade)))
+		if (cell_cycle_controls_size && 
+		((cells[caux].type == CellType::blade || cells[caux].type == CellType::vein_blade)))
 		{
-			cells[caux].preferred_area = preferred_area_initial.val[static_cast<int>(cells[caux].type)] + (preferred_area_final.val[static_cast<int>(cells[caux].type)] - preferred_area_initial.val[static_cast<int>(cells[caux].type)]) * cells[caux].cell_cycle_state / cells[caux].cell_cycle_limit;
+			cells[caux].preferred_area = preferred_area_initial.val[static_cast<int>(cells[caux].type)] + 
+			(preferred_area_final.val[static_cast<int>(cells[caux].type)] - 
+			preferred_area_initial.val[static_cast<int>(cells[caux].type)]) * 
+			cells[caux].cell_cycle_state / cells[caux].cell_cycle_limit;
+			if(keep_area_after_division)
+				cells[caux].preferred_area /= pow(2, cells[caux].num_divisions);
 		}
 	}
 } //advanceCellCycle
@@ -2452,15 +2537,19 @@ void Tissue::calculateBasePrefAreaAndPerim(Cell& cell){
 	}
 
 	if(reference_for_gradient == USE_BARE_EXPONENTIAL_GRADIENT){
-		pos_factor_x = exp(- xcoord_decrease_exponent * (cell.centroid_x - min_xpos)/(max_xpos - min_xpos));
+		pos_factor_x = exp(- xcoord_decrease_exponent * pos_factor_x);
 		cell.base_perimeter = perimeter_contract_final.val[static_cast<int>(cell.type)];
 		cell.base_preferred_area = preferred_area_final.val[static_cast<int>(cell.type)];
 		if(xcoord_controls_perim)
 			cell.base_perimeter *= pos_factor_x;
 		if(xcoord_controls_size)
 			cell.base_preferred_area *= (1 - pos_factor_x);
-		cell.perimeter_contractility = time_controls_perim ? perimeter_contract.val[static_cast<int>(CellType::blade)] : cell.base_perimeter;
-		cell.preferred_area = time_controls_size ? preferred_area_initial.val[static_cast<int>(CellType::blade)] : cell.base_preferred_area;
+		cell.perimeter_contractility = time_controls_perim ? 
+				perimeter_contract.val[static_cast<int>(CellType::blade)] : 
+				cell.base_perimeter;
+		cell.preferred_area = time_controls_size ? 
+				preferred_area_initial.val[static_cast<int>(CellType::blade)] : 
+				cell.base_preferred_area;
 		return;
 	}
 	
@@ -2572,10 +2661,10 @@ void Tissue::produceOutputs(std::string add_to_name)
 		writeSpringsFile(fname);
 	//writeAllData(fname); //THIS MIGHT USEFUL TO DEBUG, BUT THE FORMAT IS NOT READ BY PLOTTING PROGRAM
 	if(WRITE_DATA_TABLES){
-		//writeEdgeDataTable(fname);
+		writeEdgeDataTable(fname);
 		writeCellDataTable(fname);
-		//writeSpringDataTable(fname);
-		//writePointsDataTable(fname);
+		writeSpringDataTable(fname);
+		writePointsDataTable(fname);
 	}
 	if (REPORT_OUT > 0)
 		cout << "\nWritting file: " << written_files << " at move " << counter_moves_accepted << endl;
@@ -2685,7 +2774,7 @@ void Tissue::simulateMonteCarlo()
 	cout << "SIMULATING with MONTE CARLO method for " << max_accepted_movements << " accepted movements." << endl;
 	if (!step_mode)
 	{
-		produceOutputs();
+		produceOutputs(); // Initial print of the state of the
 	}
 	//MAIN SIMULATION LOOPSimulate
 	do
@@ -2693,12 +2782,12 @@ void Tissue::simulateMonteCarlo()
 		if (tryMoveVertex())
 		{ //Tries a random movement; if accepted:
 			counter_moves_accepted++;
-			performRearrangements(); // Performs any transition/rearrangement needed
-			if ((counter_moves_accepted % write_every_N_moves == 0 && !step_mode)) //88206084
-				produceOutputs(); //&& counter_moves_accepted > 70000
-		}						  //End if move accepted
+			performRearrangements(); // Performs any transition (rearrangement) needed
+			if ((counter_moves_accepted % write_every_N_moves == 0 && !step_mode)) 
+				produceOutputs(); //Print files that then can be used to plot
+		}//End if move accepted
 		counter_move_trials++;
-	} while (counter_moves_accepted < max_accepted_movements);
+	} while (counter_moves_accepted < max_accepted_movements); 
 }//simulateMonteCarlo
 
 void Tissue::simulateEuler()
@@ -2789,7 +2878,7 @@ void Tissue::simulate(std::default_random_engine &generator, std::uniform_real_d
 		simulateMonteCarlo();
 		break;
 	case INTEGR_EULER:
-		simulateEuler();
+		simulateEuler(); //Doesn't work
 		break;
 	case INTEGR_MIXTURE:
 		break;
@@ -2806,6 +2895,8 @@ void Tissue::detectChangesAfterMove(int vertex_moved)
 	//Check if T1 transitions are needed
 	Edge *ee;
 	int caux;
+	Vertex *v1;
+	Vertex *v2;
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
 		if (vertices[vertex_moved].edges[i] == EMPTY_CONNECTION)
@@ -2813,19 +2904,19 @@ void Tissue::detectChangesAfterMove(int vertex_moved)
 		ee = &edges[vertices[vertex_moved].edges[i]];
 		//if(ee->type == EdgeType::stringedge)//Redundant: can_transition = False in these edges (strings/cuticle)
 		//	continue;
-		Vertex *v1 = &vertices[ee->vertices[0]];
-		Vertex *v2 = &vertices[ee->vertices[1]];
+		v1 = &vertices[ee->vertices[0]];
+		v2 = &vertices[ee->vertices[1]];
 		if (ee->length <= t1_transition_critical_distance && v1->movable && v2->movable && ee->can_transition)
 		{ //if length < critical distance
 			if (ee->cells[0] != EMPTY_CONNECTION && ee->cells[1] != EMPTY_CONNECTION)
 			{ //if the edge touches two cells, and there are 4 cells involved, then T1
 				int cellnum = 0;
-				for (int j = 0; j < CELLS_PER_VERTEX; j++)
+				for (int j = 0; j < CELLS_PER_VERTEX; j++){
 					if (v1->cells[j] != EMPTY_CONNECTION)
 						cellnum++;
-				for (int j = 0; j < CELLS_PER_VERTEX; j++)
 					if (v2->cells[j] != EMPTY_CONNECTION && !contains(v2->cells[j], v1->cells, CELLS_PER_VERTEX))
 						cellnum++;
+				}
 				if (cellnum == 4 && cells[ee->cells[0]].num_vertices > 3 && cells[ee->cells[1]].num_vertices > 3)
 				{ //empty_connections == 0
 					rearrangements_needed.push(Rearrangement{ee->ind, RearrangementType::t1});
@@ -2843,12 +2934,12 @@ void Tissue::detectChangesAfterMove(int vertex_moved)
 			else
 			{ //Otherwise, length of union of edges touching two vertices touching the edge
 				int edgenum = 0;
-				for (int j = 0; j < CELLS_PER_VERTEX; j++)
+				for (int j = 0; j < CELLS_PER_VERTEX; j++){
 					if (v2->edges[j] != EMPTY_CONNECTION)
 						edgenum++;
-				for (int j = 0; j < CELLS_PER_VERTEX; j++)
 					if (v1->edges[j] != EMPTY_CONNECTION && !contains(v1->edges[j], v2->edges, CELLS_PER_VERTEX))
 						edgenum++;
+				}
 				if (edgenum == 5 && v1->spring == EMPTY_CONNECTION && v2->spring == EMPTY_CONNECTION)
 					rearrangements_needed.push(Rearrangement{vertices[vertex_moved].edges[i], RearrangementType::t1_at_border_inwards});
 				else if (edgenum < 5)

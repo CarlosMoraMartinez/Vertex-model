@@ -131,6 +131,7 @@ def multiplot(c2, diff_conds, ca, cb, current_cond, images, absence, plotFun=plo
         out_cond = outfolder + "/" +  ca.split(" ")[0] + ":" + cb.split(" ")[0] + ":cond" + str(current_cond) + '.svg'
         plt.savefig(out_cond, format='svg', dpi=1200)
     plt.close()
+    plt.clf()
 
 def plotAll(c2, images, absence, plotFun=plotImage,  limits=[-10,80,-10,55], outfolder=outfolder_base, plotpars=[]):
     for vnum1 in range(c2.columns.shape[0]):

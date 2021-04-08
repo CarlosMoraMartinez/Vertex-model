@@ -226,7 +226,9 @@ struct DivisionRecord{
 typedef std::vector<Vertex> vertex_v;
 typedef std::vector<Cell> cell_v;
 typedef std::vector<Edge> edge_v;
+
 typedef std::queue<Rearrangement> rearrangement_q;
+
 typedef std::queue<DivisionRecord> divisionrecord_q;
 
 //typedef std::map<CellType, double> cell_type_param;
@@ -341,6 +343,7 @@ class Tissue{
 		void restoreVeins();
 		void restoreShape();
 		//Methods to set spring tensions according to gradients
+		void setSpringTension();
 		void setSpringTension_mode1(); // A-P compartments (uses tension determined by spring type)
 		void setSpringTension_mode2(); // P-D gradient
 		void setSpringTension_mode3(); //P-D gradient multiplied by a factor in each compartment

@@ -11,7 +11,7 @@ getDistanceTables <- function(){ #d as argument removed
   #setwd(d)
   ## READ CELL FILES
   f<-list.files() %>%subset(grepl(".ptab", .)) %>% subset(grepl("moved",.))
-  time <- gsub("etournay1_strings8b_moved_", "", f) %>% gsub(".ptab", "", .) %>% as.numeric
+  time <- gsub(WING_BASE, "", f) %>% gsub(".ptab", "", .) %>% as.numeric
   f <- f[order(time)]
   time <- time[order(time)]
   res<-data.frame();
@@ -335,10 +335,11 @@ makeAll<-function(d){
   rm(res2, res3)
 }
 
-nums <- c(268, 266, 267, 265)
-nums <- c(270)
-wing <- "/etournay1_strings8b"
-sims <- 0:5
+nums <- c(342)
+nums <- c(328, 329)
+wing <- "/etournay1_strings10"
+WING_BASE <- "etournay1_strings10_moved_"
+sims <- c(0,1)
 dirbase <- "/home/carmoma/vertex/Vertex-model/dpygrad_mode%NUMBER%/dpygrad_mode%NUMBER%_"
 
 

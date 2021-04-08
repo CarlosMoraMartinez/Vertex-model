@@ -2,12 +2,12 @@
 library(tidyverse)
 library(wesanderson)
 
-nums <- c(305)
-wing <- "/etournay1_strings8b"
-sims <- c(0:5)
-timesteps <- c(0)
+nums <- c(342)
+wing <- "/etournay1_strings10"
+sims <- c(0:1)
+timesteps <- c(0,5,10,40)
 dirbase <- "/home/carmoma/vertex/Vertex-model/dpygrad_mode%NUMBER%/dpygrad_mode%NUMBER%_"
-
+WING_NAME="etournay1_strings10_moved_"
 # names <- c("Only temporal gradient", "temporal + PD gradient", "temporal + AP gradient", 
 #            "temporal + PD + AP gradients", "temporal + PD Isaac's way")
 # #names <- c("No area, no perim grad", 
@@ -34,7 +34,7 @@ for(d in dirs){
   setwd(d)
   f<-list.files() %>%subset(grepl(".celltab", .)) %>% subset(grepl("moved",.))
   fpoints<-list.files() %>%subset(grepl(".ptab", .)) %>% subset(grepl("moved",.))
-  time <- gsub("etournay1_strings8b_moved_", "", f) %>% gsub(".celltab", "", .)
+  time <- gsub(WING_NAME, "", f) %>% gsub(".celltab", "", .)
   ind2read <- which(time %in% as.character(timesteps))
   time <- time[ind2read]
   f <- f[ind2read]
@@ -120,6 +120,24 @@ for(d in dirs){
     ) + 
     scale_color_gradient(low="blue", high="red") +
     scale_fill_gradient(low="blue", high="red")
+  
+  #res3 %>% filter(coord=="centroid_x") %>% ggplot(aes(x=centroid_position, y=(perim_contract), 
+  #                 fill=time, color=time, shape=type))+
+  #  geom_line(size=3)+
+  #  xlim(0, 1100) +
+  #  #facet_grid(coordinate~.)+
+  #  ggtitle("") +
+  #  ylab("Perimeter contractility") +
+  #  xlab("Centroid position (PD)") +
+  #  theme_light() +
+  #  theme(
+  #    plot.title = element_text(size=16, face="bold.italic"),
+  #    axis.text.x =  element_text( size=36, face="bold"),
+  #    axis.text.y = element_text( size=36, face="bold"),
+  #    axis.title.x = element_text( size=40, face="bold"),
+  #    axis.title.y = element_text(size=40, face="bold"),
+  #    strip.text = element_text(size=16, face="bold") 
+  #  ) 
   g3 <- ggplot(res3, aes(x=centroid_position, y=K, 
                        fill=time, color=time, shape=type))+
     geom_point(size=0.5, stroke=0.5, alpha=0.5)+

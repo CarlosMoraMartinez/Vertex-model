@@ -182,6 +182,7 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     plt.savefig(name + '.png', pad_inches=0.0, bbox_inches = 'tight')
     if(printsvg):
         plt.savefig(name + '.svg', format='svg', dpi=1200)
+    plt.clf()
     return (fig, ax)
     
 

@@ -3,9 +3,8 @@
 library(tidyverse)
 library(wesanderson)
 
-dirs <- c("/home/carmoma/vertex/Vertex-model/dpygrad_mode232/dpygrad_mode232_0/etournay1_strings8b",
-          "/home/carmoma/vertex/Vertex-model/dpygrad_mode229/dpygrad_mode229_1/etournay1_strings8b",
-          "/home/carmoma/vertex/Vertex-model/dpygrad_mode229/dpygrad_mode229_2/etournay1_strings8b"
+dirs <- c("/home/carmoma/vertex/Vertex-model/dpygrad_mode328/dpygrad_mode328_1/etournay1_strings8b",
+          "/home/carmoma/vertex/Vertex-model/dpygrad_mode329/dpygrad_mode329_0/etournay1_strings8b"
 )
 
 
