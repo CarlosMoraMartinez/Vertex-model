@@ -1,6 +1,7 @@
 import os
 import sys
 import argparse
+import re
 
 import pandas as pd
 import numpy as np
@@ -16,6 +17,12 @@ picsdir_end = "_all_final/"
 outfolder_base = "./combined_plots"
 no_plot_cols = ["Unnamed", "name", "Result"]
 
+def trimVarName(vname):
+    a = str(vname)
+    if(a.startswith("{")):
+        return ", ".join(np.unique([str(round(float(i.split(":")[1]), 4)) for i in re.sub("[{}' ]", "", a).split(",")]))
+    else:
+        return a
 
 def dropIdenticalColumns(data):
     vary = [a for a in data.columns if np.unique(data[a]).shape[0] != 1]
@@ -117,11 +124,16 @@ def multiplot(c2, diff_conds, ca, cb, current_cond, images, absence, plotFun=plo
     for xpos, va in enumerate(np.unique(c2[ca])):
         for ypos, vb in enumerate(np.unique(c2[cb])):
             iname = list(c_thiscond["name"].iloc[np.array(c_thiscond[ca] == va) & np.array(c_thiscond[cb] == vb)])[0]
+            #print(va, vb, iname)
             plotFun(ax[xpos][ypos], images.get(iname, absence), limits)
             if(xpos == nrows - 1): 
-                ax[xpos][ypos].set_xlabel(str(vb))
+                name2draw = trimVarName(vb)
+                fsize = 2 if(len(name2draw) > 7) else 12
+                ax[xpos][ypos].set_xlabel(name2draw, fontsize=fsize)
             if(ypos == 0):
-                ax[xpos][ypos].set_ylabel(str(va))
+                name2draw = trimVarName(va)
+                fsize = 2 if(len(name2draw) > 7) else 12
+                ax[xpos][ypos].set_ylabel(name2draw, fontsize=fsize)
             ax[xpos][ypos].set_title(iname.split('_')[-1])
             #ax[xpos][ypos].set_title( str(va) + ", " + str(vb))
             #ax[xpos][ypos].set_title(ca.split(" ")[0] + "=" + str(va) + ", " + cb.split(" ")[0] + "=" + str(vb))
