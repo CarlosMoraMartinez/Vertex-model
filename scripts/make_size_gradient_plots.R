@@ -2,10 +2,10 @@
 library(tidyverse)
 library(wesanderson)
 
-nums <- c(342)
+nums <- c(357)
 wing <- "/etournay1_strings10"
-sims <- c(0:1)
-timesteps <- c(0,5,10,40)
+sims <- c(0:6)
+timesteps <- c(0)
 dirbase <- "/home/carmoma/vertex/Vertex-model/dpygrad_mode%NUMBER%/dpygrad_mode%NUMBER%_"
 WING_NAME="etournay1_strings10_moved_"
 # names <- c("Only temporal gradient", "temporal + PD gradient", "temporal + AP gradient", 
@@ -204,3 +204,7 @@ for(num in nums){
   dirs <- paste(dirsims, as.character(sims), wing, sep="")
   plotAll(dirs) #Defined below
 }
+
+##Beautiful syntax:
+#b<- res %>% group_by(type) %>% summarise(mean=across(where(is.numeric), mean), sd=across(where(is.numeric), sd), n=n())
+

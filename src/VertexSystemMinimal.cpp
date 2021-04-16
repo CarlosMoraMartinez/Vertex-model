@@ -2681,10 +2681,12 @@ void Tissue::derivativeVertexPos(const Vertex &v, pointDerivative &pd)
 	//TERM 1
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
-		if (v.cells[i] == EMPTY_CONNECTION)
+		if (v.cells[i] == EMPTY_CONNECTION){
+			//cout << "No cell " << i << endl;
 			continue;
+		}
 		c = v.cells[i];
-        aux = (cells[c].area/cells[c].preferred_area- 1)/cells[c].preferred_area;
+        aux = cells[c].K * (cells[c].area - cells[c].preferred_area);//(cells[c].area/cells[c].preferred_area- 1)/cells[c].preferred_area;
 		aux_this = which(v.ind, cells[c].vertices, cells[c].num_vertices); //These three lines are repeated in TERM3 but since TERM3 is probably going to be optimized it doesnt matter
 		//IMPORTANT: ASSUMES THAT VERTICES IN CELLS ARE ORDERED CLOCK-WISE
 		//Calculate derivative of area according to Shoelace formula from Wikipedia
@@ -2692,66 +2694,59 @@ void Tissue::derivativeVertexPos(const Vertex &v, pointDerivative &pd)
 		aux_prev = cells[c].vertices[(aux_this + 1)%cells[c].num_vertices ];
 		t1x += aux*(vertices[aux_prev].y - vertices[aux_next].y);
 		t1y += aux*(vertices[aux_next].x - vertices[aux_prev].x);
-		cout << "    Term 1: aux " << aux << ", pref area " << cells[c].preferred_area << ", area " << cells[c].area << ", cell " << c << endl;
+		//cout << "Term 1: aux " << aux << ", pref area " << cells[c].preferred_area << ", area " << cells[c].area << ", cell " << c << endl;
 
 	} //Term1
 	//TERM 2
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
-		if (v.edges[i] == EMPTY_CONNECTION)
+		if (v.edges[i] == EMPTY_CONNECTION){
 			continue;
-		c = v.edges[i];
-		pref_area = edges[c].type == EdgeType::tissue_boundary ? edges[c].cells[0] == EMPTY_CONNECTION ? cells[edges[c].cells[1]].preferred_area
-																											 : cells[edges[c].cells[0]].preferred_area
-																		: (cells[edges[c].cells[0]].preferred_area + cells[edges[c].cells[1]].preferred_area) * 0.5;
-		aux_next = edges[c].vertices[0] == v.ind ? edges[c].vertices[1] : edges[c].vertices[0];
-		if(edges[c].length > NUMERIC_THRESHOLD){//Control for division by 0
-			aux = edges[c].tension / (edges[c].length * pref_area);
-		}else{
-			aux = edges[c].tension / (NUMERIC_THRESHOLD * pref_area);
 		}
+		c = v.edges[i];
+		aux_next = edges[c].vertices[0] == v.ind ? edges[c].vertices[1] : edges[c].vertices[0];
+		//aux =  0.5 * edges[c].tension / (edges[c].length > NUMERIC_THRESHOLD ? edges[c].length : NUMERIC_THRESHOLD);
+		aux = 0.5 * edges[c].tension / edges[c].length;
 		t2x += (v.x - vertices[aux_next].x) * aux;
 		t2y += (v.y - vertices[aux_next].y) * aux;
-		cout << "    Term 2: aux " << aux << ", x - next: " << v.x - vertices[aux_next].x << ", y - next: " << v.y - vertices[aux_next].y << ", len: " << springs[v.spring].length << ", tens: " << springs[v.spring].tension  << ", edge " << c  << endl;
+		//cout << "Term 2: aux " << aux << ", x - next: " << v.x - vertices[aux_next].x << ", y - next: " << v.y - vertices[aux_next].y << ", len: " << edges[c].length << ", tens: " << edges[c].tension  << ", edge " << c  << endl;
 	} //Term 2
 	if (v.spring != EMPTY_CONNECTION){
-		if(springs[v.spring].length > NUMERIC_THRESHOLD){//Control for division by 0
-			aux = springs[v.spring].tension / (springs[v.spring].length * pref_area);
-		}else{
-			aux = springs[v.spring].tension / (NUMERIC_THRESHOLD * pref_area);
-		}
+		 aux = 0.5 * springs[v.spring].tension / (springs[v.spring].length > NUMERIC_THRESHOLD ? springs[v.spring].length : NUMERIC_THRESHOLD);
 		aux_next = springs[v.spring].vertices[0] == v.ind ? springs[v.spring].vertices[1] : springs[v.spring].vertices[0];
 		t2x += (v.x - vertices[aux_next].x) * aux; // Here may be a numeric problem when distance between 2 points is already 0
 		t2y += (v.y - vertices[aux_next].y) * aux;
-		cout << "    Term 2 spring: aux" << aux << ", x - next: " << v.x - vertices[aux_next].x << ", y - next: " << v.y - vertices[aux_next].y << ", len: " << springs[v.spring].length << ", tens: " << springs[v.spring].tension  << endl;
+		//cout << "Term 2 spring: aux" << aux << ", x - next: " << v.x - vertices[aux_next].x << ", y - next: " << v.y - vertices[aux_next].y << ", len: " << springs[v.spring].length << ", tens: " << springs[v.spring].tension  << endl;
 	}//Spring part of term2
 	//Term 3 THIS TERM MUST BE OPTIMIZED
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
-		if (v.cells[i] == EMPTY_CONNECTION)
+		if (v.cells[i] == EMPTY_CONNECTION){
+			//cout << "No cell " << i << endl;
 			continue;
+		}
 		c = v.cells[i];
+		aux = 0.5 * cells[c].perimeter * cells[c].perimeter_contractility;
 		aux_this = which(v.ind, cells[c].vertices, cells[c].num_vertices);
 		aux_prev = cells[c].vertices[(aux_this + cells[c].num_vertices - 1)%cells[c].num_vertices ];
 		aux_next = cells[c].vertices[(aux_this + 1)%cells[c].num_vertices ];
-		aux = cells[c].perimeter*cells[c].perimeter_contractility/cells[c].preferred_area;
         auxd1 = distance(v.ind, aux_prev);
         auxd2 = distance(v.ind, aux_next); //Maybe numeric problem
 		auxd1 = auxd1 > NUMERIC_THRESHOLD ? auxd1 : NUMERIC_THRESHOLD;
 		auxd2 = auxd2 > NUMERIC_THRESHOLD ? auxd2 : NUMERIC_THRESHOLD;
 		t3x += aux*( (v.x - vertices[aux_prev].x)/auxd1 + (v.x - vertices[aux_next].x)/auxd2);
 		t3y += aux*( (v.y - vertices[aux_prev].y)/auxd1 + (v.y - vertices[aux_next].y)/auxd2);
-		cout << "    Term 3 aux " << aux << ", d1: " << auxd1 << ",d2 " << auxd2 << endl;
+		//cout << "Term 3 aux " << aux << ", d1: " << auxd1 << ",d2 " << auxd2 << endl;
 	} //Term3
-	cout << "v.ind=" << v.ind << ": x1=" << t1x << ", y1=" << t1y << ", x2=" << t2x << ", y2=" << t2y << ", x3=" << t3x << ", y3=" << t3y;
+	//cout << "v.ind=" << v.ind << ": x1=" << t1x << ", y1=" << t1y << ", x2=" << t2x << ", y2=" << t2y << ", x3=" << t3x << ", y3=" << t3y;
 
-	t1x = isnan(t1x) || isinf(t1x) ? 0 : t1x;
+	/*t1x = isnan(t1x) || isinf(t1x) ? 0 : t1x;
 	t1y = isnan(t1y) || isinf(t1y) ? 0 : t1y;
 	t2x = isnan(t2x) || isinf(t2x) ? 0 : t2x;
 	t2y = isnan(t2y) || isinf(t2y) ? 0 : t2y;
 	t3x = isnan(t3x) || isinf(t3x) ? 0 : t3x;
 	t3y = isnan(t3y) || isinf(t3y) ? 0 : t3y;
-
+*/
 	pd.x = 0.5 * t1x * energy_term1 + t2x * energy_term2 + t3x * energy_term3;
 	pd.y = 0.5 * t1y * energy_term1 + t2y * energy_term2 + t3y * energy_term3;
 	if (max_range_vertex_movement > 0 && (abs(pd.x) > max_range_vertex_movement || abs(pd.y) > max_range_vertex_movement))
@@ -2767,7 +2762,8 @@ void Tissue::derivativeVertexPos(const Vertex &v, pointDerivative &pd)
 		pd.x += cos(angle) * radius;
 		pd.y += sin(angle) * radius;
 	}
-	cout << ", dx=" << pd.x << ", dy=" << pd.y << endl << endl;
+	//cout << ", dx=" << pd.x << ", dy=" << pd.y << endl << endl;
+	cout << "v=" << v.ind << ", dx=" << pd.x << ", dy=" << pd.y << ", t1x=" << t1x << ", t1y=" << t1y << ", t2x=" << t2x << ", t2y=" << t2y << ", t3x=" << t3x << ", t3y=" << t3y << endl;
 }//derivativeVertexPos used in Simulate Euler
 void Tissue::simulateMonteCarlo()
 {

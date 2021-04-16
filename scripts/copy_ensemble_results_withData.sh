@@ -1,9 +1,9 @@
 
 
 cd $1
-wingarray=(etournay1_strings8b) 
-#(wing2E wing2Edumpy) #(wing2C wing2Cdumpy)bud2 budsmall strechsmall_3cpv etournay1_nosprings etournay1_strings3 etournay1_3cpv_3
-
+wingarray=(etournay1_strings10) 
+#(wing2E wing2Edumpy) #(wing2C wing2Cdumpy)bud2 budsmall strechsmall_3cpv etournay1_nosprings etournay1_strings3 etournay1_3cpv_3 21grid5
+#square1
 params=$(ls | grep $1)
 
 for wing in ${wingarray[@]}
