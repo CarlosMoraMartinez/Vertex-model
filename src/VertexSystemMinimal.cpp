@@ -2604,8 +2604,8 @@ void Tissue::calculateBasePrefAreaAndPerim(Cell& cell){
 
 	cell.base_perimeter = ini_perim + (fin_perim - ini_perim) * expAdvance(factor_perim, xcoord_decrease_exponent); //(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
 	cell.base_preferred_area = ini_area + (fin_area - ini_area) * expAdvance(factor_area, xcoord_decrease_exponent); //(1 - exp(-pow(pos_factor, xcoord_decrease_exponent)))/EXP_FACTOR;
-	//cell.perimeter_contractility = time_controls_perim ? fin_perim : ini_perim;
-	//cell.preferred_area = time_controls_size ? fin_area : ini_area;
+	cell.perimeter_contractility = time_controls_perim ? ini_perim : cell.base_perimeter;
+	cell.preferred_area = time_controls_size ? ini_area : cell.base_preferred_area;
 	
 }
 
