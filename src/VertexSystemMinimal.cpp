@@ -2528,7 +2528,9 @@ void Tissue::calculateBasePrefAreaAndPerim(Cell& cell){
 	float pos_factor_y = 0, ini_perim, ini_area, fin_perim, fin_area, factor_area, factor_perim;
 	if((cell.type == CellType::blade || cell.type == CellType::vein_blade) && 
 			(reference_for_gradient != USE_PROPORTION_OF_WING || pos_factor_x >= wing_proportion_in_gradient) &&
-			(reference_for_gradient != USE_BARE_EXPONENTIAL_GRADIENT)){
+			(reference_for_gradient != USE_BARE_EXPONENTIAL_GRADIENT) &&
+			(reference_for_gradient != GRADIENT_FROM_CENTER_ALL) &&
+			(reference_for_gradient != GRADIENT_FROM_CENTER_HINGE)){
 		cell.base_perimeter = perimeter_contract_final.val[static_cast<int>(cell.type)];
 		cell.base_preferred_area = preferred_area_final.val[static_cast<int>(cell.type)];
 		cell.perimeter_contractility = perimeter_contract.val[static_cast<int>(cell.type)];		
@@ -2536,7 +2538,9 @@ void Tissue::calculateBasePrefAreaAndPerim(Cell& cell){
 		return;
 	}
 
-	if(reference_for_gradient == USE_BARE_EXPONENTIAL_GRADIENT){
+	if(reference_for_gradient == USE_BARE_EXPONENTIAL_GRADIENT ||
+			(reference_for_gradient == GRADIENT_FROM_CENTER_ALL) ||
+			(reference_for_gradient == GRADIENT_FROM_CENTER_HINGE)){
 		pos_factor_x = exp(- xcoord_decrease_exponent * pos_factor_x);
 		cell.base_perimeter = perimeter_contract_final.val[static_cast<int>(cell.type)];
 		cell.base_preferred_area = preferred_area_final.val[static_cast<int>(cell.type)];
@@ -2544,6 +2548,17 @@ void Tissue::calculateBasePrefAreaAndPerim(Cell& cell){
 			cell.base_perimeter *= pos_factor_x;
 		if(xcoord_controls_size)
 			cell.base_preferred_area *= (1 - pos_factor_x);
+
+		//If there is gradient from medial to lateral
+		if(reference_for_gradient == GRADIENT_FROM_CENTER_ALL ||
+		(reference_for_gradient == GRADIENT_FROM_CENTER_HINGE && 
+		(cell.type == CellType::hinge || cell.type == CellType::vein_hinge))){		
+			float dist_from_center = 1 - abs(cell.centroid_y - AP_compartment_limit)/abs(AP_compartment_limit - (cell.centroid_y < AP_compartment_limit ? min_ypos : max_ypos));
+			float CLperim_value = perimeter_contract.val[static_cast<int>(cell.type)] + dist_from_center*(perimeter_contract_final.val[static_cast<int>(cell.type)] - perimeter_contract.val[static_cast<int>(cell.type)]);
+			//cell.base_perimeter = cell.base_perimeter*(1 - wing_proportion_in_gradient) + CLperim_value*wing_proportion_in_gradient;
+			cell.base_perimeter += CLperim_value*wing_proportion_in_gradient;
+		}
+		//Time dependence
 		cell.perimeter_contractility = time_controls_perim ? 
 				perimeter_contract.val[static_cast<int>(CellType::blade)] : 
 				cell.base_perimeter;
