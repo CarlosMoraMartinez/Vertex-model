@@ -2552,11 +2552,13 @@ void Tissue::calculateBasePrefAreaAndPerim(Cell& cell){
 		//If there is gradient from medial to lateral
 		if(reference_for_gradient == GRADIENT_FROM_CENTER_ALL ||
 		(reference_for_gradient == GRADIENT_FROM_CENTER_HINGE && 
-		(cell.type == CellType::hinge || cell.type == CellType::vein_hinge))){		
-			float dist_from_center = 1 - abs(cell.centroid_y - AP_compartment_limit)/abs(AP_compartment_limit - (cell.centroid_y < AP_compartment_limit ? min_ypos : max_ypos));
-			float CLperim_value = perimeter_contract.val[static_cast<int>(cell.type)] + dist_from_center*(perimeter_contract_final.val[static_cast<int>(cell.type)] - perimeter_contract.val[static_cast<int>(cell.type)]);
+		(cell.type == CellType::hinge || cell.type == CellType::vein_hinge))
+		){		
+			float dist_from_center = 1 - wing_proportion_in_gradient*abs(cell.centroid_y - AP_compartment_limit)/abs(AP_compartment_limit - (cell.centroid_y < AP_compartment_limit ? min_ypos : max_ypos));
+			//float CLperim_value = perimeter_contract.val[static_cast<int>(cell.type)] + dist_from_center*(perimeter_contract_final.val[static_cast<int>(cell.type)] - perimeter_contract.val[static_cast<int>(cell.type)]);
 			//cell.base_perimeter = cell.base_perimeter*(1 - wing_proportion_in_gradient) + CLperim_value*wing_proportion_in_gradient;
-			cell.base_perimeter += CLperim_value*wing_proportion_in_gradient;
+			//cell.base_perimeter += CLperim_value*wing_proportion_in_gradient;
+			cell.base_perimeter = cell.base_perimeter*dist_from_center + perimeter_contract.val[static_cast<int>(cell.type)];
 		}
 		//Time dependence
 		cell.perimeter_contractility = time_controls_perim ? 
