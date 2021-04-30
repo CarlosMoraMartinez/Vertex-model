@@ -395,6 +395,7 @@ void Tissue::set_default_simulation_params()
 	string_distal_transition_prop = 0.0;
 	reference_for_gradient = REFERENCE_FOR_GRADIENT;
 	wing_proportion_in_gradient = DEFAULT_PROPORTION_FOR_GRADIENT;
+	string_equilibrium_distance = STRING_EQUILIBRIUM_DISTANCE;
 	random_seed = RANDOM_SEED;
 }
 
@@ -650,6 +651,7 @@ cout << "Param file reading... breakpoint 1c" << endl;
 	string_distal_transition_prop = read_real_par(it);
 	reference_for_gradient = read_real_par(it);
 	wing_proportion_in_gradient = read_real_par(it);
+	string_equilibrium_distance = read_real_par(it) > 0;
 	random_seed = read_real_par(it);
 	std::cout << "Param file reading... final" << endl;
 	std::flush(cout);
@@ -1763,7 +1765,7 @@ inline double Tissue::calculateEnergy(Vertex &v)
 		if (v.edges[i] != EMPTY_CONNECTION)
 		{
 			aux_ind = v.edges[i];
-			if(edges[aux_ind].type == EdgeType::stringedge && STRING_EQUILIBRIUM_DISTANCE){
+			if(edges[aux_ind].type == EdgeType::stringedge && string_equilibrium_distance){
 				//cout << "Eq. Distance" << endl;
 				term2 += edges[aux_ind].tension * pow(edges[aux_ind].length - edges[aux_ind].optimal_length, 2);
 

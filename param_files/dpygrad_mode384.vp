@@ -284,9 +284,9 @@
 >posterior_compartment_factor #If spring_tension_mode = 1 or 3, multiply posterior tension by this number
 0.5
 >spring_gradient_min_tension #
-1.5,5,10
+10,20,30,50,100
 >spring_gradient_max_tension #
-10
+100
 >spring_gradient_exponent #
 1
 >spring_gradient_min_tension_P # If spring_tension_mode == 4, for posterior compartment gradient
@@ -326,7 +326,7 @@
 <
 
 >string_edge_tension
-5000,10000
+800,5000,10000
 >string_edge_tension_posterior_compartment_proportion
 0.01
 >string_edge_tension_min

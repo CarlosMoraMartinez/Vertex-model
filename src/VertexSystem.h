@@ -96,7 +96,7 @@ const bool REPORT_T1 = false;
 const bool REPORT_DIV = false;
 const int REPORT_OUT = 0;//SET THIS TO 0 IF EVOLUTION IS GOING TO BE USED OR IN CASE OF LONG SIMULATIONS
 const bool WRITE_DATA_TABLES = true;
-const bool STRING_EQUILIBRIUM_DISTANCE = true;
+const bool STRING_EQUILIBRIUM_DISTANCE = false;
 const bool ONLY_ONE_CONTACT = true; //Only 1 contact edge is allowed between 2 cells; T1 is not performed when it will compromise this condition
 const bool RECALCULATE_CENTROIDS_FOR_PRINTING = true;
 const int USE_HINGE_BLADE_FRONTIER = 1;
@@ -402,7 +402,7 @@ class Tissue{
 		
 		cell_type_param perimeter_contract, perimeter_contract_final;
 		bool time_controls_perim, xcoord_controls_perim, ycoord_controls_perim; //Exponent will be the same as for area
-
+		bool string_equilibrium_distance;
 		float t1_transition_critical_distance; 
 		float t2_transition_critical_area;
 		float active_t1_prob,min_angle_for_active_t1, max_angle_for_active_t1, minsin2rant1, maxsin2rant1; //To make T1s at random
