@@ -2,9 +2,9 @@
 library(tidyverse)
 library(wesanderson)
 
-nums <- c(357)
+nums <- c(364)
 wing <- "/etournay1_strings10"
-sims <- c(0:6)
+sims <- c(0:5)
 timesteps <- c(0)
 dirbase <- "/home/carmoma/vertex/Vertex-model/dpygrad_mode%NUMBER%/dpygrad_mode%NUMBER%_"
 WING_NAME="etournay1_strings10_moved_"
