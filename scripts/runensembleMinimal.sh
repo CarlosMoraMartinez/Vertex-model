@@ -4,7 +4,7 @@
 
 maxCPU=10
 i=0
-wingarray=(etournay1_strings10) #etournay1_strings3 etournay1_strings8b square1 etournay1_strings10
+wingarray=(etournay1_strings10 etournay1_strings14) #etournay1_strings3 etournay1_strings8b square1 etournay1_strings10
 #21grid5_mv10 21grid5_mv20 21grid5_mv30 21grid5_mv50
 #21grid3 21grid1 21grid2 21grid5
 #etournay1_3cpv_3 etournay1_3cpv_4
