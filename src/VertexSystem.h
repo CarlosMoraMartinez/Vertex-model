@@ -148,6 +148,8 @@ struct Vertex{
 	bool movable_y; // == 3  in param_file, == 1 movable both
 	int spring;
 	bool dead;
+	double x_drag;
+	double y_drag;
 };
 // Structure for Cell
 //Add: preferred angle with respect to origin/longest axis and angle noise
@@ -452,6 +454,8 @@ class Tissue{
 		int written_files;
 		std::default_random_engine generator;
 		std::uniform_real_distribution<double> unif;
+		//drag / momentum parameters:
+		float momentum_term_cuticle, momentum_term_tissue, momentum_ponderate_current;
 		//Methods used by constructors
 		void initialize_vertices(std::ifstream& inp);
 		void initialize_cells(std::ifstream& inp);  

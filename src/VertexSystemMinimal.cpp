@@ -652,6 +652,11 @@ cout << "Param file reading... breakpoint 1c" << endl;
 	reference_for_gradient = read_real_par(it);
 	wing_proportion_in_gradient = read_real_par(it);
 	string_equilibrium_distance = read_real_par(it) > 0;
+
+	momentum_term_cuticle = read_real_par(it);
+	momentum_term_tissue = read_real_par(it);
+	momentum_ponderate_current = read_real_par(it);
+
 	random_seed = read_real_par(it);
 	std::cout << "Param file reading... final" << endl;
 	std::flush(cout);
@@ -995,6 +1000,8 @@ void Tissue::set_default_params()
 
 	for (int v = 0; v < vertices.size(); v++)
 	{
+		vertices[v].x_drag = vertices[v].x;
+		vertices[v].y_drag = vertices[v].y;
 		vertices[v].energy = calculateEnergy(vertices[v]);
 	}
 }
@@ -1002,7 +1009,7 @@ void Tissue::set_default_params()
 void Tissue::setStringTension(int e){
 			double position = 0.5*(vertices[edges[e].vertices[0]].x + vertices[edges[e].vertices[1]].x);
 			double position_factor = (position - min_xpos)/(max_xpos - min_xpos);
-			if((1 - position_factor) < string_distal_transition_prop){
+			if((1 - position_factor) < string_distal_transition_prop && string_distal_transition_prop > 0){
 				//cout << "A\n";
 				//Transition zone between static vertices at the tip and the rest of the cuticle
 				edges[e].tension = string_distal_transition_tension;
@@ -1029,7 +1036,10 @@ void Tissue::setStringTension(int e){
 					}
 				}else{
 					//In posterior compartment
-					if(string_posterior_gradient){
+					if(momentum_term_cuticle > 0){
+						float pos = (position - min_xpos)/(max_xpos - min_xpos); //Same as position_factor before applying exp
+						edges[e].tension = line_tension_stringedge * (tension_stringedge_posterior_prop + (1-tension_stringedge_posterior_prop)*position_factor);
+					}else if(string_posterior_gradient){
 						edges[e].tension = pos_tension*tension_stringedge_posterior_prop;
 					}else{
 						edges[e].tension = line_tension_stringedge * tension_stringedge_posterior_prop;
@@ -1745,40 +1755,50 @@ inline double Tissue::calculateEnergy2(Vertex &v)
 	return 0.5 * term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3;
 }
 //
-inline double Tissue::calculateEnergy(Vertex &v)
-{
-	double term1 = 0, term2 = 0, term3 = 0;
-	double aux;
-	int aux_ind;
-	for (int i = 0; i < CELLS_PER_VERTEX; i++)
-	{
-		if (v.cells[i] != EMPTY_CONNECTION){
-			aux_ind = v.cells[i];
-			aux = cells[aux_ind].area - cells[aux_ind].preferred_area;
-			//term1 += aux*aux*K.val[static_cast<int>(cells[aux_ind].type)];
-			term1 += aux*aux*cells[aux_ind].K;
-			term3 += 0.5 * cells[aux_ind].perimeter_contractility * cells[aux_ind].perimeter * cells[aux_ind].perimeter;
-		}
-	}
-	for (int i = 0; i < CELLS_PER_VERTEX; i++)
-	{
-		if (v.edges[i] != EMPTY_CONNECTION)
-		{
-			aux_ind = v.edges[i];
-			if(edges[aux_ind].type == EdgeType::stringedge && string_equilibrium_distance){
-				//cout << "Eq. Distance" << endl;
-				term2 += edges[aux_ind].tension * pow(edges[aux_ind].length - edges[aux_ind].optimal_length, 2);
+inline double Tissue::calculateEnergy(Vertex &v) {
+  double term1 = 0, term2 = 0, term3 = 0, momentum_term = 0;
+  double aux;
+  int aux_ind;
+  bool is_cuticle = false;
+  for (int i = 0; i < CELLS_PER_VERTEX; i++) {
+    if (v.cells[i] != EMPTY_CONNECTION) {
+      aux_ind = v.cells[i];
+      aux = cells[aux_ind].area - cells[aux_ind].preferred_area;
+      // term1 += aux*aux*K.val[static_cast<int>(cells[aux_ind].type)];
+      term1 += aux * aux * cells[aux_ind].K;
+      term3 += 0.5 * cells[aux_ind].perimeter_contractility *
+               cells[aux_ind].perimeter * cells[aux_ind].perimeter;
+    }
+  }
+  for (int i = 0; i < CELLS_PER_VERTEX; i++) {
+    if (v.edges[i] != EMPTY_CONNECTION) {
+      aux_ind = v.edges[i];
+      if (edges[aux_ind].type == EdgeType::stringedge) {
+		is_cuticle = true;
+        if (string_equilibrium_distance) {
+          // cout << "Eq. Distance" << endl;
+          term2 +=
+              edges[aux_ind].tension *
+              pow(edges[aux_ind].length - edges[aux_ind].optimal_length, 2);
 
-			}else{
-				term2 += edges[aux_ind].tension * edges[aux_ind].length;
-			}
-		}
-	}
-	if (v.spring != EMPTY_CONNECTION){
-		term2 += springs[v.spring].tension * springs[v.spring].length;
-	}
-	return term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3;
-}//calcEnergy2
+        } else {
+          term2 += edges[aux_ind].tension * edges[aux_ind].length;
+        }
+      }
+    }
+  }
+  if (v.spring != EMPTY_CONNECTION) {
+    term2 += springs[v.spring].tension * springs[v.spring].length;
+  }
+
+  if((is_cuticle && momentum_term_cuticle > 0.0)){
+	  momentum_term = momentum_term_cuticle*sqrt(pow(v.x - v.x_drag, 2) + pow(v.y - v.y_drag, 2));
+  }else if( momentum_term_tissue > 0.0){
+	  //Also applies to cuticle if no momentum in cuticle but there is momentum in tissue
+	  momentum_term = momentum_term_tissue*sqrt(pow(v.x - v.x_drag, 2) + pow(v.y - v.y_drag, 2));
+  }
+  return term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3 + momentum_term;
+} // calcEnergy2
 inline double Tissue::calculateEnergy_term4(Vertex& v){
 	int n = 0, aux_nei, aux_ind, aux_cell;
 	float products[CELLS_PER_VERTEX];
@@ -2039,6 +2059,10 @@ bool Tissue::tryMoveVertex()
 			}
 		} */
 		vertices[vertex_to_move].moves_accepted ++;
+		vertices[vertex_to_move].x_drag = (1 - momentum_ponderate_current)*vertices[vertex_to_move].x_drag + momentum_ponderate_current*vertices[vertex_to_move].x;
+		vertices[vertex_to_move].y_drag = (1 - momentum_ponderate_current)*vertices[vertex_to_move].y_drag + momentum_ponderate_current*vertices[vertex_to_move].y;
+		
+
 		detectChangesAfterMove(vertex_to_move);
 		if (autonomous_cell_cycle)
 		{ //NOTE: Maybe make this before detecting changes so the effect is immediate? Otherwise cells have to wait until next round
