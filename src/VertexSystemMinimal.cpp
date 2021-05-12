@@ -864,6 +864,7 @@ void Tissue::initialize_cells(std::ifstream &inp)
 		while (vertex != EMPTY_CONNECTION)
 		{
 			c.vertices[vert_count] = vertex;
+			cout << "vert_count: " << vert_count << ", vert: " << vertex << endl;
 			addCellToVertex(vertex, cell_count);
 			vert_count++;
 			s = s.substr(sz);
@@ -996,7 +997,9 @@ void Tissue::set_default_params()
 		}
 	}
 
-	setSpringTension();
+	if(num_springs > 0){
+		setSpringTension();
+	}
 
 	for (int v = 0; v < vertices.size(); v++)
 	{

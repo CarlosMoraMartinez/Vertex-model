@@ -21,7 +21,8 @@ bladetype = 0
 hingetype = 1
 veintype = 2
 veinhinge = 3
-wingcols = ['blue', 'green', 'black', 'gray']
+cuticletype = 4
+wingcols = ['blue', 'green', 'black', 'gray', 'red']
 springcols = ['red', 'yellow', 'purple', 'pink', 'brown']
 STATIC_COLS=["red", "white", "blue", "gray"]
 
@@ -137,6 +138,7 @@ class HexGrid:
         self.celltypes = []
         self.vnum = 0
         self.plotcol = None
+        self.vertex_cell_index_created = False
 
         if(kwargs['Read'] != ""):
             self.loadData() 
@@ -317,6 +319,9 @@ class HexGrid:
 
     def plotHex2(self, fig=None, save=False, alpha=0.4):
         from matplotlib.collections import PolyCollection
+        if(self.vertex_cell_index_created):
+            print("Warning!: Removing vertex index before plotting")
+            self.removeVertexCellIndex()
         if(fig is None):
             fig, ax = plt.subplots()
             fig.suptitle(self.outname, fontsize=16)
@@ -367,7 +372,9 @@ class HexGrid:
         else:
             f, ax = plot
         #ax.scatter([i[2] for i in self.centers], [i[3] for i in self.centers], c = [wingcols[k] for k in self.celltypes])
-
+        if(self.vertex_cell_index_created):
+            print("Warning!: Removing vertex index before plotting")
+            self.removeVertexCellIndex()
         if(len(self.centers) < 50):
             for i in range(len(self.centers)):
                 ax.annotate(i, [self.centers[i][2], self.centers[i][3]])
@@ -614,15 +621,37 @@ class HexGrid:
                 v_to_remove.sort(reverse=False)
 
     def removeVertex(self, v, list_to_update):
+        newvert = -1
+        #Remove vertex from cells
+        if(self.vertex_cell_index_created):
+            for c in self.vertices[v][4]:
+                for vi, vv in enumerate(self.cells[c]):
+                    if(vv == v):
+                        self.cells[c].pop(vi) 
+        else:
+            for ci, c in enumerate(self.cells):
+                for vi, vv in enumerate(c):
+                    if(vv == v):
+                        self.cells[ci].pop(vi)
+                        break
+        #Update all other vertices
         for vert in range(v, len(self.vertices) - 1):
             newvert = self.vertices[vert  + 1][2]
+            if(self.vertex_cell_index_created):
+                for c in self.vertices[newvert][4]:
+                    #Change name of newvert 
+                    for vx, vinc in enumerate(self.cells[c]):
+                        if(vinc == newvert):
+                            self.cells[c][vx] = vert
+                            break
+            else:
+                #Not index; therefore, search in all cells
+                for cind, cell in enumerate(self.cells):
+                    for vicell, vcell in enumerate(cell):
+                        if(vcell == newvert):
+                            self.cells[cind][vicell] = vert
             self.vertices[vert + 1][2] = vert
             self.vertices[vert] = self.vertices[vert + 1]
-            for cind, cell in enumerate(self.cells):
-                for vicell, vcell in enumerate(cell):
-                    if(vcell == newvert):
-                        self.cells[cind][vicell] = vert
-                        break
             for sind, spring in enumerate(self.springs):
                 for vispring, vspring in enumerate(spring):
                     if(vspring == newvert):
@@ -634,7 +663,18 @@ class HexGrid:
         self.vertices.pop()  
         self.vnum -= 1
         return list_to_update
-
+    def setVertexCellIndex(self):
+        for i in range(self.vnum):
+            self.vertices[i].append([])
+        for cind, c in enumerate(self.cells):
+            for v in c:
+                self.vertices[v][4].append(cind)
+        self.vertex_cell_index_created = True
+    def removeVertexCellIndex(self):
+        for i, v in enumerate(self.vertices):
+            while(len(v) > 4):
+                self.vertices[i].pop()
+        self.vertex_cell_index_created = False
     def removeSpringVertices(self, s, v):         
         #v.sort(reverse=True) #Assumes they are sorted
         #s.sort(reverse=True)

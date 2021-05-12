@@ -31,10 +31,11 @@ bladetype = 0
 hingetype = 1
 veintype = 2
 veinhinge = 3
-wingcols = ['dodgerblue', 'lawngreen', 'crimson', 'yellow']
+cuticletype = 4
+wingcols = ['dodgerblue', 'lawngreen', 'crimson', 'yellow', "gray"]
 #wingcols = ['dodgerblue', 'black', 'indigo', 'dimgray']
 #wingcols = ['blue', 'green', 'black', 'gray']
-wingcols_comp = [['red', 'darkred', 'lightsalmon', 'mistyrose'], ['olivedrab', 'darkgreen', 'yellowgreen', 'yellowgreen']]
+wingcols_comp = [['red', 'darkred', 'lightsalmon', 'mistyrose', "pink"], ['olivedrab', 'darkgreen', 'yellowgreen', 'yellowgreen', "pink"]]
 springcols = ['red', 'yellow', 'purple', 'pink', 'brown','crimson', 'gold', 'violet', 'magenta', 'brown']
 EDGE_COLOR = 'black'
 
@@ -128,7 +129,7 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     if(expr):
         alphas = expr
     else:
-        alphas = 1 #0.85
+        alphas = 0.85
     if(cellproperty != ''):
         cellproperty_name = cellproperty.split("__")[0].split(":")[0].split(";")[0]
         if("preferred_area_norm" in cellproperty):
