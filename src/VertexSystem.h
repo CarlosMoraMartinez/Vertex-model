@@ -89,6 +89,13 @@ const bool KEEP_AREA_AFTER_DIVISION = false;
 const bool CELL_CYCLE_CONTROLS_SIZE = true;
 const bool TIME_CONTROLS_SIZE = false;
 const bool XCOORD_CONTROLS_SIZE = false;
+const bool CELL_CUTICLE_CAN_TRANSITION = false;
+const bool BORDER_CAN_TRANSITION = false;
+const bool BLADE_HINGE_INTERFACE_CAN_TRANSITION = false;
+const bool VEIN_TO_BLADE_CAN_TRANSITION = true;
+const bool VEIN_TO_HINGE_CAN_TRANSITION = true;
+const bool VEIN_CAN_TRANSITION = true;
+
 const bool STATIC_PRESENT = true;
 const int MOVE_TRIALS = 100;  //Times it tries to move a vertex before it quits because always makes edges to cross
 const bool UPDATE_EDGE_TENSION_EVERY_MOVE = true; //Update edge tension if tension is dependent on edge angle (if true, do it in every iteration, if false do it only in transitions and start)
@@ -109,7 +116,7 @@ const float DEFAULT_PROPORTION_FOR_GRADIENT = 0.7;
 const int REFERENCE_FOR_GRADIENT = USE_PROPORTION_OF_WING;
 const bool NORMALIZE_EDGE_TENSION = false;
 
-const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\tspring\tmoves_accepted\tmoves_rejected\tcells\tedges\tneighbour_vertices\n";
+const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\ttype\tspring\tmoves_accepted\tmoves_rejected\tcells\tedges\tneighbour_vertices\n";
 const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tK\tperimeter\tperim_contract\t" +
 	std::string("centroid_x\tcentroid_y\tbase_eq_area\tbase_eq_perimcontr\tangle_longest\tangle_signal\t")+
 	std::string("angle_random\tdegrees_signal\tmax_area\tcell_cycle_state\tcell_cycle_limit\tcan_divide\tnum_vertices\t")+
@@ -125,10 +132,13 @@ const std::string T2_HEADER = ">T2_name\tcell\tvert_survivor\tx\ty\ttype";
 const std::string DIV_HEADER = ">DIV_name\tind1\tind2\tcentroid_1x\tcentroid_1y\tcentroid_2x\tcentroid_2y\ttype\tcounter_moves_accepted";
 
 //Enum class to define types of cells 
-enum class CellType{blade = 0, hinge = 1, vein_blade = 2, vein_hinge = 3};
+enum class CellType{blade = 0, hinge = 1, vein_blade = 2, vein_hinge = 3, cuticle=4};
 
 //Enum class to define types of edges
-enum class EdgeType{blade = 0, hinge = 1, vein_hinge = 2, vein_blade = 3, tissue_boundary = 4, spring = 5, vein = 6, stringedge = 7};
+enum class EdgeType{blade = 0, hinge = 1, vein_hinge = 2, vein_blade = 3, tissue_boundary = 4, spring = 5, vein = 6, stringedge = 7, cellular_cuticle = 8};
+
+//Enum class to define types of vertices
+enum class VertexType{tissue=0, cuticle=1, spring_only=2};
 
 //Enum class to define types of transitions
 enum class RearrangementType{t1 = 0, t2 = 1, divide_cell = 2, divide_edge = 3, join_limit_edges = 4, t1_at_border_outwards = 5, t1_at_border_inwards = 6, rotate_inwards = 7, random_t1 = 8};
@@ -150,6 +160,7 @@ struct Vertex{
 	bool dead;
 	double x_drag;
 	double y_drag;
+	VertexType type;
 };
 // Structure for Cell
 //Add: preferred angle with respect to origin/longest axis and angle noise
@@ -238,10 +249,10 @@ typedef std::queue<DivisionRecord> divisionrecord_q;
 //typedef std::map<CellType, double> cell_type_param;
 //typedef std::map<int, double> spring_type_param;
 
-const int NUM_CELL_TYPES = 4;
+const int NUM_CELL_TYPES = 5; //SHOULD BE A MAXIMUM BECAUSE STRUCT TYPES ARE DECLARED USING THIS NUMBER
 const int NUM_SPRING_TYPES = 4;
 struct cell_type_param{
-	double val[NUM_CELL_TYPES];
+	double val[NUM_CELL_TYPES]; //If you use a cell type number > NUM_CELL_TYPES, an error will occur, even when inside the program the actual cell number is known
 };
 struct spring_type_param{
 	double val[NUM_SPRING_TYPES];
@@ -362,6 +373,7 @@ class Tissue{
 		
 	private:
 		std::string simname;
+		int num_cell_types;
 		int num_cells, num_vertices, num_edges, num_springs;
 		int integration_mode;
 		bool step_mode; //If the simulation is controlled by an external source, set this to true in order to avoid excessive printing of outputs

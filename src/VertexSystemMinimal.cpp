@@ -292,6 +292,7 @@ void Tissue::set_default_simulation_params()
 	t2_active = T2_ACTIVE;
 	join_edges_active = JOIN_EDGES_ACTIVE;
 	check_if_edges_cross_opt = CHECK_EDGES_CROSS_AFTER_MOVE;
+	num_cell_types = NUM_CELL_TYPES;
 	control_cells_2sides = CONTROL_CELLS_2SIDES;
 	integration_mode = INTEGR_MONTECARLO;
 	min_range_vertex_movement = MIN_RANGE_VERTEX_MOVEMENT;
@@ -509,6 +510,7 @@ void Tissue::initialize_params(std::string params_file)
 	join_edges_active = read_real_par(it) > 0;
 	control_cells_2sides = static_cast<bool>(read_real_par(it));
 	check_if_edges_cross_opt = read_real_par(it) > 0;
+	num_cell_types =  read_real_par(it);
 	cout << "Param file reading... breakpoint 1b" << endl;
 	std::flush(cout);
 	long unsigned int temp_num_moves = read_longint_par(it);
@@ -677,6 +679,7 @@ void Tissue::initialize_vertices(std::ifstream &inp)
 	v.dead = false;
 	//v.movable = true;
 	v.spring = EMPTY_CONNECTION;
+	v.type = VertexType::spring_only; //Later will be changed
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
 		v.cells[i] = EMPTY_CONNECTION;
@@ -985,6 +988,11 @@ void Tissue::set_default_params()
 		cells[c].edge_maxangle = edge_maxangle.val[celltype];
 		cells[c].edge_spatialmax_tension = edge_spatialmax_tension.val[celltype];
 		cells[c].edge_spatialmin_tension = edge_spatialmin_tension.val[celltype];
+
+		//Set type to vertices
+		for(int vinc=0; vinc < cells[c].num_vertices; vinc++){
+			vertices[cells[c].vertices[vinc]].type = cells[c].type == CellType::cuticle ? VertexType::cuticle : VertexType::tissue;
+		}
 	}
 
 	for (int e = 0; e < edges.size(); e++)
@@ -994,6 +1002,8 @@ void Tissue::set_default_params()
 			setEdgeTension(e);
 		}else{
 			setStringTension(e);
+			vertices[edges[e].vertices[0]].type = VertexType::cuticle; 
+			vertices[edges[e].vertices[1]].type = VertexType::cuticle;
 		}
 	}
 
@@ -1058,17 +1068,18 @@ void Tissue::setEdgeType(int e)
 	int c1 = edges[e].cells[0];
 	int c2 = edges[e].cells[1];
 	int aux;
+
 	if (contains(EMPTY_CONNECTION, edges[e].cells, VERTEX_PER_EDGE))
 	{
 		aux = edges[e].cells[0] == EMPTY_CONNECTION ? edges[e].cells[1] : edges[e].cells[0];
 		edges[e].type = EdgeType::tissue_boundary;
 		if(!(vertices[edges[e].vertices[0]].movable_x && vertices[edges[e].vertices[0]].movable_y) ){
-			edges[e].tension = line_tension_interstatic;
+			edges[e].tension = line_tension_interstatic; //Special tension for edges between vertices that can only move in x or y
 			edges[e].can_transition = false;
 		}else{
 			edges[e].tension = line_tension_tissue_boundary.val[static_cast<int>(cells[aux].type)];
-			edges[e].can_transition = true;
-		}
+			edges[e].can_transition = (cells[aux].type != CellType::cuticle || CELL_CUTICLE_CAN_TRANSITION) && BORDER_CAN_TRANSITION; //Cuticle border can't transition, else can
+ 		}
 	}
 	else if (cells[c1].type == CellType::blade && cells[c2].type == CellType::blade)
 	{
@@ -1093,7 +1104,7 @@ void Tissue::setEdgeType(int e)
 	{
 		edges[e].type = EdgeType::hinge;
 		edges[e].tension = hinge_blade_interface_tension;
-		edges[e].can_transition = false;
+		edges[e].can_transition = BLADE_HINGE_INTERFACE_CAN_TRANSITION;
 	}
 	else if ((cells[c1].type == CellType::blade && cells[c2].type == CellType::vein_blade) ||
 			 (cells[c2].type == CellType::blade && cells[c1].type == CellType::vein_blade) ||
@@ -1102,7 +1113,7 @@ void Tissue::setEdgeType(int e)
 	{
 		edges[e].type = EdgeType::vein_blade;
 		edges[e].tension = line_tension.val[static_cast<int>(CellType::vein_blade)];
-		edges[e].can_transition = true; //false; true
+		edges[e].can_transition = VEIN_TO_BLADE_CAN_TRANSITION; //false; true
 	}
 	else if ((cells[c1].type == CellType::hinge && cells[c2].type == CellType::vein_hinge) ||
 			 (cells[c2].type == CellType::hinge && cells[c1].type == CellType::vein_hinge) ||
@@ -1111,32 +1122,38 @@ void Tissue::setEdgeType(int e)
 	{
 		edges[e].type = EdgeType::vein_hinge;
 		edges[e].tension = line_tension.val[static_cast<int>(CellType::vein_hinge)];
-		edges[e].can_transition = true; //false; true
+		edges[e].can_transition = VEIN_TO_HINGE_CAN_TRANSITION; //false; true
 	}
 	else if (cells[c1].type == CellType::vein_blade && cells[c2].type == CellType::vein_blade)
 	{
 		edges[e].type = EdgeType::vein;
 		edges[e].tension = line_tension.val[static_cast<int>(CellType::blade)]; //vein_blade is only for vein border
-		edges[e].can_transition = true;					  //false;true
+		edges[e].can_transition = VEIN_CAN_TRANSITION;					  //false;true
 	}
 	else if (cells[c1].type == CellType::vein_hinge && cells[c2].type == CellType::vein_hinge)
 	{
 		edges[e].type = EdgeType::vein;
 		edges[e].tension = line_tension.val[static_cast<int>(CellType::hinge)]; //vein_hinge is only for vein border
-		edges[e].can_transition = true;					  //false;true
+		edges[e].can_transition = VEIN_CAN_TRANSITION;					  //false;true
 	}
-	else if ((cells[c1].type == CellType::vein_blade && cells[c2].type == CellType::vein_hinge) || (cells[c1].type == CellType::vein_hinge && cells[c2].type == CellType::vein_blade))
+	else if ((cells[c1].type == CellType::vein_blade && cells[c2].type == CellType::vein_hinge) || 
+	(cells[c1].type == CellType::vein_hinge && cells[c2].type == CellType::vein_blade))
 	{
 		edges[e].type = EdgeType::vein;
 		edges[e].tension = 0.5 * (line_tension.val[static_cast<int>(CellType::hinge)] + line_tension.val[static_cast<int>(CellType::blade)]); //vein_hinge and vein_blade are only for vein border
-		edges[e].can_transition = false;
+		edges[e].can_transition = BLADE_HINGE_INTERFACE_CAN_TRANSITION;
+	}else if(cells[c1].type == CellType::cuticle || cells[c2].type == CellType::cuticle)
+	{
+		edges[e].type = EdgeType::cellular_cuticle;
+		edges[e].tension = line_tension.val[static_cast<int>(CellType::cuticle)];
+		edges[e].can_transition = CELL_CUTICLE_CAN_TRANSITION; //cuticle can't transition for now 
 	}
 	edges[e].base_tension = edges[e].tension; //whereas tension can change, base_tension can't
 }
 
 void Tissue::setEdgeTension(int e)
 {
-	if (edges[e].type == EdgeType::tissue_boundary || edges[e].type == EdgeType::stringedge)
+	if (edges[e].type == EdgeType::tissue_boundary || edges[e].type == EdgeType::stringedge )
 		return;
 	if (!(cells[edges[e].cells[0]].vary_line_tension && cells[edges[e].cells[1]].vary_line_tension))
 		return;
@@ -1762,7 +1779,7 @@ inline double Tissue::calculateEnergy(Vertex &v) {
   double term1 = 0, term2 = 0, term3 = 0, momentum_term = 0;
   double aux;
   int aux_ind;
-  bool is_cuticle = false;
+  //bool is_cuticle = false;
   for (int i = 0; i < CELLS_PER_VERTEX; i++) {
     if (v.cells[i] != EMPTY_CONNECTION) {
       aux_ind = v.cells[i];
@@ -1777,13 +1794,10 @@ inline double Tissue::calculateEnergy(Vertex &v) {
     if (v.edges[i] != EMPTY_CONNECTION) {
       aux_ind = v.edges[i];
       if (edges[aux_ind].type == EdgeType::stringedge) {
-		is_cuticle = true;
+		//is_cuticle = true;
         if (string_equilibrium_distance) {
           // cout << "Eq. Distance" << endl;
-          term2 +=
-              edges[aux_ind].tension *
-              pow(edges[aux_ind].length - edges[aux_ind].optimal_length, 2);
-
+          term2 += edges[aux_ind].tension * pow(edges[aux_ind].length - edges[aux_ind].optimal_length, 2);
         } else {
           term2 += edges[aux_ind].tension * edges[aux_ind].length;
         }
@@ -1794,7 +1808,7 @@ inline double Tissue::calculateEnergy(Vertex &v) {
     term2 += springs[v.spring].tension * springs[v.spring].length;
   }
 
-  if((is_cuticle && momentum_term_cuticle > 0.0)){
+  if((v.type == VertexType::cuticle && momentum_term_cuticle > 0.0)){
 	  momentum_term = momentum_term_cuticle*sqrt(pow(v.x - v.x_drag, 2) + pow(v.y - v.y_drag, 2));
   }else if( momentum_term_tissue > 0.0){
 	  //Also applies to cuticle if no momentum in cuticle but there is momentum in tissue
@@ -2566,6 +2580,13 @@ void Tissue::calculateBasePrefAreaAndPerim(Cell& cell){
 		cell.preferred_area = preferred_area_initial.val[static_cast<int>(cell.type)];
 		return;
 	}
+	if(cell.type == CellType::cuticle){
+		cell.base_perimeter = perimeter_contract_final.val[static_cast<int>(cell.type)];
+		cell.base_preferred_area = preferred_area_final.val[static_cast<int>(cell.type)];
+		cell.perimeter_contractility = perimeter_contract.val[static_cast<int>(cell.type)];		
+		cell.preferred_area = preferred_area_initial.val[static_cast<int>(cell.type)];
+		return;
+	}
 
 	if(reference_for_gradient == USE_BARE_EXPONENTIAL_GRADIENT ||
 			(reference_for_gradient == GRADIENT_FROM_CENTER_ALL) ||
@@ -2712,9 +2733,10 @@ void Tissue::produceOutputs(std::string add_to_name)
 		writeSpringDataTable(fname);
 		writePointsDataTable(fname);
 	}
-	if (REPORT_OUT > 0)
+	if (REPORT_OUT > 0){
 		cout << "\nWritting file: " << written_files << " at move " << counter_moves_accepted << endl;
 		std::cout << getStats() << endl;
+	}
 	written_files++;
 }
 
@@ -5340,7 +5362,7 @@ void Tissue::writePointsDataTable(std::string fname)
 }
 void Tissue::printCelltypeParam(cell_type_param par, std::string name){
 	cout << name << ": ";
-	for(int i = 0; i < NUM_CELL_TYPES; i++) cout << i << "=" << par.val[i] << ",\t";
+	for(int i = 0; i < num_cell_types; i++) cout << i << "=" << par.val[i] << ",\t";
 	cout << endl;
 }
 
@@ -5351,7 +5373,9 @@ void Tissue::printCelltypeParam(cell_type_param par, std::string name){
 std::ostream &operator<<(std::ostream &out, const Vertex &v)
 {
 	int vmovable = v.movable ? v.movable_x && v.movable_y? 1 : v.movable_x? 2 : 3 : 0;
-	out << v.ind << "\t" << v.x << "\t" << v.y << "\t" << v.energy << "\t" << vmovable << "\t" << v.spring << "\t" << v.moves_accepted << "\t" << v.moves_rejected << "\t";
+	out << v.ind << "\t" << v.x << "\t" 
+		<< v.y << "\t" << v.energy << "\t" << vmovable << "\t" 
+		<< static_cast<int>(v.type) << "\t" << v.spring << "\t" << v.moves_accepted << "\t" << v.moves_rejected << "\t";
 	for (int i = 0; i < sizeof(v.cells) / sizeof(v.cells[0]); i++)
 	{ // print cells touching vertex separated by ','
 		out << v.cells[i] << ",";

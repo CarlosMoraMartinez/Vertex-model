@@ -215,6 +215,7 @@ void Tissue::set_default_simulation_params()
 	t2_active = T2_ACTIVE;
 	join_edges_active = JOIN_EDGES_ACTIVE;
 	check_if_edges_cross_opt = CHECK_EDGES_CROSS_AFTER_MOVE;
+	num_cell_types = NUM_CELL_TYPES;
 	control_cells_2sides = CONTROL_CELLS_2SIDES;
 	integration_mode = INTEGR_MONTECARLO;
 	min_range_vertex_movement = MIN_RANGE_VERTEX_MOVEMENT;
@@ -239,25 +240,25 @@ void Tissue::set_default_simulation_params()
 	//energy_term4 = ENERGY_TERM4;
 	//difference_flow_rate = 0;
 
-	for(int i = 0; i < NUM_CELL_TYPES; i++) line_tension.val[i] = i % 2 == 0 ? LINE_TENSION_BLADE : LINE_TENSION_HINGE;
-	for(int i = 0; i < NUM_CELL_TYPES; i++) line_tension_tissue_boundary.val[i] = LINE_TENSION_TISSUE_BOUNDARY;
-	for(int i = 0; i < NUM_CELL_TYPES; i++) perimeter_contract.val[i] = i % 2 == 0 ? PERIMETER_CONTRACT_BLADE : PERIMETER_CONTRACT_HINGE;
+	for(int i = 0; i < num_cell_types; i++) line_tension.val[i] = i % 2 == 0 ? LINE_TENSION_BLADE : LINE_TENSION_HINGE;
+	for(int i = 0; i < num_cell_types; i++) line_tension_tissue_boundary.val[i] = LINE_TENSION_TISSUE_BOUNDARY;
+	for(int i = 0; i < num_cell_types; i++) perimeter_contract.val[i] = i % 2 == 0 ? PERIMETER_CONTRACT_BLADE : PERIMETER_CONTRACT_HINGE;
 
 	t1_transition_critical_distance = T1_TRANSITION_CRITICAL_DISTANCE;
 	t2_transition_critical_area = T2_TRANSITION_CRITICAL_AREA;
 	max_edge_length = MAX_EDGE_LENGTH;
 
-	for(int i = 0; i < NUM_CELL_TYPES; i++) preferred_area_initial.val[i] =  PREFERRED_AREA_INITIAL;
-	for(int i = 0; i < NUM_CELL_TYPES; i++) preferred_area_final.val[i] = PREFERRED_AREA_FINAL;
-	for(int i = 0; i < NUM_CELL_TYPES; i++) division_angle_random_noise.val[i] = DIVISION_ANGLE_RANDOM_NOISE;
-	for(int i = 0; i < NUM_CELL_TYPES; i++) division_angle_longest_axis.val[i] = DIVISION_ANGLE_LONGEST_AXIS;
-	for(int i = 0; i < NUM_CELL_TYPES; i++) division_angle_external.val[i] = DIVISION_ANGLE_EXTERNAL;
-	for(int i = 0; i < NUM_CELL_TYPES; i++) division_angle_external_degrees.val[i] = DIVISION_ANGLE_EXTERNAL_DEGREES;
-	for(int i = 0; i < NUM_SPRING_TYPES; i++) spring_type_constants.val[i] = SPRING_CONSTANT;
-	for(int i = 0; i < NUM_CELL_TYPES; i++) cell_cycle_limit.val[i] = CELL_CYCLE_LIMIT;
-	for(int i = 0; i < NUM_CELL_TYPES; i++) vary_line_tension.val[i] = -1.0;
-	for(int i = 0; i < NUM_CELL_TYPES; i++) line_tension.val[i] = LINE_TENSION_BLADE;
-	for(int i = 0; i < NUM_CELL_TYPES; i++) line_tension.val[i] = LINE_TENSION_BLADE;
+	for(int i = 0; i < num_cell_types; i++) preferred_area_initial.val[i] =  PREFERRED_AREA_INITIAL;
+	for(int i = 0; i < num_cell_types; i++) preferred_area_final.val[i] = PREFERRED_AREA_FINAL;
+	for(int i = 0; i < num_cell_types; i++) division_angle_random_noise.val[i] = DIVISION_ANGLE_RANDOM_NOISE;
+	for(int i = 0; i < num_cell_types; i++) division_angle_longest_axis.val[i] = DIVISION_ANGLE_LONGEST_AXIS;
+	for(int i = 0; i < num_cell_types; i++) division_angle_external.val[i] = DIVISION_ANGLE_EXTERNAL;
+	for(int i = 0; i < num_cell_types; i++) division_angle_external_degrees.val[i] = DIVISION_ANGLE_EXTERNAL_DEGREES;
+	for(int i = 0; i < num_cell_types; i++) spring_type_constants.val[i] = SPRING_CONSTANT;
+	for(int i = 0; i < num_cell_types; i++) cell_cycle_limit.val[i] = CELL_CYCLE_LIMIT;
+	for(int i = 0; i < num_cell_types; i++) vary_line_tension.val[i] = -1.0;
+	for(int i = 0; i < num_cell_types; i++) line_tension.val[i] = LINE_TENSION_BLADE;
+	for(int i = 0; i < num_cell_types; i++) line_tension.val[i] = LINE_TENSION_BLADE;
 
 	vary_edge_tension_with_time = false;
 	vary_edge_tension_time_exponent = 0;
@@ -367,6 +368,7 @@ void Tissue::initialize_params(std::string params_file)
 	join_edges_active = static_cast<bool>(read_real_par(it));
 	control_cells_2sides = static_cast<bool>(read_real_par(it));
 	check_if_edges_cross_opt = static_cast<bool>(read_real_par(it));
+	num_cell_types = read_real_par(it);
 	int temp_num_moves = static_cast<int>(read_real_par(it));
 	upper_bound_movements = max_accepted_movements;
 	if(temp_num_moves > 0)
@@ -452,6 +454,7 @@ void Tissue::initialize_vertices(std::ifstream &inp)
 	v.dead = false;
 	//v.movable = true;
 	v.spring = EMPTY_CONNECTION;
+	v.type =VertexType::tissue;
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
 		v.cells[i] = EMPTY_CONNECTION;
@@ -4068,7 +4071,7 @@ void Tissue::writeEdgeDataTable(std::string fname)
 
 void Tissue::printCelltypeParam(cell_type_param par, std::string name){
 	cout << name << ": ";
-	for(int i = 0; i < NUM_CELL_TYPES; i++) cout << i << "=" << par.val[i] << ",\t";
+	for(int i = 0; i < num_cell_types; i++) cout << i << "=" << par.val[i] << ",\t";
 	cout << endl;
 }
 
