@@ -941,6 +941,7 @@ void Tissue::addEdge(int v1, int v2, int cell)
 	{
 		Edge e;
 		e.dead = false;
+		e.type = EdgeType::blade;
 		e.ind = this->num_edges;
 		e.vertices[0] = v1;
 		e.vertices[1] = v2;
@@ -999,7 +1000,11 @@ void Tissue::set_default_params()
 	{
 		if(edges[e].type != EdgeType::stringedge){
 			setEdgeType(e);
-			setEdgeTension(e);
+			if( edges[e].type == EdgeType::cellular_cuticle){
+				setStringTension(e);
+			}else{
+				setEdgeTension(e);
+			}
 		}else{
 			setStringTension(e);
 			vertices[edges[e].vertices[0]].type = VertexType::cuticle; 
@@ -1153,10 +1158,11 @@ void Tissue::setEdgeType(int e)
 
 void Tissue::setEdgeTension(int e)
 {
-	if (edges[e].type == EdgeType::tissue_boundary || edges[e].type == EdgeType::stringedge )
+	if (edges[e].type == EdgeType::tissue_boundary || edges[e].type == EdgeType::stringedge || edges[e].type == EdgeType::cellular_cuticle)
 		return;
 	if (!(cells[edges[e].cells[0]].vary_line_tension && cells[edges[e].cells[1]].vary_line_tension))
 		return;
+	
 	float mins, maxs, maxangle, angle, pmaxan, punif; //pex, prand, tensionext, tensionrand
 	int cellvar;
 	mins = 0.5 * (cells[edges[e].cells[0]].edge_spatialmin_tension + cells[edges[e].cells[1]].edge_spatialmin_tension);
@@ -1776,7 +1782,8 @@ inline double Tissue::calculateEnergy2(Vertex &v)
 }
 //
 inline double Tissue::calculateEnergy(Vertex &v) {
-  double term1 = 0, term2 = 0, term3 = 0, momentum_term = 0;
+  double term1 = 0, term2 = 0, term3 = 0;
+  //double momentum_term = 0;
   double aux;
   int aux_ind;
   //bool is_cuticle = false;
@@ -1808,13 +1815,13 @@ inline double Tissue::calculateEnergy(Vertex &v) {
     term2 += springs[v.spring].tension * springs[v.spring].length;
   }
 
-  if((v.type == VertexType::cuticle && momentum_term_cuticle > 0.0)){
+  /*if((v.type == VertexType::cuticle && momentum_term_cuticle > 0.0)){
 	  momentum_term = momentum_term_cuticle*sqrt(pow(v.x - v.x_drag, 2) + pow(v.y - v.y_drag, 2));
   }else if( momentum_term_tissue > 0.0){
 	  //Also applies to cuticle if no momentum in cuticle but there is momentum in tissue
 	  momentum_term = momentum_term_tissue*sqrt(pow(v.x - v.x_drag, 2) + pow(v.y - v.y_drag, 2));
-  }
-  return term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3 + momentum_term;
+  }*/
+  return term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3;// + momentum_term;
 } // calcEnergy2
 inline double Tissue::calculateEnergy_term4(Vertex& v){
 	int n = 0, aux_nei, aux_ind, aux_cell;
