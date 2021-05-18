@@ -1,3 +1,4 @@
+from operator import index
 import sys
 import os
 
@@ -6,13 +7,19 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 LM_NAMES = ['1', '2', '3', '4', '12']
+colors = ['black', 'green', 'yellow', 'orange', 'blue', 'purple','red', 'peru']
 
+#Edge types
 BORDER_TYPE = 4
+STRING_TYPE = 7
+CUTICLE_TYPE = 8
 VEIN_TYPE = 6 
+#Cell types
 BLADE_TYPE = 0
 HINGE_TYPE = 1
 BLADE_VEIN_TYPE = 2
 HINGE_VEIN_TYPE = 3
+
 Y_PROPORTION = 0.25
 EMPTY_CONNECTION = -999
 
@@ -116,7 +123,7 @@ def getLandmarks1to4(p, c, e, border, border_e):
     landmarks = sorted(landmarks, key = lambda x : x[1], reverse = True) #
     return landmarks
 
-def getLandmark12(p, c, e, border, border_e):
+def getLandmark12_old(p, c, e, border, border_e):
     eveins = e[e['type'] == VEIN_TYPE]
     eveins = eveins.assign(v1= [int(x.split(',')[0]) for x in eveins.vertices], v2= [int(x.split(',')[1]) for x in eveins.vertices] )
     interedges = [xind for x, xind in [[(c.loc[int(i.cells.split(',')[0])].type, c.loc[int(i.cells.split(',')[1])].type), iind] for iind, i in eveins.iterrows()] if(BLADE_VEIN_TYPE in x and HINGE_VEIN_TYPE in x)]
@@ -137,6 +144,36 @@ def getLandmark12(p, c, e, border, border_e):
             vein_v.add(eveins.loc[current_edge].v1)
     res = list(map(np.mean, zip(*[[p.loc[i].x, p.loc[i].y] for i in vein_v])))
     return res
+
+
+def getLandmark12(p, c, e, border, border_e):
+    #eveins = e[e['type'] == VEIN_TYPE]
+    eveins = e.copy()
+    eveins = eveins.assign(v1= [int(x.split(',')[0]) for x in eveins.vertices], v2= [int(x.split(',')[1]) for x in eveins.vertices],
+     c1= [int(x.split(',')[0]) for x in eveins.cells], c2= [int(x.split(',')[1]) for x in eveins.cells])
+    e_celltypes = [[c.loc[a].type, c.loc[b].type] if(a in c.index and b in c.index) else [EMPTY_CONNECTION] for a, b in zip(eveins.c1, eveins.c2)]
+    eveins = eveins.assign(interedge = [BLADE_VEIN_TYPE in x and HINGE_VEIN_TYPE in x for x in e_celltypes])
+    interedge_tab = eveins.iloc[eveins.interedge.tolist()]
+    interedge_tab = interedge_tab.assign(y_position = [0.5*(p.loc[a].y + p.loc[b].y) for a, b in zip(interedge_tab.v1, interedge_tab.v2)])
+    order_ie = np.argsort(interedge_tab.y_position.tolist())
+    order_ie = np.flip(order_ie, axis = 0)
+    interedge_tab = interedge_tab.iloc[order_ie]
+    interedges=interedge_tab.ind.tolist()
+    #interedges = [x for _,x in sorted(zip(order_ie, interedges))]
+    current_edge = interedges.pop()
+    vein_v = set([interedge_tab.loc[current_edge].v1, interedge_tab.loc[current_edge].v2]) #Only want vein with lowest 'y' coordinate (vein 4)
+    vein_e = [current_edge]
+    while interedges:
+        current_edge = interedges.pop()
+        if(interedge_tab.loc[current_edge].v1 in vein_v):
+            vein_e.append(current_edge)
+            vein_v.add(interedge_tab.loc[current_edge].v2)
+        elif(interedge_tab.loc[current_edge].v2 in vein_v):
+            vein_e.append(current_edge)
+            vein_v.add(interedge_tab.loc[current_edge].v1)
+    res = list(map(np.mean, zip(*[[p.loc[i].x, p.loc[i].y] for i in vein_v])))
+    return res
+
 
 def getLandmarks(p, c, e, border, border_e):
     lms = getLandmarks1to4(p, c, e, border, border_e) + [getLandmark12(p, c, e, border, border_e)]
@@ -160,15 +197,38 @@ def plotLandmarks(p, c, e, lms, showAllCells=False, show=False, name = 'test'):
     else:
         plt.savefig(name + '_landmarks.pdf')
 
-def processWing(name, plotToFile=True):
+def plotLandmarks2(p, c, e, lms, showAllCells=2, show=False, name = 'test'):
+    if(showAllCells == 1): #makes plot faster
+        e = e[(e['type']  != HINGE_TYPE) & (e['type'] != BLADE_TYPE)]
+    if(showAllCells < 2): ##Plots edges
+        for iix, i in e.iterrows():
+            indices = [int(x) for x in i.vertices.split(',') if x != '' and x != str(EMPTY_CONNECTION)]
+            paux = p.loc[indices]
+            cc = colors[i.type] if(i.type < len(colors)) else colors[-1]
+            fig=plt.plot(paux['x'], paux['y'], color = cc)
+    elif(showAllCells == 2): #dotplot of cells
+        c2 = c.loc[c.centroid_x > 0].loc[c.centroid_y > 0]
+        plt.scatter(c2.centroid_x, c2.centroid_y, color = [colors[i] for i in c2.type])
+    for n, l in lms.items():
+        plt.scatter(l[0], l[1], color = "blue")
+        plt.text(l[0], l[1], n, color = "blue")
+    if(show):
+        plt.show()
+    else:
+        plt.savefig(name + '_landmarks.pdf')
+
+def processWing(name, plotToFile=2):
     p, c, e = loadData(name)
     border, border_e = getBorder(p, c, e)
     #plotOrderedBorder(p, border)
     lms = getLandmarks(p, c, e, border, border_e)
     if(plotToFile):
-        plotLandmarks(p, c, e, lms, False, False, name)
+        plotLandmarks2(p, c, e, lms, plotToFile, False, name)
     lms.setdefault('name', name)
+    plt.clf()
     return lms
+
+
 def writeLandmarksToCsv(landmarks, basename = 'all'):
     df = pd.DataFrame(landmarks)
     df.to_csv(basename + '_landmarks.csv', sep="\t", index=False)
@@ -176,9 +236,10 @@ def writeLandmarksToCsv(landmarks, basename = 'all'):
 def main():
     #os.chdir('C:\\Users\\Carlos\\Desktop\\scriptfindlandmarks')
     #name = 'wing2E_moved_4'
+    print("WARNING: This script probably does not work well if you are using a cellular cuticle. Remove cuticle vertices or cells beforehand")
     basename = sys.argv[1]
     if(len(sys.argv) > 2):
-        plotLms = int(sys.argv[2]) > 0
+        plotLms = int(sys.argv[2]) #> 0
         if (plotLms):
             print("Plotting ON")
         else:
@@ -191,8 +252,9 @@ def main():
     landmarks = []
     for name in files:
         try:
+            print("Calculating landmarks for ", name)
             landmarks.append(processWing(name, plotLms))
-            print("Calculated landmarks for ", name)
+            print("    Calculated landmarks for ", name)
         except:
             print("ERROR calculating landmarks for", name)
     writeLandmarksToCsv(landmarks, basename)

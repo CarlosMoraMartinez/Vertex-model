@@ -1,0 +1,20 @@
+{
+	"ensvar_test2":{
+		"ENERGY_TERM1":{
+			"type":"regular", 
+			"absol":"no",
+			"values":[1,0.1]	
+		},
+		"ENERGY_TERM2":{
+			"type":"regular", 
+			"absol":"no",
+			"values":[1,0.1]	
+		},
+		"ENERGY_TERM3":{
+			"type":"regular", 
+			"absol":"no",
+			"values":[1,0.1]	
+		}
+	}
+
+}

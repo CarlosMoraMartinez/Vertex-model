@@ -1800,7 +1800,7 @@ inline double Tissue::calculateEnergy(Vertex &v) {
   for (int i = 0; i < CELLS_PER_VERTEX; i++) {
     if (v.edges[i] != EMPTY_CONNECTION) {
         aux_ind = v.edges[i];
-        if (edges[aux_ind].type == EdgeType::stringedge && string_equilibrium_distance) {
+        if ((edges[aux_ind].type == EdgeType::stringedge || edges[aux_ind].type == EdgeType::cellular_cuticle) && string_equilibrium_distance) {
           term2 += edges[aux_ind].tension * pow(edges[aux_ind].length - edges[aux_ind].optimal_length, 2);
         } else {
           term2 += edges[aux_ind].tension * edges[aux_ind].length;

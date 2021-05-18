@@ -129,7 +129,7 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
     if(expr):
         alphas = expr
     else:
-        alphas = 0.85
+        alphas = 0.6
     if(cellproperty != ''):
         cellproperty_name = cellproperty.split("__")[0].split(":")[0].split(";")[0]
         if("preferred_area_norm" in cellproperty):

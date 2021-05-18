@@ -16,7 +16,7 @@ echo $3' Param Files generated'
 mkdir $3
 mkdir $3/src
 mkdir $3/param_files
-cp src/VertexSystemMinimal.cpp src/VertexSystem.h src/vertex_cmm.cpp src/plotOps_loop.py scripts/compileMinimalTemp.sh $3/src
+cp src/VertexSystemMinimal.cpp src/VertexSystem.h src/vertex_cmm.cpp src/plotOps_loop.py scripts/compileMinimal.sh $3/src
 
 cp ./param_files/$3/* $3/param_files
 
@@ -34,7 +34,7 @@ do
     mkdir $NAME
     mkdir $NAME/src
     mkdir $NAME/param_files
-    cp src/VertexSystemMinimal.cpp src/VertexSystem.h src/vertex_cmm.cpp src/plotOps_loop.py src/compileMinimalTemp.sh $NAME/src
+    cp src/VertexSystemMinimal.cpp src/VertexSystem.h src/vertex_cmm.cpp src/plotOps_loop.py src/compileMinimal.sh $NAME/src
     cd $NAME
 
     cp '../param_files/'$NAME'.vp' param_files
@@ -54,7 +54,7 @@ do
                 echo '      CPUs lower than '$maxCPU
                 echo '      sending job: '$NAME ' ' $wing
                 cp -r ../../initial_conds/$wing ./
-                bash src/compileMinimalTemp.sh $wing $NAME $1 $2 >$NAME'-'$wing.out 2>$NAME'-'$wing.err &
+                bash src/compileMinimal.sh $wing $NAME $1 $2 >$NAME'-'$wing.out 2>$NAME'-'$wing.err &
                 i=$(($i + 1))
                 sleep 3
             else
