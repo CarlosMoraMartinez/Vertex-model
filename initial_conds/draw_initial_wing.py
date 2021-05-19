@@ -197,7 +197,7 @@ class getBorders:
         plt.subplots_adjust(bottom=0.2)
         self.axbox = plt.axes([0.1, 0.05, 0.8, 0.075])
 
-        print("T to set static vertices; V to set springs; N to choose spring type; J to remove static vertices or springs; M to continue")
+        print("T to set static vertices; V to set springs; N to choose spring type (positive numbers: static types; negative numbers: cuticle with strings); J to remove static vertices or springs; M to continue")
         plt.show()
 
     def submitText(self, text):
@@ -260,7 +260,7 @@ class getBorders:
             self.removeStatic(verts)
         #fig, ax, pc = self.hx.plotHex2(fig=(self.fig, self.ax))
         self.canvas.draw_idle()
-        print("T to set static vertices; V to set springs; N to choose spring type; J to remove static vertices or springs; N to set spring type; M to continue")
+        print("T to set static vertices; V to set springs; N to choose spring type (positive numbers: static types; negative numbers: cuticle with strings); J to remove static vertices or springs; N to set spring type; M to continue")
 
     def setStatic(self, verts):
         for v in verts:
