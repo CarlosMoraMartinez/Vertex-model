@@ -140,6 +140,7 @@ Tissue::Tissue(std::string starting_tissue_file, std::string params_file, int ma
 	this->upper_bound_movements = max_accepted_movements; //Will be overwritten
 	this->write_every_N_moves = 0; //write_every_N_moves; //Will be overwritten by Parameter File unless value in file is 0!!
 	step_mode = false;
+	this->cuticle_type = CuticleType::only_springs; //by default; if another type of cuticle is detected, this value will change
 
 	try
 	{
@@ -686,10 +687,17 @@ void Tissue::initialize_vertices(std::ifstream &inp)
 		v.edges[i] = EMPTY_CONNECTION;
 		v.neighbour_vertices[i] = EMPTY_CONNECTION;
 	}
+	//Remove later if 2 layer cuticle is not used 
+	for (int i = 0; i < MAX_NODES_PER_CUTICLE_VERTEX; i++)
+	{
+		v.edges2[i] = EMPTY_CONNECTION;
+		v.neighbour_vertices2[i] = EMPTY_CONNECTION;
+	}
 
 	std::string::size_type sz;
 	while (getline(inp, s))
 	{
+		cout << "Vertex: ";
 		v.x = stod(s, &sz);
 		s = s.substr(sz);
 		v.y = stod(s, &sz);
@@ -703,6 +711,7 @@ void Tissue::initialize_vertices(std::ifstream &inp)
 		v.moves_rejected = 1;
 		//cout << "movable: " << s << ", " << static_cast<int>(v.movable) << static_cast<int>(v.movable_x) << static_cast<int>(v.movable_y) << endl;
 		this->vertices.push_back(v);
+		cout << v.ind << endl;
 	}
 }
 
@@ -795,9 +804,17 @@ void Tissue::initialize_stringedges(std::ifstream& inp){
 //Create new edges
 	string s;
 	getline(inp, s);
-	int num_stringedges = stoi(s);
+	std::string::size_type sz0;
+	int num_stringedges = stoi(s, &sz0);	
 	if (num_stringedges == 0)
 		return;
+	s = s.substr(sz0);
+	cuticle_type = CuticleType::strings_1layer;
+	if(s.length() > 0)
+		cuticle_type = static_cast<CuticleType>(stoi(s));
+	int max_edges = cuticle_type == CuticleType::strings_1layer ? CELLS_PER_VERTEX : MAX_NODES_PER_CUTICLE_VERTEX; 
+	cout << "Cuticle of type: " << static_cast<int>(cuticle_type) << endl;
+
 	Edge e;
 	e.dead = false;
 	e.type = EdgeType::stringedge;
@@ -811,6 +828,7 @@ void Tissue::initialize_stringedges(std::ifstream& inp){
 	int i = num_edges;
 	while (getline(inp, s))
 	{
+		//cout << "stringedge: ";
 		e.vertices[0] = stoi(s, &sz);
 		if(e.vertices[0] < 0)
 			continue;
@@ -818,16 +836,38 @@ void Tissue::initialize_stringedges(std::ifstream& inp){
 		e.vertices[1] = stoi(s, &sz);
 		s = s.substr(sz);
 		e.ind = i;
+		//cout << e.ind << " ";
 		e.length = distance(e.vertices[0], e.vertices[1]);
-		vertices[e.vertices[0]].neighbour_vertices[which(EMPTY_CONNECTION, vertices[e.vertices[0]].neighbour_vertices, CELLS_PER_VERTEX)] = e.vertices[1];
-		vertices[e.vertices[1]].neighbour_vertices[which(EMPTY_CONNECTION, vertices[e.vertices[1]].neighbour_vertices, CELLS_PER_VERTEX)] = e.vertices[0];
-		vertices[e.vertices[0]].edges[which(EMPTY_CONNECTION, vertices[e.vertices[0]].edges, CELLS_PER_VERTEX)] = i;
-		vertices[e.vertices[1]].edges[which(EMPTY_CONNECTION, vertices[e.vertices[1]].edges, CELLS_PER_VERTEX)] = i;
-
+		//cout << "string edge adding:  " << e << endl;
+		//cout << "Vertices before adding:\n" << vertices[e.vertices[0]] << endl <<vertices[e.vertices[1]] << endl;	
+		if(cuticle_type == CuticleType::strings_2layers){
+			vertices[e.vertices[0]].type = VertexType::cuticle_2layers;
+			vertices[e.vertices[1]].type = VertexType::cuticle_2layers;
+		}
+		
+		if(cuticle_type != CuticleType::strings_2layers){
+			//cout << "<<cuticle type != 2"<< endl;
+			vertices[e.vertices[0]].neighbour_vertices[which(EMPTY_CONNECTION, vertices[e.vertices[0]].neighbour_vertices, CELLS_PER_VERTEX)] = e.vertices[1];
+			vertices[e.vertices[1]].neighbour_vertices[which(EMPTY_CONNECTION, vertices[e.vertices[1]].neighbour_vertices, CELLS_PER_VERTEX)] = e.vertices[0];
+			vertices[e.vertices[0]].edges[which(EMPTY_CONNECTION, vertices[e.vertices[0]].edges, CELLS_PER_VERTEX)] = i;
+			vertices[e.vertices[1]].edges[which(EMPTY_CONNECTION, vertices[e.vertices[1]].edges, CELLS_PER_VERTEX)] = i;
+		}else{
+			//cout << "<<cuticle type == 2"<< endl;
+			vertices[e.vertices[0]].neighbour_vertices2[which(EMPTY_CONNECTION, vertices[e.vertices[0]].neighbour_vertices2, MAX_NODES_PER_CUTICLE_VERTEX)] = e.vertices[1];
+			vertices[e.vertices[1]].neighbour_vertices2[which(EMPTY_CONNECTION, vertices[e.vertices[1]].neighbour_vertices2, MAX_NODES_PER_CUTICLE_VERTEX)] = e.vertices[0];
+			vertices[e.vertices[0]].edges2[which(EMPTY_CONNECTION, vertices[e.vertices[0]].edges2, MAX_NODES_PER_CUTICLE_VERTEX)] = i;
+			vertices[e.vertices[1]].edges2[which(EMPTY_CONNECTION, vertices[e.vertices[1]].edges2, MAX_NODES_PER_CUTICLE_VERTEX)] = i;		
+		}
 		this->edges.push_back(e);
 		i++;
+		//cout << "First empty: " << which(EMPTY_CONNECTION, vertices[e.vertices[0]].neighbour_vertices2, MAX_NODES_PER_CUTICLE_VERTEX) << endl;
+		//cout << "size: " << sizeof(vertices[e.vertices[0]]);
+		//cout << "Vertices after adding:\n" << vertices[e.vertices[0]] << endl <<vertices[e.vertices[1]] << endl;
+		//cout << "\n Finished\n\n";
 	}
 }
+
+
 /*
 Initializes cells from file; adds cells to vertices
 Input: ifstream pointing to a file defining vertex identifiers (starting from 0) for each cell
@@ -867,7 +907,7 @@ void Tissue::initialize_cells(std::ifstream &inp)
 		while (vertex != EMPTY_CONNECTION)
 		{
 			c.vertices[vert_count] = vertex;
-			cout << "vert_count: " << vert_count << ", vert: " << vertex << endl;
+			//cout << "vert_count: " << vert_count << ", vert: " << vertex << endl;
 			addCellToVertex(vertex, cell_count);
 			vert_count++;
 			s = s.substr(sz);
@@ -887,6 +927,9 @@ void Tissue::initialize_cells(std::ifstream &inp)
 			}
 		}
 		c.type = vertex == EMPTY_CONNECTION ? CellType::blade : static_cast<CellType>(vertex);
+		if(c.type == CellType::cuticle){
+			cuticle_type = CuticleType::cells;
+		}
 		c.cell_cycle_state = start_cell_cycle_at_random ? std::rand() % static_cast<int>(cell_cycle_limit.val[static_cast<int>(c.type)]) : 0;
 		this->cells.push_back(c);
 		cell_count++;
@@ -1007,8 +1050,8 @@ void Tissue::set_default_params()
 			}
 		}else{
 			setStringTension(e);
-			vertices[edges[e].vertices[0]].type = VertexType::cuticle; 
-			vertices[edges[e].vertices[1]].type = VertexType::cuticle;
+			vertices[edges[e].vertices[0]].type = cuticle_type == CuticleType::strings_1layer ? VertexType::cuticle : VertexType::cuticle_2layers; 
+			vertices[edges[e].vertices[1]].type = cuticle_type == CuticleType::strings_1layer ? VertexType::cuticle : VertexType::cuticle_2layers;
 		}
 	}
 
@@ -1782,10 +1825,14 @@ inline double Tissue::calculateEnergy2(Vertex &v)
 }
 //
 inline double Tissue::calculateEnergy(Vertex &v) {
+if(v.type == VertexType::cuticle_2layers){
+	return calculateEnergyCuticle2(v);
+}
   double term1 = 0, term2 = 0, term3 = 0;
   //double momentum_term = 0;
   double aux;
   int aux_ind;
+  int num_elements = v.type == VertexType::cuticle_2layers ? MAX_NODES_PER_CUTICLE_VERTEX : CELLS_PER_VERTEX;
   //bool is_cuticle = false;
   for (int i = 0; i < CELLS_PER_VERTEX; i++) {
     if (v.cells[i] != EMPTY_CONNECTION) {
@@ -1797,14 +1844,16 @@ inline double Tissue::calculateEnergy(Vertex &v) {
                cells[aux_ind].perimeter * cells[aux_ind].perimeter;
     }
   }
-  for (int i = 0; i < CELLS_PER_VERTEX; i++) {
+  for (int i = 0; i < num_elements; i++) {
     if (v.edges[i] != EMPTY_CONNECTION) {
         aux_ind = v.edges[i];
         if ((edges[aux_ind].type == EdgeType::stringedge || edges[aux_ind].type == EdgeType::cellular_cuticle) && string_equilibrium_distance) {
           term2 += edges[aux_ind].tension * pow(edges[aux_ind].length - edges[aux_ind].optimal_length, 2);
         } else {
           term2 += edges[aux_ind].tension * edges[aux_ind].length;
+		  
       }
+
     }
   }
   if (v.spring != EMPTY_CONNECTION) {
@@ -1819,6 +1868,33 @@ inline double Tissue::calculateEnergy(Vertex &v) {
   }*/
   return term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3;// + momentum_term;
 } // calcEnergy2
+
+
+//Calculate energy for cuticle with 2 layers of strings
+inline double Tissue::calculateEnergyCuticle2(Vertex &v) {
+	//cout << "entering energy cuticle " << endl;
+  double term1 = 0, term2 = 0, term3 = 0;
+  //double momentum_term = 0;
+  double aux;
+  int aux_ind;
+  for (int i = 0; i < MAX_NODES_PER_CUTICLE_VERTEX; i++) {
+    if (v.edges2[i] != EMPTY_CONNECTION) {
+        aux_ind = v.edges2[i];
+        if (string_equilibrium_distance) {
+          term2 += edges[aux_ind].tension * pow(edges[aux_ind].length - edges[aux_ind].optimal_length, 2);
+        } else {
+          term2 += edges[aux_ind].tension * edges[aux_ind].length;		  
+      	}
+	//cout << "Edge " << i << ", :" << v.edges2[i] << ", term 2 so far: "<< term2 << endl;
+    }
+  }
+  if (v.spring != EMPTY_CONNECTION) {
+    term2 += springs[v.spring].tension * springs[v.spring].length;
+  }
+  return term2 * energy_term2;// + momentum_term;
+} // calculateEnergy for cuticle with 2 layers
+
+
 inline double Tissue::calculateEnergy_term4(Vertex& v){
 	int n = 0, aux_nei, aux_ind, aux_cell;
 	float products[CELLS_PER_VERTEX];
@@ -5383,19 +5459,38 @@ std::ostream &operator<<(std::ostream &out, const Vertex &v)
 	{ // print cells touching vertex separated by ','
 		out << v.cells[i] << ",";
 	}
-	out << "\t";
-	for (int i = 0; i < sizeof(v.edges) / sizeof(v.edges[0]); i++)
-	{ // print edges touching vertex separated by ','
-		out << v.edges[i] << ",";
-	}
-	out << "\t";
-	for (int i = 0; i < sizeof(v.neighbour_vertices) / sizeof(v.neighbour_vertices[0]); i++)
-	{ // print neighbour vertices separated by ','
-		out << v.neighbour_vertices[i] << ",";
-	}
+        if (v.type != VertexType::cuticle_2layers) {
+			//cout << "PRINTING REGULAR VERTEX: " << static_cast<int>(v.type)<< endl;
+          out << "\t";
+          for (int i = 0; i < sizeof(v.edges) / sizeof(v.edges[0]);
+               i++) { // print edges touching vertex separated by ','
+            out << v.edges[i] << ",";
+          }
+          out << "\t";
+          for (int i = 0; i < sizeof(v.neighbour_vertices) /
+                                  sizeof(v.neighbour_vertices[0]);
+               i++) { // print neighbour vertices separated by ','
+            out << v.neighbour_vertices[i] << ",";
+          }
+        } else {
+			//cout << "PRINTING CUTICLE TYPE 3 VERT" << endl;
+          out << "\t";
+          for (int i = 0; i < sizeof(v.edges2) / sizeof(v.edges2[0]);
+               i++) { // print edges touching vertex separated by ','
+            out << v.edges2[i] << ",";
+          }
+          out << "\t";
+          for (int i = 0; i < sizeof(v.neighbour_vertices2) /
+                                  sizeof(v.neighbour_vertices2[0]);
+               i++) { // print neighbour vertices separated by ','
+            out << v.neighbour_vertices2[i] << ",";
+          }
+        }
 
-	return out;
+        return out;
 }
+
+
 
 //Overloading of << operator for CELLS. Useful to print
 std::ostream &operator<<(std::ostream &out, const Cell &c)

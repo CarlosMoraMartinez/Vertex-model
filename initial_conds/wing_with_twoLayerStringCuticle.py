@@ -103,10 +103,16 @@ class WingWith2StringLayers:
         vec_y = y + size*(y-self.center_y)/dist
         return (vec_x, vec_y)
     def plotNewWing(self):
-        self.new_wing.plotHex2()
+        self.wing.plotHex2()
         plt.show()
     def writeNewGrid(self):
-        self.new_wing.writeGrid()
+        self.wing.writeGrid()
+    def getStringLength(self):
+        lengths = []
+        for a, b in self.strings:
+            l = np.sqrt(np.power(self.vertices[a][0] - self.vertices[b][0], 2) + np.power(self.vertices[a][1] - self.vertices[b][1], 2))
+            lengths.append(l)
+        return lengths
     
 
 

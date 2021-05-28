@@ -138,19 +138,30 @@ enum class CellType{blade = 0, hinge = 1, vein_blade = 2, vein_hinge = 3, cuticl
 enum class EdgeType{blade = 0, hinge = 1, vein_hinge = 2, vein_blade = 3, tissue_boundary = 4, spring = 5, vein = 6, stringedge = 7, cellular_cuticle = 8};
 
 //Enum class to define types of vertices
-enum class VertexType{tissue=0, cuticle=1, spring_only=2};
+enum class VertexType{tissue=0, cuticle=1, spring_only=2, cuticle_2layers=3}; //1 accounts for cell cuticle and for string cuticle 
 
 //Enum class to define types of transitions
 enum class RearrangementType{t1 = 0, t2 = 1, divide_cell = 2, divide_edge = 3, join_limit_edges = 4, t1_at_border_outwards = 5, t1_at_border_inwards = 6, rotate_inwards = 7, random_t1 = 8};
+
+//Enum class to define cuticle type
+enum class CuticleType{only_springs = 0, strings_1layer = 1, strings_2layers = 2, cells = 3};
+
 // Structure for Vertex
+const int MAX_NODES_PER_CUTICLE_VERTEX = 5;
 struct Vertex{
 	int ind;
 	double x;
 	double y;
 	double energy;
 	int cells[CELLS_PER_VERTEX];
-	int edges[CELLS_PER_VERTEX];
-	int neighbour_vertices[CELLS_PER_VERTEX];
+	union{	//Unions just save some memory; edges2 and neigobours2 hold data for cuticle vertices when cuticle is made of 2 layers of strings
+		int edges[CELLS_PER_VERTEX];
+		int edges2[MAX_NODES_PER_CUTICLE_VERTEX];
+	};//In this case it would be easier to declare just a vector of size 5, but I did not want to change other parts of the code
+	union{
+		int neighbour_vertices[CELLS_PER_VERTEX];
+		int neighbour_vertices2[MAX_NODES_PER_CUTICLE_VERTEX];
+	};
 	int moves_accepted;
 	int moves_rejected;
 	bool movable; //>0  in param_file
@@ -162,6 +173,7 @@ struct Vertex{
 	double y_drag;
 	VertexType type;
 };
+
 // Structure for Cell
 //Add: preferred angle with respect to origin/longest axis and angle noise
 //     cell cycle stage
@@ -299,6 +311,7 @@ class Tissue{
 		void calculateCellCentroid(Cell& c);
 		double distance(int v1, int v2);
 		double calculateEnergy(Vertex& v);
+		double calculateEnergyCuticle2(Vertex& v);
 		double calculateEnergy2(Vertex& v);
 		double calculateEnergy_term4(Vertex& v);
 		double calculateEnergy_term4_cuticle(Vertex& v);
@@ -407,6 +420,7 @@ class Tissue{
 		float spring_gradient_min_tension_P; //used if spring_tension_mode is 4
 		float spring_gradient_max_tension_P; //used if spring_tension_mode is 4
 		float spring_gradient_exponent_P; //used if spring_tension_mode is 4
+		CuticleType cuticle_type;
 		float line_tension_interstatic;
 		float AP_compartment_limit;	
 		int mode_to_order_springs_PD; //used if spring_tension_mode is 2 or 3
