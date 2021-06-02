@@ -169,8 +169,8 @@ def plot_grid2(plot_pos, grid, pointsList, sprList, add_vnums, celltypes, expr, 
         if(isinstance(edg, pd.DataFrame)):
             stringedges = [[v for v in vv.split(',') if v] for vv in edg.loc[edg.type == 7]["vertices"].tolist()]
             for s in stringedges:
-                ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color="black", linewidth=0.25)
-                ax.scatter([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color="red", s = 0.25)
+                ax.plot([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color="black", linewidth=0.05)
+                ax.scatter([pointsList[s[0]][0], pointsList[s[1]][0]], [pointsList[s[0]][1], pointsList[s[1]][1]], color="red", s = 0.05)
                 #ax.annotate(s[0], pointsList[s[0]][0:2], size=0.05, color="purple")
                 #ax.annotate(s[1], pointsList[s[1]][0:2], size=0.05, color="purple")
     else:

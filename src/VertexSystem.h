@@ -147,7 +147,7 @@ enum class RearrangementType{t1 = 0, t2 = 1, divide_cell = 2, divide_edge = 3, j
 enum class CuticleType{only_springs = 0, strings_1layer = 1, strings_2layers = 2, cells = 3};
 
 // Structure for Vertex
-const int MAX_NODES_PER_CUTICLE_VERTEX = 5;
+const int MAX_NODES_PER_CUTICLE_VERTEX = 8;
 struct Vertex{
 	int ind;
 	double x;
@@ -273,6 +273,8 @@ struct spring_type_param{
 struct bufferRejectMovement{
 	double edge_lengths[CELLS_PER_VERTEX];
 	double edge_tensions[CELLS_PER_VERTEX];
+	double edge_tensions2[MAX_NODES_PER_CUTICLE_VERTEX];
+	double edge_lengths2[MAX_NODES_PER_CUTICLE_VERTEX];
 	double cell_areas[CELLS_PER_VERTEX];
 	double cell_perimeters[CELLS_PER_VERTEX];
 	double spring_length;
@@ -318,6 +320,8 @@ class Tissue{
 		void derivativeVertexPos(const Vertex &v, pointDerivative & pd);
 		void moveVertex(Vertex& v, float x, float y);
 		void moveVertexBack(Vertex& v);
+		void moveVertexCuticle(Vertex& v, float x, float y);
+		void moveVertexBackCuticle(Vertex& v);
 		bool tryMoveVertex();
 		void detectChangesAfterMove(int vertex_moved);
 		void performRearrangements();

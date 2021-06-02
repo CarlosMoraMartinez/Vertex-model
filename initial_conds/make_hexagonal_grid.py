@@ -23,7 +23,7 @@ veintype = 2
 veinhinge = 3
 cuticletype = 4
 wingcols = ['blue', 'green', 'black', 'gray', 'red']
-springcols = ['red', 'yellow', 'purple', 'pink', 'brown']
+springcols = ['red', 'yellow', 'purple', 'pink', 'brown', "gold", "tomato", "mediumorchid", "indigo", "dodgerblue", "darkgray"]
 STATIC_COLS=["red", "white", "blue", "gray"]
 
 
@@ -137,6 +137,7 @@ class HexGrid:
         self.stringEdges = []
         self.celltypes = []
         self.vnum = 0
+        self.cuticle_type = 0
         self.plotcol = None
         self.vertex_cell_index_created = False
 
@@ -348,7 +349,8 @@ class HexGrid:
             if(mov != 1):
                 ax.scatter(x, y, color = STATIC_COLS[mov], s = 2)
         for a, b in self.stringEdges:
-            plt.plot( [self.vertices[a][0], self.vertices[b][0]] ,  [self.vertices[a][1], self.vertices[b][1]], c = "red")
+            strcol = springcols[a%len(springcols)]
+            plt.plot( [self.vertices[a][0], self.vertices[b][0]] ,  [self.vertices[a][1], self.vertices[b][1]], c = strcol)
         if(save):
             self.saveFig()
         return(fig, ax, pc)
@@ -449,7 +451,7 @@ class HexGrid:
             f.write('\n')
         f.close()
         f = open(dirname + self.outname + add + stredge_ext,  'w')
-        f.write(str(len(self.stringEdges)) + '\n')
+        f.write(str(len(self.stringEdges)) + "\t" + str(self.cuticle_type) + '\n')
         for c in self.stringEdges:
             f.write('\t'.join([str(i) for i in c]))
             f.write('\n')
@@ -559,8 +561,12 @@ class HexGrid:
             self.vnum+=1            
         return ind       
     def addStringEdge(self, a, b):
+        if(self.cuticle_type == 0):
+            self.cuticle_type = 1
         self.stringEdges.append([a, b]) 
     def setStringEdges(self, stredges):
+        if(self.cuticle_type == 0):
+            self.cuticle_type = 1        
         self.stringEdges = stredges
     def getSpringWithVertex(self, v):
         res = -1

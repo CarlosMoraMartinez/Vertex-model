@@ -531,7 +531,7 @@ void Tissue::initialize_params(std::string params_file)
 	temperature_positive_energy = read_real_par(it);
 	temperature_negative_energy = read_real_par(it);
 	temperature_means_proportion_of_acceptance = read_real_par(it) > 0;
-cout << "Param file reading... breakpoint 1c" << endl;
+	cout << "Param file reading... breakpoint 1c" << endl;
 	std::flush(cout);
 	energy_term1 = read_real_par(it);
 	energy_term2 = read_real_par(it);
@@ -577,7 +577,7 @@ cout << "Param file reading... breakpoint 1c" << endl;
 	aux = read_real_par(it);
 	xcoord_controls_perim = (aux == 1 || aux == 3);
 	ycoord_controls_perim = (aux == 2 || aux == 3);
-	cout << "B" << endl;
+	//cout << "B" << endl;
 	perimeter_contract = read_celltype_par(it, sz);
 	perimeter_contract_final = read_celltype_par(it, sz);
 	preferred_area_initial = read_celltype_par(it, sz);
@@ -622,7 +622,7 @@ cout << "Param file reading... breakpoint 1c" << endl;
 	spring_gradient_exponent_P = read_real_par(it); //used if spring_tension_mode is 4
 	mode_to_order_springs_PD = read_real_par(it);
 	include_hinge_in_spring_gradient = read_real_par(it) > 0;
-	cout << "C" << endl;
+	//cout << "C" << endl;
 	//For random ("active") T1 transitions
 	active_t1_prob = read_real_par(it);
 	min_angle_for_active_t1 = read_real_par(it);
@@ -663,7 +663,7 @@ cout << "Param file reading... breakpoint 1c" << endl;
 	random_seed = read_real_par(it);
 	std::cout << "Param file reading... final" << endl;
 	std::flush(cout);
-	cout << "D" << endl;
+	//cout << "D" << endl;
 }
 
 /*
@@ -697,7 +697,7 @@ void Tissue::initialize_vertices(std::ifstream &inp)
 	std::string::size_type sz;
 	while (getline(inp, s))
 	{
-		cout << "Vertex: ";
+		//cout << "Vertex: ";
 		v.x = stod(s, &sz);
 		s = s.substr(sz);
 		v.y = stod(s, &sz);
@@ -711,7 +711,7 @@ void Tissue::initialize_vertices(std::ifstream &inp)
 		v.moves_rejected = 1;
 		//cout << "movable: " << s << ", " << static_cast<int>(v.movable) << static_cast<int>(v.movable_x) << static_cast<int>(v.movable_y) << endl;
 		this->vertices.push_back(v);
-		cout << v.ind << endl;
+		//cout << v.ind << endl;
 	}
 }
 
@@ -991,6 +991,7 @@ void Tissue::addEdge(int v1, int v2, int cell)
 		e.cells[0] = cell;
 		e.cells[1] = EMPTY_CONNECTION;
 		e.length = sqrt(pow(this->vertices[v1].x - this->vertices[v2].x, 2) + pow(this->vertices[v1].y - this->vertices[v2].y, 2));
+		e.optimal_length = e.length; //This optimal length is only used in some cuticle implementations, but better to initialize
 		this->edges.push_back(e);
 		addEdgeToVertex(v1, e.ind);
 		addEdgeToVertex(v2, e.ind);
@@ -1877,20 +1878,28 @@ inline double Tissue::calculateEnergyCuticle2(Vertex &v) {
   //double momentum_term = 0;
   double aux;
   int aux_ind;
+  //cout << ">vcut2layers" << "\t" << v.ind << "\t";
   for (int i = 0; i < MAX_NODES_PER_CUTICLE_VERTEX; i++) {
     if (v.edges2[i] != EMPTY_CONNECTION) {
         aux_ind = v.edges2[i];
         if (string_equilibrium_distance) {
-          term2 += edges[aux_ind].tension * pow(edges[aux_ind].length - edges[aux_ind].optimal_length, 2);
+          term2 += abs(edges[aux_ind].tension) * pow(edges[aux_ind].length - edges[aux_ind].optimal_length, 2);
+		  //cout << aux_ind << "\t" << edges[aux_ind].tension << "\t" << edges[aux_ind].length << "\t" << edges[aux_ind].optimal_length << "\t" << abs(edges[aux_ind].tension) * pow(edges[aux_ind].length - edges[aux_ind].optimal_length, 2) << "\t";
         } else {
           term2 += edges[aux_ind].tension * edges[aux_ind].length;		  
       	}
 	//cout << "Edge " << i << ", :" << v.edges2[i] << ", term 2 so far: "<< term2 << endl;
-    }
+    }else{
+		//cout << EMPTY_CONNECTION << "\t" << EMPTY_CONNECTION << "\t" << EMPTY_CONNECTION << "\t" << EMPTY_CONNECTION << "\t" << EMPTY_CONNECTION << "\t";
+	}
   }
   if (v.spring != EMPTY_CONNECTION) {
     term2 += springs[v.spring].tension * springs[v.spring].length;
+	//cout << springs[v.spring].tension << "\t" << springs[v.spring].length << "\t";
+  }else{
+	  //cout << EMPTY_CONNECTION << "\t" << EMPTY_CONNECTION << "\t";
   }
+  //cout << term2 << "\t" << term2 * energy_term2 << endl;
   return term2 * energy_term2;// + momentum_term;
 } // calculateEnergy for cuticle with 2 layers
 
@@ -1970,7 +1979,9 @@ void Tissue::moveVertexBack(Vertex &v)
 		if (v.edges[i] != EMPTY_CONNECTION)
 		{
 			edges[v.edges[i]].length = bufferMovement.edge_lengths[i];
-			edges[v.edges[i]].tension = bufferMovement.edge_tensions[i];
+			if (UPDATE_EDGE_TENSION_EVERY_MOVE){
+				edges[v.edges[i]].tension = bufferMovement.edge_tensions[i];
+			}
 		}
 	}
 	if (v.spring != EMPTY_CONNECTION){
@@ -2049,6 +2060,43 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 		}
 	}
 }
+
+void Tissue::moveVertexBackCuticle(Vertex &v)
+{
+	v.x = bufferMovement.x;
+	v.y = bufferMovement.y;
+	v.energy = bufferMovement.energy;
+	for (int i = 0; i < MAX_NODES_PER_CUTICLE_VERTEX; i++)
+	{
+		if (v.edges2[i] != EMPTY_CONNECTION)
+		{
+			edges[v.edges2[i]].length = bufferMovement.edge_lengths2[i];
+			edges[v.edges2[i]].tension = bufferMovement.edge_tensions2[i];
+		}
+	}
+	if (v.spring != EMPTY_CONNECTION){
+		springs[v.spring].length = bufferMovement.spring_length;
+	}
+}//moveVertexBackCuticle
+void Tissue::moveVertexCuticle(Vertex &v, float x, float y)
+{
+	v.x = x;
+	v.y = y;
+	for (int i = 0; i < MAX_NODES_PER_CUTICLE_VERTEX; i++)
+	{
+		if (v.edges2[i] != EMPTY_CONNECTION)
+		{
+			bufferMovement.edge_lengths2[i] = edges[v.edges2[i]].length;
+			edges[v.edges2[i]].length = distance(edges[v.edges2[i]].vertices[0], edges[v.edges2[i]].vertices[1]);
+		}
+	}
+
+	if (v.spring != EMPTY_CONNECTION)
+	{
+		bufferMovement.spring_length = springs[v.spring].length;
+		springs[v.spring].length = distance(springs[v.spring].vertices[0], springs[v.spring].vertices[1]);
+	}
+}//MoveVertexCuticle
 //counter_favorable_accepted, counter_favorable_rejected, counter_unfav_accepted, counter_unfav_rejected
 bool Tissue::tryMoveVertex()
 {
@@ -2067,7 +2115,12 @@ bool Tissue::tryMoveVertex()
 	radius = unif(generator) * max_range_vertex_movement;
 	new_x = vertices[vertex_to_move].movable_x ? bufferMovement.x + cos(angle) * radius : bufferMovement.x;
 	new_y = vertices[vertex_to_move].movable_y ? bufferMovement.y + sin(angle) * radius : bufferMovement.y;
-	moveVertex(vertices[vertex_to_move], new_x, new_y);
+	if(vertices[vertex_to_move].type != VertexType::cuticle_2layers){
+		moveVertex(vertices[vertex_to_move], new_x, new_y);
+	}else{
+		moveVertexCuticle(vertices[vertex_to_move], new_x, new_y);
+	}
+
 	vertices[vertex_to_move].energy = calculateEnergy(vertices[vertex_to_move]);
 	//REMOVE LATER
 	/*bool in_cuticle = false;
@@ -2226,7 +2279,11 @@ bool Tissue::tryMoveVertex()
 		{
 			counter_unfav_rejected++;
 		} //Counters
-		moveVertexBack(vertices[vertex_to_move]);
+		if(vertices[vertex_to_move].type != VertexType::cuticle_2layers){
+			moveVertexBack(vertices[vertex_to_move]);
+		}else{
+			moveVertexBackCuticle(vertices[vertex_to_move]);
+		}
 		return false;
 	}
 }

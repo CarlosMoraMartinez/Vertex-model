@@ -62,36 +62,49 @@ class WingWith2StringLayers:
         x_pos, y_pos, _, _ = [i for i in zip(*[self.vertices[j] for j in self.onlyinstrings])] 
         self.center_x = 0.5*(np.min(x_pos) + np.max(x_pos))
         self.center_y = 0.5*(np.min(y_pos) + np.max(y_pos))
-    def makeCuticle(self, size=5):
+    def makeCuticle(self, size=5, nlayers=1):
         print("a")
-        #1) Create dictionary of connections
+        self.wing.cuticle_type = 1 if nlayers == 1 else 2
         connections = [self.strings[i][0] == self.strings[i-1][1] and self.strings[i][1] == self.strings[i+1][0] for i in range(1, len(self.strings) -1) ]
         assert(all(connections), "Error: assumption that strings are ordered is not met. You will have to fix the wing cuticle or change this function")
         #Just ordering them can work
-        #2)Create new vertices in new positions
+        #Create new vertices in new positions
         assert(all([x[2] == i for i, x in enumerate(self.vertices)]), "Danger!! Number of vertices is not correct")
-        vind = len(self.vertices)
-        previous = -1
-        print("b")
-        for i in range(1, len(self.strings)):
-            current_old = self.strings[i][0]
-            self.new_strings.append([current_old, vind])
-            print("c")
-            newx, newy = self.getNewPosition(self.vertices[current_old][0], self.vertices[current_old][1], size)
-            self.new_vertices.append([newx, newy, vind, 1])
-            print("d")
-            if(previous != -1):
-                print("e")
-                self.new_strings.append([previous, vind])
-                self.new_strings.append([previous, current_old])
-                self.new_strings.append([current_old - 1, vind])
-                print("f")
-            previous = vind
-            vind += 1
-            print("g")
-            #Add connections
-        self.wing.stringEdges.extend(self.new_strings)
-        self.wing.vertices.extend(self.new_vertices)
+        prev_layer = self.strings
+        next_layer = []
+        for layer in range(nlayers):
+            print("Starting layer ", layer)
+            vind = len(self.vertices)
+            previous = -1
+            #print("b")
+            for i in range(1, len(prev_layer)):
+                current_old = prev_layer[i][0]
+                self.new_strings.append([current_old, vind])
+                #print("c")
+                newx, newy = self.getNewPosition(self.vertices[current_old][0], self.vertices[current_old][1], size)
+                if(i == 1 or i == (len(prev_layer)-1)):
+                    static = 0
+                else:
+                    static = 1
+                self.new_vertices.append([newx, newy, vind, static])
+                #print("d")
+                if(previous != -1):
+                    #print("e")
+                    self.new_strings.append([previous, vind])
+                    self.new_strings.append([previous, current_old])
+                    self.new_strings.append([current_old - 1, vind])
+                    next_layer.append([previous, vind])
+                    #print("f")
+                previous = vind
+                vind += 1
+                #print("g")
+                #Add connections
+            self.wing.stringEdges.extend(self.new_strings)
+            self.wing.vertices.extend(self.new_vertices)
+            self.new_vertices = []
+            self.new_strings = []
+            prev_layer = next_layer
+            next_layer = []
     def scatterNewVertices(self):
         for v in self.new_vertices:
             plt.scatter(v[0], v[1], color="RED")
@@ -113,6 +126,14 @@ class WingWith2StringLayers:
             l = np.sqrt(np.power(self.vertices[a][0] - self.vertices[b][0], 2) + np.power(self.vertices[a][1] - self.vertices[b][1], 2))
             lengths.append(l)
         return lengths
+    def removeStringsWithLengthHigherThan(self, maxlen=50):
+        lengths = self.getStringLength()
+        for i in range(len(lengths) - 1, -1, -1):
+            if(lengths[i] >= maxlen):
+                x = self.wing.stringEdges.pop(i)
+                print("Removed string %d [%d, %d], with length = %f"%(i, x[0], x[1], lengths[i]))
+
+
     
 
 
@@ -138,7 +159,7 @@ parser.add_argument('-x', '--MinX', metavar='cuticle_start', type=int, default =
 #makeWingVoronoi()
 def main():
     args = parser.parse_args()
-    #args = {"Inputname":"etournay1_strings10", "Outname":"cuttest"}
+    #args = {"Inputname":"etournay1_strings10", "Outname":"cuttest4layers"}
     #obj = type("args", (object,), args)
     # ww = WingWith2StringLayers(obj)
     cuticle_width = args.CuticleThickness
@@ -147,6 +168,7 @@ def main():
     ww.makeCuticle(cuticle_width)
     ww.plotNewWing()
     ww.writeNewGrid()
+    ww.removeStringsWithLengthHigherThan(50) #Modify length according to your wing and cuticle string length
 
 if __name__ == '__main__':
     main()
