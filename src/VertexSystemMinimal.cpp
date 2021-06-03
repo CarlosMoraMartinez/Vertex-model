@@ -1979,7 +1979,7 @@ void Tissue::moveVertexBack(Vertex &v)
 		if (v.edges[i] != EMPTY_CONNECTION)
 		{
 			edges[v.edges[i]].length = bufferMovement.edge_lengths[i];
-			if (UPDATE_EDGE_TENSION_EVERY_MOVE){
+			if (UPDATE_EDGE_TENSION_EVERY_MOVE && v.type != VertexType::cuticle){
 				edges[v.edges[i]].tension = bufferMovement.edge_tensions[i];
 			}
 		}
@@ -2008,7 +2008,7 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 		{
 			bufferMovement.edge_lengths[i] = edges[v.edges[i]].length;
 			edges[v.edges[i]].length = distance(edges[v.edges[i]].vertices[0], edges[v.edges[i]].vertices[1]);
-			if (UPDATE_EDGE_TENSION_EVERY_MOVE)
+			if (UPDATE_EDGE_TENSION_EVERY_MOVE && v.type != VertexType::cuticle)
 			{
 				//setEdgeType(v.edges[i]); not needed since there is base_tension
 				bufferMovement.edge_tensions[i] = edges[v.edges[i]].tension;
@@ -2070,8 +2070,7 @@ void Tissue::moveVertexBackCuticle(Vertex &v)
 	{
 		if (v.edges2[i] != EMPTY_CONNECTION)
 		{
-			edges[v.edges2[i]].length = bufferMovement.edge_lengths2[i];
-			edges[v.edges2[i]].tension = bufferMovement.edge_tensions2[i];
+			edges[v.edges2[i]].length = bufferMovement.edge_lengths[i];
 		}
 	}
 	if (v.spring != EMPTY_CONNECTION){
@@ -2086,7 +2085,7 @@ void Tissue::moveVertexCuticle(Vertex &v, float x, float y)
 	{
 		if (v.edges2[i] != EMPTY_CONNECTION)
 		{
-			bufferMovement.edge_lengths2[i] = edges[v.edges2[i]].length;
+			bufferMovement.edge_lengths[i] = edges[v.edges2[i]].length;
 			edges[v.edges2[i]].length = distance(edges[v.edges2[i]].vertices[0], edges[v.edges2[i]].vertices[1]);
 		}
 	}

@@ -271,10 +271,10 @@ struct spring_type_param{
 };
 
 struct bufferRejectMovement{
-	double edge_lengths[CELLS_PER_VERTEX];
-	double edge_tensions[CELLS_PER_VERTEX];
-	double edge_tensions2[MAX_NODES_PER_CUTICLE_VERTEX];
-	double edge_lengths2[MAX_NODES_PER_CUTICLE_VERTEX];
+	double edge_lengths[MAX_NODES_PER_CUTICLE_VERTEX];
+	double edge_tensions[MAX_NODES_PER_CUTICLE_VERTEX];
+	//double edge_tensions2[MAX_NODES_PER_CUTICLE_VERTEX];
+	//double edge_lengths2[MAX_NODES_PER_CUTICLE_VERTEX];
 	double cell_areas[CELLS_PER_VERTEX];
 	double cell_perimeters[CELLS_PER_VERTEX];
 	double spring_length;
