@@ -169,10 +169,10 @@
 <
 
 >>spring_type_tension #
-0:10.0
-1:10.0
-2:10.0
-3:10.0
+0:0,10.0,100
+1:0,10.0,100
+2:0,10.0,100
+3:0,10.0,100
 <
 
 >>max_cell_area #
@@ -328,7 +328,7 @@
 <
 
 >string_edge_tension
-0.0,0.01,0.1,1,5,20,100,200,500,1000
+0.0,0.01,1
 >string_edge_tension_posterior_compartment_proportion
 0.01
 >string_edge_tension_min
@@ -353,11 +353,11 @@
 0.2
 >string_equilibrium_distance
 1
->momentum_term_cuticle #Does not work now; uncomment lines in which the comment "UNCOMMENT TO USE MOMENTUM" has been added, in VertexSystemMinimal.cpp
+>momentum_term_cuticle
 -1
->momentum_term_tissue #Does not work now; uncomment lines as above
+>momentum_term_tissue
 -1
->momentum_ponderate_current #Does not work now; uncomment lines as above
+>momentum_ponderate_current
 0.1
 >random_seed
 1234

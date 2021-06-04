@@ -115,8 +115,8 @@ class WingWith2StringLayers:
         vec_x = x + size*(x-self.center_x)/dist
         vec_y = y + size*(y-self.center_y)/dist
         return (vec_x, vec_y)
-    def plotNewWing(self):
-        self.wing.plotHex2()
+    def plotNewWing(self, save=False):
+        self.wing.plotHex2(save=save)
         plt.show()
     def writeNewGrid(self):
         self.wing.writeGrid()
@@ -150,24 +150,25 @@ parser.add_argument('-o', '--Outname', metavar='outname', type=str, default = "h
                                         help='Identifier. Used as prefix of all output files. ')
 parser.add_argument('-i', '--Inputname', metavar='inputname', type=str, default = "", 
                                         help='Identifier. Used as prefix to read files. ')
-parser.add_argument('-w', '--Inputimage', metavar='inputimage', type=str, default = inputname, 
-                                        help='Use this image to draw on it. ')
-parser.add_argument('-s', '--CuticleThickness', metavar='thickness', type=int, default = 2, 
-                                        help='Number of cell layers of cuticle')
-parser.add_argument('-x', '--MinX', metavar='cuticle_start', type=int, default = 2, 
-                                        help='Proportion of the wing x axis at which the cuticle starts')                                        
+#parser.add_argument('-w', '--Inputimage', metavar='inputimage', type=str, default = inputname, 
+#                                        help='Use this image to draw on it. ')
+parser.add_argument('-n', '--CuticleThickness', metavar='thickness', type=int, default = 1, 
+                                        help='Number of vertex layers of cuticle')
+parser.add_argument('-s', '--LayerDistance', metavar='layer_distance', type=float, default = 5.0, 
+                                        help='Distance between cuticle layers')                                        
 #makeWingVoronoi()
 def main():
     args = parser.parse_args()
     #args = {"Inputname":"etournay1_strings10", "Outname":"cuttest4layers"}
     #obj = type("args", (object,), args)
     # ww = WingWith2StringLayers(obj)
-    cuticle_width = args.CuticleThickness
+    cuticle_width = args.LayerDistance
+    n_layers = args.CuticleThickness
     print("WARNING: Make sure that your starting wing does not have vertices that only touch springs or string-like cuticle.")
     ww = WingWith2StringLayers(args)
-    ww.makeCuticle(cuticle_width)
-    ww.plotNewWing()
+    ww.makeCuticle(cuticle_width, n_layers)
     ww.writeNewGrid()
+    ww.plotNewWing(save=True)
     ww.removeStringsWithLengthHigherThan(50) #Modify length according to your wing and cuticle string length
 
 if __name__ == '__main__':

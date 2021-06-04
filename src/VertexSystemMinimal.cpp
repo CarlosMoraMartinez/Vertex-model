@@ -1830,7 +1830,7 @@ if(v.type == VertexType::cuticle_2layers){
 	return calculateEnergyCuticle2(v);
 }
   double term1 = 0, term2 = 0, term3 = 0;
-  //double momentum_term = 0;
+  //double momentum_term = 0;//UNCOMMENT TO USE MOMENTUM
   double aux;
   int aux_ind;
   int num_elements = v.type == VertexType::cuticle_2layers ? MAX_NODES_PER_CUTICLE_VERTEX : CELLS_PER_VERTEX;
@@ -1861,13 +1861,14 @@ if(v.type == VertexType::cuticle_2layers){
     term2 += springs[v.spring].tension * springs[v.spring].length;
   }
 
+  //UNCOMMENT TO USE MOMENTUM
   /*if((v.type == VertexType::cuticle && momentum_term_cuticle > 0.0)){
 	  momentum_term = momentum_term_cuticle*sqrt(pow(v.x - v.x_drag, 2) + pow(v.y - v.y_drag, 2));
   }else if( momentum_term_tissue > 0.0){
 	  //Also applies to cuticle if no momentum in cuticle but there is momentum in tissue
 	  momentum_term = momentum_term_tissue*sqrt(pow(v.x - v.x_drag, 2) + pow(v.y - v.y_drag, 2));
   }*/
-  return term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3;// + momentum_term;
+  return term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3;// + momentum_term;//UNCOMMENT TO USE MOMENTUM
 } // calcEnergy2
 
 
@@ -1875,6 +1876,7 @@ if(v.type == VertexType::cuticle_2layers){
 inline double Tissue::calculateEnergyCuticle2(Vertex &v) {
 	//cout << "entering energy cuticle " << endl;
   double term1 = 0, term2 = 0, term3 = 0;
+  //double momentum_term = 0;//UNCOMMENT TO USE MOMENTUM
   //double momentum_term = 0;
   double aux;
   int aux_ind;
@@ -1900,7 +1902,12 @@ inline double Tissue::calculateEnergyCuticle2(Vertex &v) {
 	  //cout << EMPTY_CONNECTION << "\t" << EMPTY_CONNECTION << "\t";
   }
   //cout << term2 << "\t" << term2 * energy_term2 << endl;
-  return term2 * energy_term2;// + momentum_term;
+
+  //UNCOMMENT TO USE MOMENTUM
+  /*if(momentum_term_cuticle > 0.0){
+	momentum_term = momentum_term_cuticle*sqrt(pow(v.x - v.x_drag, 2) + pow(v.y - v.y_drag, 2));
+  }*/
+  return term2 * energy_term2;// + momentum_term; //UNCOMMENT TO USE MOMENTUM
 } // calculateEnergy for cuticle with 2 layers
 
 
@@ -3044,7 +3051,7 @@ void Tissue::simulateEuler()
 		{
 			if (cells[c].dead)
 				continue;
-			cells[c].perimeter = calculateCellPerimeter(cells[c]);
+			cells[c].perimeter = calculateCellPerimeter(cells[c]); //This can probably be made more efficient; not needed to sum all again
 			cells[c].area = calculateCellArea(cells[c]);
 			calculateCellCentroid(cells[c]);
 		}//end update cells
