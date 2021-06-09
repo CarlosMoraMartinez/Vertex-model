@@ -1492,6 +1492,7 @@ int Tissue::newVertex()
 	vertices[v].movable = true;
 	vertices[v].movable_x = true;
 	vertices[v].movable_y = true;
+	vertices[v].type = VertexType::tissue;
 	vertices[v].spring = EMPTY_CONNECTION;
 	vertices[v].dead = false;
 	vertices[v].moves_accepted = 1;
@@ -5132,6 +5133,7 @@ bool Tissue::AddSpringToVertex(int v, float minx, float maxx)
 			int vnew = newVertex(vertices[v].x, vertices[v].y);
 			vertices[vnew].movable = false;
 			vertices[vnew].spring = e.ind;
+			vertices[vnew].type = VertexType::spring_only;
 			vertices[v].spring = e.ind;
 			e.vertices[0] = v;
 			e.vertices[1] = vnew;

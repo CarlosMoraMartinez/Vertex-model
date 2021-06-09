@@ -22,32 +22,33 @@ getEdgeData <- function(this_f){
   return(edges)
 } 
 
-FILE_BASE_STRING <- "etournay1_strings9_moved_"
-FILE_BASE_STRING <- "21grid[0-9]_moved_"
+#FILE_BASE_STRING <- "etournay1_strings9_moved_"
+#FILE_BASE_STRING <- "21grid[0-9]_moved_"
+FILE_BASE_STRING <- "cellcuticle1_moved_"
 ZOOM_POINT <- c(300, 350, 320, 380)
+CUTICLE_TYPE = 8 #7 for string cuticle, 8 for full cuticle
+TYPES <- c(0, 1, 2, 3, 4, 5, 6, 7, 8)
 
-dirs_all <- c("/home/carmoma/vertex/Vertex-model/hexgrid2021_4/hexgrid2021_4_110/21grid5",
-          "/home/carmoma/vertex/Vertex-model/hexgrid2021_1/hexgrid2021_1_0/21grid2",
-          "/home/carmoma/vertex/Vertex-model/hexgrid2021_1/hexgrid2021_1_0/21grid3",
-          "/home/carmoma/vertex/Vertex-model/hexgrid2021_1/hexgrid2021_1_1/21grid1",
-          "/home/carmoma/vertex/Vertex-model/hexgrid2021_1/hexgrid2021_1_1/21grid2",
-          "/home/carmoma/vertex/Vertex-model/hexgrid2021_1/hexgrid2021_1_1/21grid3",
-          "/home/carmoma/vertex/Vertex-model/hexgrid2021_1/hexgrid2021_1_2/21grid1",
-          "/home/carmoma/vertex/Vertex-model/hexgrid2021_1/hexgrid2021_1_2/21grid2",
-          "/home/carmoma/vertex/Vertex-model/hexgrid2021_1/hexgrid2021_1_2/21grid3",
-          "/home/carmoma/vertex/Vertex-model/hexgrid2021_1/hexgrid2021_1_3/21grid1",
-          "/home/carmoma/vertex/Vertex-model/hexgrid2021_1/hexgrid2021_1_3/21grid2",
-          "/home/carmoma/vertex/Vertex-model/hexgrid2021_1/hexgrid2021_1_3/21grid3"
+dirs_all <- c("/home/carmoma/vertex/Vertex-model/cellcuticle_11/cellcuticle_11_0/cellcuticle1",
+              "/home/carmoma/vertex/Vertex-model/cellcuticle_11/cellcuticle_11_1/cellcuticle1",
+              "/home/carmoma/vertex/Vertex-model/cellcuticle_11/cellcuticle_11_2/cellcuticle1",
+              "/home/carmoma/vertex/Vertex-model/cellcuticle_11/cellcuticle_11_3/cellcuticle1",
+              "/home/carmoma/vertex/Vertex-model/cellcuticle_11/cellcuticle_11_4/cellcuticle1",
+              "/home/carmoma/vertex/Vertex-model/cellcuticle_11/cellcuticle_11_5/cellcuticle1",
+              "/home/carmoma/vertex/Vertex-model/cellcuticle_11/cellcuticle_11_6/cellcuticle1",
+              "/home/carmoma/vertex/Vertex-model/cellcuticle_11/cellcuticle_11_7/cellcuticle1"
+          
 )
 
 dirs <- dirs_all[c(1,4,7,10)]
-
+dirs <- dirs_all[c(1, 2)]
 dirs <- c("/home/carmoma/vertex/Vertex-model/dpygrad_mode337/dpygrad_mode337_0/etournay1_strings9",
           "/home/carmoma/vertex/Vertex-model/dpygrad_mode325/dpygrad_mode325_1/etournay1_strings8b",
           "/home/carmoma/vertex/Vertex-model/dpygrad_mode325/dpygrad_mode325_2/etournay1_strings8b",
           "/home/carmoma/vertex/Vertex-model/dpygrad_mode325/dpygrad_mode325_3/etournay1_strings8b"
 )
 
+TIME_POINTS =c(0, 1, 5, 10)
 for(d in dirs){
   setwd(d)
 ## READ CELL FILES
@@ -57,12 +58,13 @@ for(d in dirs){
   res<-data.frame();
 
 #for(i in min(time[!is.na(time)]):max(time[!is.na(time)])){
-for(i in c(0, 1, 5, 10, 20)){
+for(i in TIME_POINTS){
 this_f <- f[time==i] %>% subset(!is.na(.))
   edges <- getEdgeData(this_f)
-  edges2 <- edges %>% filter(type %in% c(1) & ! is.na(tension))
+  edges2 <- edges %>% filter(type %in% TYPES & ! is.na(tension))
 
 #Full Wing
+  edges$log_tension <- ifelse(edges$tension < 0, 0, log10(edges$tension))
   g1<-edges %>% ggplot(aes(x=x1, y=y1, fill=tension, col=tension)) + 
    geom_segment(aes(xend=x2, yend=y2)) +
    coord_fixed(ratio = 1) +
@@ -75,9 +77,25 @@ this_f <- f[time==i] %>% subset(!is.na(.))
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank()
     ) +
-   scale_color_gradient(low="blue", high="red",limits = c(min(edges2$tension), max(edges2$tension)),oob = scales::squish) +
-    scale_fill_gradient(low="blue", high="red",limits = c(min(edges2$tension), max(edges2$tension)),oob = scales::squish)
-#Only caption
+   scale_color_gradient(low="blue", high="red",limits = c(min(edges$tension), max(edges$tension)),oob = scales::squish) +
+    scale_fill_gradient(low="blue", high="red",limits = c(min(edges$tension), max(edges$tension)),oob = scales::squish)
+
+  g1_log<-edges %>% ggplot(aes(x=x1, y=y1, fill=log_tension, col=log_tension)) + 
+    geom_segment(aes(xend=x2, yend=y2)) +
+    coord_fixed(ratio = 1) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(size=16, face="bold.italic"),
+      axis.title.x = element_text( size=16, face="bold"),
+      axis.title.y = element_text(size=16, face="bold"),
+      strip.text = element_text(size=16, face="bold") ,
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank()
+    ) +
+    scale_color_gradient(low="blue", high="red",limits = c(min(edges$log_tension), max(edges$log_tension)),oob = scales::squish) +
+    scale_fill_gradient(low="blue", high="red",limits = c(min(edges$log_tension), max(edges$log_tension)),oob = scales::squish)
+  
+  #Only caption
   g2<-ggplot(edges, aes(x=x1, y=y1, fill=tension, col=tension)) + 
    geom_segment(aes(xend=x2, yend=y2)) +
     coord_fixed(ratio = 1) +
@@ -90,13 +108,13 @@ this_f <- f[time==i] %>% subset(!is.na(.))
      panel.grid.major = element_blank(), 
      panel.grid.minor = element_blank()
    ) +
-    scale_color_gradient(low="blue", high="red",limits = c(min(edges2$tension), max(edges2$tension)),oob = scales::squish) +
-    scale_fill_gradient(low="blue", high="red",limits = c(min(edges2$tension), max(edges2$tension)),oob = scales::squish) +
+    scale_color_gradient(low="blue", high="red",limits = c(min(edges$tension), max(edges$tension)),oob = scales::squish) +
+    scale_fill_gradient(low="blue", high="red",limits = c(min(edges$tension), max(edges$tension)),oob = scales::squish) +
     xlim(ZOOM_POINT[1], ZOOM_POINT[2]) +
     ylim(ZOOM_POINT[3], ZOOM_POINT[4])
   
   #Cuticle
-  e2 <- edges %>% filter(type==7)
+  e2 <- edges %>% filter(type==CUTICLE_TYPE)
   e3 <- e2 %>% gather("coord", "value", x1, x2, y1, y2) %>% mutate(coord=gsub("y", "y_", gsub("x", "x_", coord))) %>% separate(coord,c("coord", "coordnum"), sep="_") %>% spread(coord, value)
   
   (g3<-e2 %>% ggplot(aes(x=x1, y=y1, fill=tension, col=tension)) + 
@@ -116,9 +134,13 @@ this_f <- f[time==i] %>% subset(!is.na(.))
     scale_fill_gradient(low="blue", high="red",limits = c(min(e2$tension), max(e2$tension)),oob = scales::squish)
   )
   name1 <- paste("../../", str_extract(d, "[1-9]+_[1-9]"), "_time", as.character(i), "_fullWing.png", sep="", collapse="")
+  name1b <- paste("../../", str_extract(d, "[1-9]+_[1-9]"), "_time", as.character(i), "_fullWingLog.png", sep="", collapse="")
   name2 <- paste("../../", str_extract(d, "[1-9]+_[1-9]"), "_time", as.character(i), "_HingeCaption.png", sep="", collapse="")
   png(name1, width = 1500, height = 500)
   print(g1)
+  dev.off()
+  png(name1b, width = 1500, height = 500)
+  print(g1_log)
   dev.off()
   png(name2)
   print(g2)
