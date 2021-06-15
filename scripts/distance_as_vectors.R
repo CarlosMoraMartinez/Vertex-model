@@ -335,10 +335,10 @@ makeAll<-function(d){
   rm(res2, res3)
 }
 
-nums <- c(342)
+
 nums <- c(328, 329)
-wing <- "/etournay1_strings10"
-WING_BASE <- "etournay1_strings10_moved_"
+wing <- "/cuttest3"
+WING_BASE <- "cuttest3_moved_"
 sims <- c(0,1)
 dirbase <- "/home/carmoma/vertex/Vertex-model/dpygrad_mode%NUMBER%/dpygrad_mode%NUMBER%_"
 

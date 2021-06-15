@@ -33,7 +33,7 @@ p=pd.DataFrame(p,columns=["x", "y", "ind", "movable"])
 
 #p=pd.read_csv(basename + '.points', sep="\t") #file with points (like .points but with header (x	y	ind	movable); need to prepare this first)
 
-colors = ['black', 'green', 'yellow', 'orange', 'blue', 'purple','red', 'peru']
+colors = ['black', 'green', 'yellow', 'orange', 'blue', 'purple','red', 'peru', 'peru']
 
 if('c' in plot_types):
     for i in range(e.shape[0]):

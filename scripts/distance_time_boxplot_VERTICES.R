@@ -4,16 +4,17 @@ library(tidyverse)
 library(wesanderson)
 
 dirs <- c("/home/carmoma/vertex/Vertex-model/dpygrad_mode328/dpygrad_mode328_1/etournay1_strings8b",
-          "/home/carmoma/vertex/Vertex-model/dpygrad_mode329/dpygrad_mode329_0/etournay1_strings8b"
+          "/home/carmoma/vertex/Vertex-model/cut2layer27/cut2layer27_0/cuttest3"
 )
 
+WING <- "cuttest3_moved_"
 
 d <- dirs[1]
 
 setwd(d)
 ## READ CELL FILES
 f<-list.files() %>%subset(grepl(".ptab", .)) %>% subset(grepl("moved",.))
-time <- gsub("etournay1_strings8b_moved_", "", f) %>% gsub(".ptab", "", .) %>% as.numeric
+time <- gsub(WING, "", f) %>% gsub(".ptab", "", .) %>% as.numeric
 f <- f[order(time)]
 time <- time[order(time)]
 res<-data.frame();
@@ -40,7 +41,8 @@ for(i in 1:length(f)){
 
 #res<-res %>% mutate(type = recode(type+1, "blade", "hinge", "vein blade", "vein hinge"))
 
-res2 <- res %>% filter(!is.na(displacement) & movable ==1)
+##res$time <- gsub(WING, "", pull(res, name)) %>% gsub(".ptab", "", .) %>% as.numeric
+res2 <- res %>% filter(!is.na(displacement) & movable ==1) %>% filter(type == 0)
 res2$prop_movements_accepted <- res2$moves_accepted_interval/(res2$moves_accepted_interval+res2$moves_rejected_interval)
 
 #plot(res2$time, res2$displacement)
