@@ -320,7 +320,7 @@ def getColorFromProperty(celltab, cellproperty):
 
 parser = argparse.ArgumentParser(description='Plot grid arguments.')
 parser.add_argument('-i', '--Inputname', metavar='inputname', type=str, default = "hexgrid", 
-                    help='Identifier. Used as prefix of input files of cell coordinates. ')
+                    help='Identifier. Used as prefix of input files of cell coordinates. Usually, file number will be added at the end (e.g., if "-i mysimulations_ -s 0 -e 10", it will look for mysimulations_0, mysimulations_1, etc. If the name has an asterisk, it will replace it with the numbers (e.g., "-i  simulations_*_extra" will look for simulations_0_extra, simulations_1_extra, etc) ')
 parser.add_argument('-i2', '--Input_expr', metavar='input_expr', type=str, default = "", 
                     help='Identifier. Used as prefix of input files of gene expression. ')
 parser.add_argument('-s', '--Start_index', metavar='start', type=int, default = -999, 

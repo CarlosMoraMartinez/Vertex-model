@@ -1,4 +1,4 @@
-# cut2layer25_0
+# cut2layer31_65
 >t1_active #
 1
 >t1_inwards_active #
@@ -68,7 +68,7 @@
 >use_blade_area_for_coord_gradient #Old mode (yes) == 1; if -1, use the parameter preferred_area_initial_gradient instead
 1
 >xcoord_decrease_exponent #
-5,8,10,12,15
+15
 >use_K_spatial_gradient #<=0: no; 1=x only; 2=y only; 3=both
 0
 >K_change_exponent
@@ -105,7 +105,7 @@
 -1
 >perimeter_contract_spatial_gradient ## <=0: no; 1=x only; 2=y only; 3=both
 1
->>perimeter_contract #Be careful, can have different meanings depending on the type of gradient.
+>>perimeter_contract #
 0:0.001
 1:0.001
 2:0.001
@@ -113,10 +113,10 @@
 <
 
 >>perimeter_contract_final #
-0:1000,1500,2000,5000
-1:1000,1500,2000,5000
-2:1000,1500,2000,5000
-3:1000,1500,2000,5000
+0:100,500,1000,5000
+1:100,500,1000,5000
+2:100,500,1000,5000
+3:100,500,1000,5000
 <
 
 >>preferred_area_initial #
@@ -284,7 +284,7 @@
 >posterior_comparment_region  #If spring_tension_mode = 1 or 3, used to define the posterior compartment (by y <= this param*height)
 0.5
 >posterior_compartment_factor #If spring_tension_mode = 1 or 3, multiply posterior tension by this number
-0.00
+0.0
 >spring_gradient_min_tension #
 1000000
 >spring_gradient_max_tension #
@@ -296,7 +296,7 @@
 >spring_gradient_max_tension_P # If spring_tension_mode == 4, for posterior compartment gradient
 1000
 >spring_gradient_exponent_P # If spring_tension_mode == 4, for posterior compartment gradient
-0.1,1,5,10
+1
 >mode_to_order_springs_PD #If 1, use x position to determine tension. If 2, use vertex order
 1
 >include_hinge_in_spring_gradient
@@ -330,7 +330,7 @@
 >string_edge_tension
 2000
 >string_edge_tension_posterior_compartment_proportion
-0.000001
+1e-06
 >string_edge_tension_min
 0.1
 >string_tension_exponent
@@ -350,7 +350,7 @@
 >reference_for_gradient #1=frontier hinge-blade; 2=max hinge position; 3=proportion of wing; 4=bare exponential; 5=from center_all; 6=from center_hinge
 5
 >wing_proportion_in_gradient (proportion in gradient when ref_for_grad ==3; proportion of central to lateral gradient when ref ==5 or 6)
-0.2
+0.0,0.2,0.4,0.6,0.8
 >string_equilibrium_distance
 1
 >momentum_term_cuticle
