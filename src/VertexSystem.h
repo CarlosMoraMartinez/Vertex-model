@@ -114,7 +114,6 @@ const int GRADIENT_FROM_CENTER_ALL = 5;
 const int GRADIENT_FROM_CENTER_HINGE = 6;
 const float DEFAULT_PROPORTION_FOR_GRADIENT = 0.7;
 const int REFERENCE_FOR_GRADIENT = USE_PROPORTION_OF_WING;
-const bool NORMALIZE_EDGE_TENSION = false;
 
 const std::string VERTEX_HEADER = "ind\tx\ty\tenergy\tmovable\ttype\tspring\tmoves_accepted\tmoves_rejected\tcells\tedges\tneighbour_vertices\n";
 const std::string CELL_HEADER = "ind\ttype\tarea\tpreferred_area\tK\tperimeter\tperim_contract\t" +
@@ -314,7 +313,6 @@ class Tissue{
 		double distance(int v1, int v2);
 		double calculateEnergy(Vertex& v);
 		double calculateEnergyCuticle2(Vertex& v);
-		double calculateEnergy2(Vertex& v);
 		double calculateEnergy_term4(Vertex& v);
 		double calculateEnergy_term4_cuticle(Vertex& v);
 		void derivativeVertexPos(const Vertex &v, pointDerivative & pd);

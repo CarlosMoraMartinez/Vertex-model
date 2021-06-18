@@ -1467,22 +1467,15 @@ void Tissue::addNeighbourVertex(int vertex1, int vertex2)
 	this->vertices[vertex2].neighbour_vertices[i] = vertex1;
 }
 
-//dead_vertices, dead_cells, dead_edges
 
 int Tissue::newVertex()
 {
 	int v;
-	if (false)
-	{ //if (!dead_vertices.empty()){
-		v = dead_vertices.front();
-	}
-	else
-	{
-		Vertex vert;
-		vert.ind = static_cast<int>(this->vertices.size());
-		v = vert.ind;
-		this->vertices.push_back(vert);
-	}
+	Vertex vert;
+	vert.ind = static_cast<int>(this->vertices.size());
+	v = vert.ind;
+	this->vertices.push_back(vert);
+
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
 		vertices[v].cells[i] = EMPTY_CONNECTION;
@@ -1498,7 +1491,7 @@ int Tissue::newVertex()
 	vertices[v].moves_accepted = 1;
 	vertices[v].moves_rejected = 1;
 	this->num_vertices++;
-	//if (!dead_vertices.empty()) dead_vertices.pop();
+
 	return v;
 }
 
@@ -1511,18 +1504,11 @@ int Tissue::newVertex(double x, double y)
 }
 int Tissue::newCell()
 {
-	int c;
-	if (false)
-	{ //if(!dead_cells.empty()){
-		c = dead_cells.front();
-	}
-	else
-	{
-		Cell cl;
-		cl.ind = static_cast<int>(this->cells.size());
-		c = cl.ind;
-		this->cells.push_back(cl);
-	}
+	int c;	
+	Cell cl;
+	cl.ind = static_cast<int>(this->cells.size());
+	c = cl.ind;
+	this->cells.push_back(cl);
 	for (int i = 0; i < MAX_SIDES_PER_CELL; i++)
 	{
 		cells[c].vertices[i] = EMPTY_CONNECTION;
@@ -1537,6 +1523,20 @@ int Tissue::newCell()
 	cells[c].centroid_x = 0;
 	cells[c].centroid_y = 0;
 	cells[c].num_divisions = 0;
+	//It is not really necessary to initialize these fields. 
+	cells[c].edge_angle_prop_external = 0;
+	cells[c].edge_angle_prop_uniform = 1;
+	cells[c].edge_angle_prop_maxangle = 0;
+	cells[c].edge_angle_prop_random = 0;
+	cells[c].edge_spatialmax_tension = 0;
+	cells[c].edge_spatialmin_tension = 0;
+	cells[c].edge_tension_external = 0;
+	cells[c].division_angle_external = 0;
+	cells[c].division_angle_external_degrees = 0;
+	cells[c].division_angle_longest = 1;
+	cells[c].division_angle_random_noise=0;
+	cells[c].edge_maxangle = 0;
+
 	this->num_cells++;
 	//if (!dead_cells.empty()) dead_cells.pop();
 	return c;
@@ -1544,23 +1544,18 @@ int Tissue::newCell()
 int Tissue::newEdge()
 {
 	int e;
-	if (false)
-	{ //if(!dead_edges.empty()){ //if(false){//
-		e = dead_edges.front();
-	}
-	else
-	{
-		Edge ed;
-		ed.ind = static_cast<int>(this->edges.size());
-		e = ed.ind;
-		edges.push_back(ed);
-	}
+	Edge ed;
+	ed.ind = static_cast<int>(this->edges.size());
+	e = ed.ind;
+	edges.push_back(ed);
+
 	edges[e].vertices[0] = EMPTY_CONNECTION;
 	edges[e].vertices[1] = EMPTY_CONNECTION;
 	edges[e].cells[0] = EMPTY_CONNECTION;
 	edges[e].cells[1] = EMPTY_CONNECTION;
 	edges[e].can_transition = true;
 	edges[e].dead = false;
+
 	this->num_edges++;
 	//if (!dead_edges.empty()) dead_edges.pop();
 	return e;
@@ -1656,49 +1651,7 @@ void Tissue::setHingeMinAndMaxPositions()
 	cout << "Min hinge position: " << hinge_min_xpos << "; Max hinge position: " << hinge_max_xpos << endl;
 }//end set hinge max and min positions
 
-/* void Tissue::setMinAndMaxPositions()
-{
-	calculateCellCentroid(cells[0]);
-	double min, max, miny, maxy;
-	bool set = false;
-	for (Cell c : cells)
-	{
-		calculateCellCentroid(c);
-		if (set)
-		{
-			if (c.centroid_x < min)
-			{
-				min = c.centroid_x;
-			}
-			else if (c.centroid_x > max)
-			{
-				max = c.centroid_x;
-			}
-			if (c.centroid_y < miny)
-			{
-				miny = c.centroid_y;
-			}
-			else if (c.centroid_y > maxy)
-			{
-				maxy = c.centroid_y;
-			}
-		}
-		else
-		{
-			min = c.centroid_x;
-			max = c.centroid_x;
-			miny = c.centroid_y;
-			maxy = c.centroid_y;
-			set = true;
-		}
-	}
-	min_xpos = min;
-	max_xpos = max;
-	min_ypos = miny;
-	max_ypos = maxy;
-	AP_compartment_limit = miny + (maxy - miny)*posterior_comparment_region;
-	cout << "Min wing x position: " << min_xpos << "; Max wing xposition: " << max_xpos << "; A-P limit: " << AP_compartment_limit<< endl;
-} */
+
 void Tissue::setMinAndMaxPositions()
 {
 	calculateCellCentroid(cells[0]);
@@ -1748,7 +1701,6 @@ void Tissue::setMinAndMaxPositions()
 //Area of a polygon using Shoelace formula
 double Tissue::calculateCellArea(const Cell &c)
 {
-	/* auto start = chrono::high_resolution_clock::now();  */
 	double area = 0.0;
 	int previous = c.num_vertices - 1;
 	for (int i = 0; i < c.num_vertices; i++)
@@ -1756,9 +1708,6 @@ double Tissue::calculateCellArea(const Cell &c)
 		area += (vertices[c.vertices[previous]].x * vertices[c.vertices[i]].y - vertices[c.vertices[previous]].y * vertices[c.vertices[i]].x);
 		previous = i;
 	}
-/* 	auto stop = chrono::high_resolution_clock::now();
-	auto duration1 = chrono::duration_cast<chrono::nanoseconds>(stop - start);
-	cout << duration1.count() << "\t"; */
 	return abs(0.5 * area);
 }
 
@@ -1794,42 +1743,11 @@ inline double Tissue::distance(int v1, int v2)
 {
 	return sqrt(pow(this->vertices[v1].x - this->vertices[v2].x, 2) + pow(this->vertices[v1].y - this->vertices[v2].y, 2));
 }
-inline double Tissue::calculateEnergy2(Vertex &v)
-{
-	double term1 = 0, term2 = 0, term3 = 0;
-	double pref_area;
-	int aux_ind;
-	for (int i = 0; i < CELLS_PER_VERTEX; i++)
-	{
-		if (v.cells[i] != EMPTY_CONNECTION){
-			aux_ind = v.cells[i];
-			term1 += pow(cells[aux_ind].area / cells[aux_ind].preferred_area - 1, 2);
-			term3 += 0.5 * cells[aux_ind].perimeter_contractility * cells[aux_ind].perimeter * cells[aux_ind].perimeter/ cells[aux_ind].preferred_area;
-		}
-	}
-	for (int i = 0; i < CELLS_PER_VERTEX; i++)
-	{
-		if (v.edges[i] != EMPTY_CONNECTION)
-		{
-			aux_ind = v.edges[i];
-			pref_area = edges[aux_ind].type == EdgeType::tissue_boundary ?
-								edges[aux_ind].cells[0] == EMPTY_CONNECTION ?
-											cells[edges[aux_ind].cells[1]].preferred_area :
-											cells[edges[aux_ind].cells[0]].preferred_area :
-								(cells[edges[aux_ind].cells[0]].preferred_area + cells[edges[aux_ind].cells[1]].preferred_area) * 0.5;
-			term2 += edges[aux_ind].tension * edges[aux_ind].length / sqrt(pref_area);
-		}
-	}
-	if (v.spring != EMPTY_CONNECTION){
-		term2 += springs[v.spring].tension * springs[v.spring].length / sqrt(pref_area);
-	}
-	return 0.5 * term1 * energy_term1 + term2 * energy_term2 + term3 * energy_term3;
-}
 //
 inline double Tissue::calculateEnergy(Vertex &v) {
-if(v.type == VertexType::cuticle_2layers){
-	return calculateEnergyCuticle2(v);
-}
+	if(v.type == VertexType::cuticle_2layers){
+		return calculateEnergyCuticle2(v);
+	}
   double term1 = 0, term2 = 0, term3 = 0;
   //double momentum_term = 0;//UNCOMMENT TO USE MOMENTUM
   double aux;
@@ -2008,8 +1926,6 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 {
 	v.x = x;
 	v.y = y;
-	//float tension_sum = 0;  //REMOVE LATER
-	//int num_edges = 0;  //REMOVE LATER
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{
 		if (v.edges[i] != EMPTY_CONNECTION)
@@ -2021,30 +1937,16 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 				//setEdgeType(v.edges[i]); not needed since there is base_tension
 				bufferMovement.edge_tensions[i] = edges[v.edges[i]].tension;
 				setEdgeTension(v.edges[i]);
-				//tension_sum+=edges[v.edges[i]].tension;  //REMOVE LATER
-				//num_edges++;  //REMOVE LATER
 				//cout <<edges[v.edges[i]].tension<<endl;
 			}
 		}
 	}
-	 /* if(NORMALIZE_EDGE_TENSION && UPDATE_EDGE_TENSION_EVERY_MOVE && num_edges==3){  //REMOVE LATER
-		for (int i = 0; i < CELLS_PER_VERTEX; i++)  //REMOVE LATER
-		{
-			if (v.edges[i] != EMPTY_CONNECTION)  //REMOVE LATER
-			{
-				edges[v.edges[i]].tension /= tension_sum;  //REMOVE LATER
-			}
-		}
-	}  */
 
 	if (v.spring != EMPTY_CONNECTION)
 	{
 		bufferMovement.spring_length = springs[v.spring].length;
 		springs[v.spring].length = distance(springs[v.spring].vertices[0], springs[v.spring].vertices[1]);
 	}
-/*  	double area, perimeter;
-	int previous;
-	int c; */
 	for (int i = 0; i < CELLS_PER_VERTEX; i++)
 	{ // re-calculate cell areas
 		if (v.cells[i] != EMPTY_CONNECTION)
@@ -2053,18 +1955,6 @@ void Tissue::moveVertex(Vertex &v, float x, float y)
 			bufferMovement.cell_perimeters[i] = cells[v.cells[i]].perimeter;
 			cells[v.cells[i]].area = calculateCellArea(this->cells[v.cells[i]]);
 			cells[v.cells[i]].perimeter = calculateCellPerimeter(this->cells[v.cells[i]]);
-/* 			c = v.cells[i]; //calc area and perimeter outside of function
- 			area = 0.0;
-			perimeter= 0.0;
-			previous = cells[c].num_vertices - 1;
-			for (int i = 0; i < cells[c].num_vertices; i++)
-			{
-				area += (vertices[cells[c].vertices[previous]].x * vertices[cells[c].vertices[i]].y - vertices[cells[c].vertices[previous]].y * vertices[cells[c].vertices[i]].x);
-				previous = i;
-				perimeter += edges[cells[c].edges[i]].length;
-			}
-			cells[c].area = area;
-			cells[c].perimeter = perimeter;  */
 		}
 	}
 }
@@ -2129,43 +2019,21 @@ bool Tissue::tryMoveVertex()
 	}
 
 	vertices[vertex_to_move].energy = calculateEnergy(vertices[vertex_to_move]);
-	//REMOVE LATER
-	/*bool in_cuticle = false;
-	 for(int i = 0; i < CELLS_PER_VERTEX; i++){
-		if(vertices[vertex_to_move].edges[i] != EMPTY_CONNECTION){
-			if(edges[vertices[vertex_to_move].edges[i]].type == EdgeType::stringedge){
-				in_cuticle = true;
-				break;
-			}
 
-		}
-	} */
 
 	if(use_term4) /// UNTIL HERE
 		vertices[vertex_to_move].energy += calculateEnergy_term4(vertices[vertex_to_move]);
-	/* else if(in_cuticle)
-		vertices[vertex_to_move].energy += calculateEnergy_term4_cuticle(vertices[vertex_to_move]); */
-	//Prob of accepting unfavourable movement ins constant
-	//move_prob = vertices[vertex_to_move].energy <= bufferMovement.energy ? temperature_negative_energy : temperature_positive_energy;
-	if (temperature_means_proportion_of_acceptance)
-		{ //Prob of accepting unfavourable movement ins constant
+	
+	if (temperature_means_proportion_of_acceptance){ //Prob of accepting unfavourable movement ins constant
 			move_prob = vertices[vertex_to_move].energy <= bufferMovement.energy ? temperature_negative_energy : temperature_positive_energy;
-		}
-		else
-		{ //Prob of accepting unfavourable movement depends on how much unfavourable the movement is
+	}else{ //Prob of accepting unfavourable movement depends on how much unfavourable the movement is
 			move_prob = vertices[vertex_to_move].energy <= bufferMovement.energy ? 
 				temperature_negative_energy : 
 				exp(-(vertices[vertex_to_move].energy - bufferMovement.energy) / temperature_positive_energy);
 			//cout << "e_old:e_new:diff\t"<< bufferMovement.energy << "\t" << vertices[vertex_to_move].energy << "\t" << vertices[vertex_to_move].energy - bufferMovement.energy << "\n";
-		}
-	/* if(counter_move_trials == 2){
-		cout << ">idextra\tid\tnew_x\tnew_y\tx\ty\txdif\tydif\te\tnew_e\tedif\tmove_prob\ttime\t" << 
-		"old_elen0\told_elen1\told_elen2\told_eten0\told_eten1\told_eten2\t"<<
-		"new_elen0\tnew_elen1\tnew_elen2\tnew_eten0\tnew_eten1\tnew_eten2\t"<<
-		"old_cellarea0\told_cellarea1\told_cellarea2\told_cellper0\told_cellper1\told_cellper2\t"<<
-		"new_cellarea0\tnew_cellarea1\tnew_cellarea2\tnew_cellper0\tnew_cellper1\tnew_cellper2\n";
-	} */
- 	 
+	}
+	
+ 	//The following commented lines might help to debug (by printing many data each iteration) 
 	/* if(vertex_to_move == 440 || vertex_to_move == 441){
 		cout << ">idd\t" <<
 		vertex_to_move <<
@@ -2209,53 +2077,16 @@ bool Tissue::tryMoveVertex()
 	double move = unif(generator);
 	if (move < move_prob) //|| vertices[vertex_to_move].moves_rejected/vertices[vertex_to_move].moves_accepted > 5
 	{
-/* 		for(int i = 0; i < CELLS_PER_VERTEX; i++){
-			if(vertices[vertex_to_move].edges[i] != EMPTY_CONNECTION){
-				setEdgeTension(vertices[vertex_to_move].edges[i]);
-			}
-		} */
 		vertices[vertex_to_move].moves_accepted ++;
 		vertices[vertex_to_move].x_drag = (1 - momentum_ponderate_current)*vertices[vertex_to_move].x_drag + momentum_ponderate_current*vertices[vertex_to_move].x;
 		vertices[vertex_to_move].y_drag = (1 - momentum_ponderate_current)*vertices[vertex_to_move].y_drag + momentum_ponderate_current*vertices[vertex_to_move].y;
 		
-
 		detectChangesAfterMove(vertex_to_move);
 		if (autonomous_cell_cycle)
 		{ //NOTE: Maybe make this before detecting changes so the effect is immediate? Otherwise cells have to wait until next round
 			advanceCellCycle(vertex_to_move);
 		}
-		/* if(time_controls_size && gradient_with_same_final_area){
-			advanceSizeWithCoordsAndTime_v2(vertex_to_move);
-		}
-		else if (time_controls_size && !(xcoord_controls_size || ycoord_controls_size))
-		{
-			advanceSizeWithTime(vertex_to_move);
-		}
-		else if (time_controls_size && (xcoord_controls_size || ycoord_controls_size))
-		{
-			advanceSizeWithCoordsAndTime(vertex_to_move);
-		}
-		else if (xcoord_controls_size || ycoord_controls_size)
-		{
-			advanceSizeWithCoords(vertex_to_move);
-		} */
-
-		/* if (time_controls_perim && !(xcoord_controls_perim || ycoord_controls_perim))
-		{
-			advancePerimWithTime(vertex_to_move);
-		}
-		else if (time_controls_perim && (xcoord_controls_perim || ycoord_controls_perim))
-		{
-			advancePerimWithCoordsAndTime(vertex_to_move);
-		}
-		else if (xcoord_controls_perim || ycoord_controls_perim)
-		{
-			advancePerimWithCoords(vertex_to_move);
-		} */
-		/* if(K_gradient_x || K_gradient_y){
-			advanceKWithCoords(vertex_to_move);
-		} */
-		//Counters
+		//Update Counters
 		if(time_controls_size || time_controls_perim){
 			advanceSizeAndPerimWithTime_new(vertex_to_move);
 		}
@@ -2295,13 +2126,6 @@ bool Tissue::tryMoveVertex()
 	}
 }
 
-/*double Tissue::calculateTerm4Energy(Vertex &v, double old_x, double old_y)
-{
-	double ycent = 0.5*(max_ypos - min_ypos);
-	double yval = (1 - abs(ycent - old_y)/ycent)*(1 - difference_flow_rate) + difference_flow_rate;
-	//cout << "ymin " << min_ypos << ", ymax " << max_ypos <<"ycent " << ycent << ", yval " << yval << ", oldx " << old_x << ", vx " << v.x << ", e: " << (old_x - v.x)*energy_term4*yval << endl;
-	return (old_x - v.x)*energy_term4*yval;
-}*/
 inline double Tissue::expAdvance(double x, float exponent)
 {
 	return exponent > 0 ?
@@ -2673,7 +2497,7 @@ void Tissue::advanceSizeAndPerimWithTime_new(int vertex_moved)
 	}
 } //advanceSizeAndPerimWithTime_new
 
-void Tissue::advanceSizeWithTime(int vertex_moved)
+/*void Tissue::advanceSizeWithTime(int vertex_moved)
 {
 	int caux;
 	double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
@@ -2691,9 +2515,9 @@ void Tissue::advanceSizeWithTime(int vertex_moved)
 			cells[caux].preferred_area /= pow(2, cells[caux].num_divisions);
 		}
 	}
-} //advanceSizeWithTime
+} //advanceSizeWithTime */
 
-void Tissue::advancePerimWithTime(int vertex_moved)
+/*void Tissue::advancePerimWithTime(int vertex_moved)
 {
 	int caux;
 	double time_factor = static_cast<double>(counter_moves_accepted) / upper_bound_movements;
@@ -2707,11 +2531,15 @@ void Tissue::advancePerimWithTime(int vertex_moved)
 		cells[caux].perimeter_contractility = perimeter_contract.val[static_cast<int>(cells[caux].type)] + (perimeter_contract_final.val[static_cast<int>(cells[caux].type)] - perimeter_contract.val[static_cast<int>(cells[caux].type)]) * time_factor; //Caution: problems if step_mode is on
 		//cout << "cell="<<caux <<"; type="<<static_cast<int>(cells[caux].type) << "; time factor= " << time_factor << ", init=" << preferred_area_initial[cells[caux].type] << "; final=" << preferred_area_final[cells[caux].type] << "; area=" << cells[caux].preferred_area << endl;
 	}
-} //advancePerimWithTime
+} //advancePerimWithTime*/
 
 void Tissue::calculateBasePrefAreaAndPerim(Cell& cell){
+	float ini_perim, ini_area, fin_perim, fin_area, factor_area, factor_perim;
 	float pos_factor_x = (cell.centroid_x - min_xpos)/(max_xpos - min_xpos);
-	float pos_factor_y = 0, ini_perim, ini_area, fin_perim, fin_area, factor_area, factor_perim;
+	float pos_factor_y = cell.centroid_y - hinge_min_ypos;
+	pos_factor_y = pos_factor_y < 0 ? 0 : pos_factor_y / (hinge_max_ypos - hinge_min_ypos);
+
+	//The cell belongs to the blade and in current gradient mode blade is not affected
 	if((cell.type == CellType::blade || cell.type == CellType::vein_blade) && 
 			(reference_for_gradient != USE_PROPORTION_OF_WING || pos_factor_x >= wing_proportion_in_gradient) &&
 			(reference_for_gradient != USE_BARE_EXPONENTIAL_GRADIENT) &&
@@ -2723,6 +2551,7 @@ void Tissue::calculateBasePrefAreaAndPerim(Cell& cell){
 		cell.preferred_area = preferred_area_initial.val[static_cast<int>(cell.type)];
 		return;
 	}
+	//If the cuticle is made of cells, the gradients do not affect it (actually they might be set through a tension gradient elsewhere)
 	if(cell.type == CellType::cuticle){
 		cell.base_perimeter = perimeter_contract_final.val[static_cast<int>(cell.type)];
 		cell.base_preferred_area = preferred_area_final.val[static_cast<int>(cell.type)];
@@ -2731,26 +2560,37 @@ void Tissue::calculateBasePrefAreaAndPerim(Cell& cell){
 		return;
 	}
 
+	//Gradient is just an exponential 
 	if(reference_for_gradient == USE_BARE_EXPONENTIAL_GRADIENT ||
 			(reference_for_gradient == GRADIENT_FROM_CENTER_ALL) ||
 			(reference_for_gradient == GRADIENT_FROM_CENTER_HINGE)){
+		pos_factor_y = exp(- xcoord_decrease_exponent * pos_factor_y);
 		pos_factor_x = exp(- xcoord_decrease_exponent * pos_factor_x);
 		cell.base_perimeter = perimeter_contract_final.val[static_cast<int>(cell.type)];
 		cell.base_preferred_area = preferred_area_final.val[static_cast<int>(cell.type)];
-		if(xcoord_controls_perim)
+		if(xcoord_controls_perim & ycoord_controls_perim){
+			cell.base_perimeter *= 0.5*(pos_factor_y + pos_factor_x);
+		}else if(xcoord_controls_perim){
 			cell.base_perimeter *= pos_factor_x;
-		if(xcoord_controls_size)
+		}else if(ycoord_controls_perim){
+			cell.base_perimeter *= pos_factor_y;
+		}
+		if(xcoord_controls_size & ycoord_controls_size){
+			cell.base_preferred_area *= (1 - 0.5*(pos_factor_y + pos_factor_x));
+		}else if(xcoord_controls_size){
 			cell.base_preferred_area *= (1 - pos_factor_x);
-
+		}else if(ycoord_controls_size){
+			cell.base_preferred_area *= (1 - pos_factor_y);
+		}
 		//If there is gradient from medial to lateral
 		if(reference_for_gradient == GRADIENT_FROM_CENTER_ALL ||
 		(reference_for_gradient == GRADIENT_FROM_CENTER_HINGE && 
 		(cell.type == CellType::hinge || cell.type == CellType::vein_hinge))
 		){		
+			//Overall, if there is gradient from center:
+			//	base_perimeter = basal + distance_from_center*perimeter_final*exp(-exponent*position_x)
+			//	where basal is actually the perimeter_contract variable
 			float dist_from_center = 1 - wing_proportion_in_gradient*abs(cell.centroid_y - AP_compartment_limit)/abs(AP_compartment_limit - (cell.centroid_y < AP_compartment_limit ? min_ypos : max_ypos));
-			//float CLperim_value = perimeter_contract.val[static_cast<int>(cell.type)] + dist_from_center*(perimeter_contract_final.val[static_cast<int>(cell.type)] - perimeter_contract.val[static_cast<int>(cell.type)]);
-			//cell.base_perimeter = cell.base_perimeter*(1 - wing_proportion_in_gradient) + CLperim_value*wing_proportion_in_gradient;
-			//cell.base_perimeter += CLperim_value*wing_proportion_in_gradient;
 			cell.base_perimeter = cell.base_perimeter*dist_from_center + perimeter_contract.val[static_cast<int>(cell.type)];
 		}
 		//Time dependence
@@ -2772,8 +2612,6 @@ void Tissue::calculateBasePrefAreaAndPerim(Cell& cell){
 	}else{
 		pos_factor_x = pos_factor_x > wing_proportion_in_gradient ? 1: pos_factor_x/wing_proportion_in_gradient;
 	}
-	pos_factor_y = cell.centroid_y - hinge_min_ypos;
-	pos_factor_y = pos_factor_y < 0 ? 0 : pos_factor_y / (hinge_max_ypos - hinge_min_ypos);
 
 	if(xcoord_controls_perim & ycoord_controls_perim)
 		factor_perim = 0.5*(pos_factor_x + pos_factor_y);

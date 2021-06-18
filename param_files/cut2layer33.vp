@@ -330,7 +330,7 @@
 >string_edge_tension
 2000
 >string_edge_tension_posterior_compartment_proportion
-1e-06
+0.01
 >string_edge_tension_min
 0.1
 >string_tension_exponent
