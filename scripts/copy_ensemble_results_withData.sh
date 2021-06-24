@@ -1,7 +1,7 @@
 
 
 cd $1
-wingarray=(cuttest3)
+wingarray=(cuttest2)
 #etournay1_strings15 etournay1_strings10 cellcuticle1
 #(wing2E wing2Edumpy) #(wing2C wing2Cdumpy)bud2 budsmall strechsmall_3cpv etournay1_nosprings etournay1_strings3 etournay1_3cpv_3 21grid5
 #square1

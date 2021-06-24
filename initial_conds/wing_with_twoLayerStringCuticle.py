@@ -134,18 +134,10 @@ class WingWith2StringLayers:
                 print("Removed string %d [%d, %d], with length = %f"%(i, x[0], x[1], lengths[i]))
 
 
-    
-
-
-
-
-
-
-
 inputname = "wing.png"
 
 
-parser = argparse.ArgumentParser(description='Wing Drawer arguments.')
+parser = argparse.ArgumentParser(description='This script adds cuticle layers to a wing with a string cuticle of 1 layer.')
 parser.add_argument('-o', '--Outname', metavar='outname', type=str, default = "hexgrid", 
                                         help='Identifier. Used as prefix of all output files. ')
 parser.add_argument('-i', '--Inputname', metavar='inputname', type=str, default = "", 
@@ -167,9 +159,12 @@ def main():
     print("WARNING: Make sure that your starting wing does not have vertices that only touch springs or string-like cuticle.")
     ww = WingWith2StringLayers(args)
     ww.makeCuticle(cuticle_width, n_layers)
+    #Modify length according to your wing and cuticle string length. This step is optional and only fixes some mistakes of the algorithm that creates the cuticle
+    if(n_layers*cuticle_width < 50):
+        ww.removeStringsWithLengthHigherThan(50)
     ww.writeNewGrid()
+    print("Output text files have been printed. Proceeding with plot")
     ww.plotNewWing(save=True)
-    ww.removeStringsWithLengthHigherThan(50) #Modify length according to your wing and cuticle string length
 
 if __name__ == '__main__':
     main()
