@@ -295,19 +295,15 @@ def make_veins_thinner(aname, iters=1):
     rewrite_cells_file(a)
     return a
 
-parser = argparse.ArgumentParser(description='Plot grid arguments.')
+parser = argparse.ArgumentParser(description='Assigns cell types from wing A to wing B. This can be useful if we have simulated, for instance, expansion (6-8h APF) and then we have defined cell types on the output wing using the initial_conds/draw_initial_wing.py script. If we want to perform the simulation from 6 to 8h and from 16 to 32h all at once, we need to have the cell types assigned from the beginning. This script accomplishes this. Also, it can "fix" vein issues in output files: fill gaps if veins are broken, make veins thinner if they were originally too thick. Note: this script is very slow for big wings and does not always work well.')
 parser.add_argument('-i', '--Inputname', metavar='inputname', type=str, default = "", 
                     help='Identifier of wing to set cell types.')
 parser.add_argument('-i2', '--Input2', metavar='input2', type=str, default = "", 
-                    help='Identifier of wing from which to copy cell types (only applies if mode="copy")')
-parser.add_argument('-d', '--DeadInInput', metavar='start', type=str, default = 0, 
+                    help='Identifier of wing from which to copy cell types (only applies if mode="copy"). Also, if mode is not "copy", use this for input.')
+parser.add_argument('-d', '--DeadInInput', metavar='start', type=str, default = "", 
                     help='Indices of cells that are present in PUT_CELLTYPES but are dead in CELLTYPES_FROM (only applies if mode="copy"). Format X,X,X...')
 parser.add_argument('-m', '--Mode', metavar='mode', type=str, default = 'copy', 
-                    help='Mode: One of copy, rect, graph, make_thin')
-parser.add_argument('-n', '--Hinge', metavar='mode', type=str, default = 'copy', 
-                    help='Mode: One of copy, rect, graph, make_thin')
-parser.add_argument('-v', '--Veins', metavar='mode', type=str, default = 'copy', 
-                    help='Mode: One of copy, rect, graph, make_thin')
+                    help='Mode: One of copy, rect (not implemented), graph, make_thin. \ncopy: copies cell types of wing in argument -i2 to wing in argument -i\ngraph: fills gaps in veins (of -i2) using a graph shortest path algorithm to connect isolated pieces of veins. Works for small gaps.\nmake_thin: makes veins thinner by turning vein cells in contact with hinge/blade into hinge/blade.')
 
 def main():
     #a is the one with cell types. It is a later developmental stage
@@ -327,21 +323,23 @@ def main():
         plt.show()
         b.plot()
         plt.show()
+        rewrite_cells_file(b)
     elif(mode == "graph"):
         a = wing(aname)
         a.getPathExtremesCells()
         a.plot()
         plt.show()
         b = a
+        rewrite_cells_file(b)
     elif(mode == "rect"):
         pass
     elif(mode == "make_thin"):
         b = make_veins_thinner(aname, iters=1)
         b.plot()
         plt.show()
+        rewrite_cells_file(b)
     # Example of what should be done manually after plotting wing b:
     # b.celltypes[dead_in_a[0] ] = 1
-    rewrite_cells_file(b)
 
 if __name__ == "__main__":
     main()
