@@ -1,6 +1,7 @@
 from operator import index
 import sys
 import os
+import argparse
 
 import numpy as np
 import pandas as pd
@@ -233,20 +234,26 @@ def writeLandmarksToCsv(landmarks, basename = 'all'):
     df = pd.DataFrame(landmarks)
     df.to_csv(basename + '_landmarks.csv', sep="\t", index=False)
 
+
+
+parser = argparse.ArgumentParser(description='It looks for the positions of landmarks 1, 2, 3, 4 and 12 and prints them into a .csv file. For 1-4, it assumes that they are at the most distal part of each vein. For landmark 12, it assumes that it is between the hinge and the blade, on the most posterior vein. Call this script from inside the directory where the .cells, .points and .spr files are.')
+parser.add_argument('-i', '--Inputname', metavar='inputname', type=str, default = "", 
+                                        help='Identifier. Used as prefix to read files. ')
+#parser.add_argument('-p', '--Plot', metavar='plot', type=bool, default = False, 
+#                                        help='Whether to plot wings and landmarks. It slows down the process.')
+parser.add_argument('--plot', dest='Plot', action='store_true',  help='Plot wings and landmarks. Makes the process slower.')
+parser.add_argument('--no-plot', dest='Plot', action='store_false',  help='Do not plot wings and landmarks. Default')
+parser.set_defaults(feature=False)                                       
+
+
 def main():
     #os.chdir('C:\\Users\\Carlos\\Desktop\\scriptfindlandmarks')
     #name = 'wing2E_moved_4'
-    print("WARNING: This script probably does not work well if you are using a cellular cuticle. Remove cuticle vertices or cells beforehand")
-    basename = sys.argv[1]
-    if(len(sys.argv) > 2):
-        plotLms = int(sys.argv[2]) #> 0
-        if (plotLms):
-            print("Plotting ON")
-        else:
-            print("Plotting OFF")
-    else:
-        plotLms = True
-        print("Plotting ON")
+    print("WARNING: This script probably does not work well if you are using a cellular cuticle. Remove cuticle vertices or cells beforehand. ")
+    args = parser.parse_args()
+    basename = args.Inputname #sys.argv[1]
+    plotLms = args.Plot
+    print("Plotting %s"%("ON" if plotLms else "OFF"))
 
     files = set([f.split('.')[0] for f in os.listdir() if basename in f])
     landmarks = []

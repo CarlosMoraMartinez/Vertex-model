@@ -1,4 +1,5 @@
-import sys
+#import sys
+import argparse
 
 
 EMPTY= '-999'
@@ -85,12 +86,19 @@ def writeSprings(spr, name):
         f.write(str(len(spr)) + '\n')
         f.write('\n'.join( ['\t'.join([str(x) for x in p]) for p in spr] ))  
 
+parser = argparse.ArgumentParser(description='This script makes the indices of vertices in a wing consecutive (e.g., 0, 1, 4, 6 -> 0, 1, 2, 3) and changes cells and springs accordingly. It does not change cuticle vertices. Useful when using the result of a simulation as the initial condition for a new simulation, in case there are dead cells or vertices. The output files will have the "_df" suffix. Call this script from inside the directory where the .cells, .points and .spr files are.')
+parser.add_argument('-i', '--Inputname', metavar='inputname', type=str, default = "", 
+                                        help='Identifier. Used as prefix to read files. ')
 
 def main():
-    name = sys.argv[1]
+    args = parser.parse_args()
+    name = args.Inputname 
+    #name = sys.argv[1]
+    print("Reading wing " + name)
     numpoints, points = readPointsFile(name)
     numCells, numVerticesCell, cells, celltypes = readCellsFile(name)
     numsprings, spr = readSprings(name)
+    print("Files read.")
     points2, cells2, spr2 = defrag(points, cells, spr)
     writePoints(points2, name)
     writeCells(cells2, celltypes, name, numVerticesCell)

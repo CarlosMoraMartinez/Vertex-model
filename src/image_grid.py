@@ -197,7 +197,7 @@ def make_grids_wing(wing, mode, plotTension, limits, plotpars):
             plotFun = plotBorders
     plotAll(c2, images, absence, plotFun, limits, outfolder, plotpars) 
 
-parser = argparse.ArgumentParser(description='Plot grid arguments.')
+parser = argparse.ArgumentParser(description='Plots grids of wings in order to compare visually wings with different parameters. For an ensemble in which n + 2 parameters vary, it will plot a set of grids for each pair of parameters. In each grid, the two selected parameters vary in the X and Y axis, while other parameters are kept constant. Different grids with the same X and Y axis differ in the rest of their parameters. Call this script from inside an ENSEMBLE directory in which there already exists a directory named with the format "<wing_name>_all_final, with all the ensemble final outputs in it. If the option "-i 1" is used, then the wing plots need to exist within this directory. The output will be saved in "combined_plots<wing_name>"')
 parser.add_argument('-w', '--wingName', metavar='wing', type=str, default = '', 
                     help='Name of wing (for instance wing2E, budsmall, etc). Can provide more than one separated by comma (wing1,wing2). If not provided tries to guess.')
 parser.add_argument('-t', '--plotTension', metavar='plot_tension', type=bool, default = False, 
