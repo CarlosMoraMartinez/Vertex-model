@@ -1,0 +1,364 @@
+# cut2layer12_35
+>t1_active # T1 transitions are active (1) or not (<= 0)
+1
+>t1_inwards_active #T1s in the border in which an edge in the border (touches 1 cell) moves into the tissue (touches 2 cells) are active (1) or not (<= 0)
+-1
+>t1_outwards_active #T1s in the border in which an edge in inside the tissue (i.e., touches 2 cells) moves to the border (touches 1 cell) are active (1) or not (<= 0)
+-1
+>division_active # division is allowed or not
+1
+>t2_active # T2 transitions (cell death) are allowed or not
+-1
+>join_edges_active # join_limit_edges is a kind of transition in which a vertex is removed and two edges become 1. I do not use it.  
+-1
+>control_cells_2sides #After performing a T2 transition, if the dead cell was next to a triangular cell, a 2-side cell will be created. Although it is very rare, this can make the code to crash later. If this option is active, 2-side cells are removed after a T2 transition, in case they appear. 
+1
+>check_if_edges_cross_opt #This option is deprecated. In old versions of the code, after each move I would check whether edges crossed. The check_if_edges_cross_opt method still works, so if you want you could call it after a move has been accepted and reject it if edges cross.
+0
+>num_cell_types #Number of cell types in your initial condition. 4 for regular wings, 5 for wings with cellular cuticle. If you change it you should also adjust all the cell type parameters.
+4
+>number_of_accepted_movements #The simulation stops when this number of accepted moves is reached
+3000000000
+>write_Every_N # Output files (.cells, .points, .str, etc) are produced every N accepted movements
+100000000
+>upper_bound # If time controls any gradient (equilibrium area, perimieter contractility, tension dependent on angle), the steepness of the gradient increases until this number of accepted movements is reached
+200000000
+>Integration_mode #0 = MonteCarlo, 1=Euler (does not work well)
+0
+>min_range_vertex_movement #Movements are required to have at least this distance (never used this parameter)
+0.0
+>max_range_vertex_movement (0.01) #In MonteCarlo, this is the maximum distance of a randomly generated movement. In Euler, if positive, derivatives are set to this value when they are bigger than it
+0.1
+>h #When using Euler/Runge-Kutta integration, the integration constant
+0.01
+>temperature_positive_energy #If MonteCarlo, either Temperature or probability of acceptance of unfavourable movements (depending on parameter "temperature_means_proportion_of_acceptance"). If Euler is used, this is also the noise added.
+0.05
+>temperature_negative_energy # Probability of acceptance of favourable movements (since it is >1, favourable movements are always accepted)
+2.0
+>temperature_means_proportion_of_acceptance #If true, unfavourable movements are rejected with positive_energy probability, independently of their energy increase (makes things easier to control). If <=0, temperature_positive_energy is interpreted as a temperature (probability of acceptance is e^(-Energy increase/T) )
+1
+>ENERGY_TERM1 #(Area) #These three parameters are used to ponderate the energy terms in the equation, i.e., E = E_TERM1*term1 + E_TERM2*term2 + E_TERM3*term3. They are scaled so that the sum of ENERGY_TERM1, 2 and 3 is always 3 (this is done in the initialize_params method where these parameters are read).
+1
+>ENERGY_TERM2 #(Tension)
+1
+>ENERGY_TERM3 #(Perimeter)
+1
+>t1_transition_critical_distance #A T1 transition is performed when an edge has a length < to this
+0.2
+>length_rotated_edge # In order to prevent a T1 to be performed back and forth many times, after rotating the edge, it will have this length. 
+0.21
+>t2_transition_critical_area #A T2 transition is performed when a cell has 3 sides and an area lower than this number
+0.2
+>max_edge_length #Deprecated. I used to split edges that were too long.
+10
+>AUTONOMOUS_CELL_CYCLE #Whether cells have a counter that accounts for cell cycle
+1
+>start_cell_cycle_at_random # If 1, cell cycle is initialized in each cell sampling from a uniform distribution
+1
+>CELL_CYCLE_CONTROLS_SIZE # If 1, cells increase in size (lineally) as they progress in their cell cycle
+-1
+>keep_blade_area_after_division #If 1, when a blade cell divides, the equilibrium area of the two daughters is divided by 2. Therefore, overall increase in area is prevented. Overrides all other size controls in BLADE.
+1
+>TIME_CONTROLS_SIZE #(can't be true if CELL_CYCLE_CONTROLS_SIZE is true; is overriden). If True (i.e., 1) equilibrium area in the hinge will change from preferred_area_initial to preferred_area_final until upper_bound moves are accepted.  
+-1
+>time_decrease_exponent #(at each move, a cell proportion of (final size - starting size) is multiplied by exp(-(x**THIS_PARAM))), where x is current_move/final_moves
+0.2
+>coord_controls_size # If greater than 0, a gradient in equilibrium area is established. <=0: no; 1=gradient along x axis only; 2=y only; 3=gradient along x and y; 4=gradient_with_same_final_area (value 4 is deprecated)
+-1
+>use_blade_area_for_coord_gradient #DEPRECATED
+1
+>xcoord_decrease_exponent #Exponent in the spatial gradient of equilibrium area and perimeter contractility
+10
+>use_K_spatial_gradient #Whether or not to establish a spatial gradient  in K (see energy function). <=0: no; 1=x axis only; 2=y axis only; 3=both axes
+0
+>K_change_exponent: Exponent of the K gradient
+2
+>>K #K constant in the Energy function, defined for each cell type. 
+0:0.00111111
+1:0.00111111
+2:0.00111111
+3:0.00111111
+<
+
+>>K_final #If there is a gradient in K, K will go from K_final (proximal/posterior) to K (distal/anterior) 
+0:0.00111111
+1:0.04
+2:0.00111111
+3:0.04
+<
+
+>>line_tension #tension in the Energy function, for edges inside of the wing
+0:0.01
+1:0.01
+2:0.01
+3:0.01
+<
+
+>>line_tension_border #tension in the Energy function, for edges in the border of the wing
+0:10
+1:10
+2:10
+3:10
+<
+
+>perimeter_contract_temporal_gradient ## Whether to establish or not a temporal gradient (i.e., value goes from perimeter_contract to perimeter_contract_final between time = 0 and time = upper_bound) 
+-1
+>perimeter_contract_spatial_gradient ## To establish or not a spatial gradient in perimeter contractility. <=0: no; 1=x axis only; 2=y axis only; 3=both axes
+1
+>>perimeter_contract #This is used as starting perimeter contractility when there is a temporal gradient
+0:0.001
+1:0.001
+2:0.001
+3:0.001
+<
+
+>>perimeter_contract_final #This is used as perimeter contractility if there is no gradient, or as max perim contract if there is a spatial/temporal gradient
+0:0.1,0.5,1,2
+1:0.1,0.5,1,2
+2:0.1,0.5,1,2
+3:0.1,0.5,1,2
+<
+
+>>preferred_area_initial  #This is used as starting equilibrium area when there is a temporal gradient
+0:30.0
+1:30.0
+2:30.0
+3:30.0
+<
+
+>>preferred_area_initial_gradient #DEPRECATED
+0:20.0
+1:20.0
+2:20.0
+3:20.0
+<
+
+>>preferred_area_final #This is used as equilibrium area if there is no gradient, or as min eq. area if there is a spatial/temporal gradient
+0:30
+1:30
+2:30
+3:30
+<
+
+#The following 3 parameters determine the angle of cell division and should sum up to 1 (they are proportions)
+>>division_angle_random_noise #If 1, division angle is determined completely at random. If 0, div. angle is determined completely by Hertwig's rule. Values between 0 and 1 add some noise to the angle of division
+0:0.0
+1:0.0
+2:0.0
+3:0.0
+<
+
+>>division_angle_longest_axis #Determines how much Hertwig's rule influences division angle. 
+0:1.0
+1:1.0
+2:1.0
+3:1.0
+<
+
+>>division_angle_external # Determines how much of the division angle is determined by external factors, such as gene expression. The GeneRegulatoryNetwork module modifies this parameter to influence cell division
+0:0.0
+1:0.0
+2:0.0
+3:0.0
+<
+
+>>division_angle_external_degrees # If the division angle is determined by "genes" in some proportion, this parameter specifies the angle at which external factors influence the division. For instance, if the longest axis is horizontal (0º), this parameter takes the value 90, division_angle_external = 0.5 and division_angle_longes_axis = 0.5, the division angle will be 45º. If division_angle_external = 1 and division_angle_longest_axis = 0.0, then division angle will be 90.  
+0:90.0
+1:90.0
+2:90.0
+3:90.0
+<
+
+>>spring_type_tension # Tension of each type of spring. Only useful if spring_tension_mode == 0
+0:2.50
+1:2.50
+2:2.50
+3:2.50
+<
+
+>>max_cell_area # Cells can divide if their area is higher than this (and they are at the end of cell cycle, in case autonomous_cell_cycle is true)
+0:30.0
+1:30.0
+2:30.0
+3:30.0
+<
+
+>>cell_cycle_limit # Cells can divide if their vertices have been moved this number of times (i.e., accepted moves as it is implemented now), and they have an area > max_cell_area
+0:100000
+1:100000
+2:100000
+3:100000
+<
+
+>>vary_line_tension #if > 0, use parameters below to change edge tension depending on angle, else use the model as it was (fixed tension for each cell type) (coerced to double because it is celltypeparam, but is works as a true/false flag)
+0:-1.0
+1:-1.0
+2:-1.0
+3:-1.0
+<
+
+>vary_edge_tension_with_time # If 1, the influence of angle on edge tension changes over time. If <=0: use parameters prop_max_angle (how much angle influences tension) and prop_uniform (how much fixed tension influences tension); if 1: use edge_temporal_angle_efect_max and min instead. 
+-1
+>vary_edge_tension_time_exponent ##If negative, angle influence on tension goes from edge_temporal_angle_efect_max to min
+1.0
+>>edge_angle_prop_external #overriden if vary_edge_tension_with_time. Proportion of edge tension determined by external factor (Gene Expression module). 
+0:0.0
+1:0.0
+2:0.0
+3:0.0
+<
+
+>>edge_angle_prop_uniform #overriden if vary_edge_tension_with_time. Proportion of edge tension determined by a fixed parameter (line_tension). 
+0:1.0
+1:0.0
+2:1.0
+3:0.0
+<
+
+>>edge_angle_prop_maxangle #overriden if vary_edge_tension_with_time. Proportion of edge tension determined by angle
+0:0.0
+1:1.0
+2:0.0
+3:1.0
+<
+
+>>edge_angle_prop_random # Proportion of edge tension determined randomly
+0:0.0
+1:0.0
+2:0.0
+3:0.0
+<
+
+>>edge_tension_external #overriden if vary_edge_tension_with_time. If edge_angle_prop_external > 0, this is the tension value that is used. This value is set by the Gene Expression module.
+0:0.0
+1:0.0
+2:0.0
+3:0.0
+<
+
+>>edge_maxangle # If angle has an effect on tension, this is the angle at which tension is max. 0.0 = horizontal (cells contract in the PD direction), 90.0 = vertical (cells contract in the AP direction)
+0:0.0
+1:0.0
+2:0.0
+3:0.0
+<
+
+>>edge_spatialmax_tension # If angle has an effect on tension, this is the tension of edges that are oriented with an angle of "edge_maxangle" degrees (i.e., the max tension that edges can have).
+0:0.1
+1:0.1
+2:0.1
+3:0.1
+<
+
+>>edge_spatialmin_tension # If angle has an effect on tension, this is the tension of edges that are oriented perpendicular to "edge_maxangle" (i.e., the min tension that edges can have)
+0:-0.2
+1:-0.2
+2:-0.2
+3:-0.2
+<
+
+>>edge_temporal_angle_efect_max #between 0 and 1. If vary_edge_tension_with_time, the values of edge_angle_prop_maxangle and edge_angle_prop_uniform will not be used. Instead, the proportion of angle influence will change over time. this parameter indicates the maximum proportion of influence that the angle will have on tension. The current values, for instance (0,1,0,1), indicate that edges in the blade will never be influenced by angle, therefore, their tension will be completely determined by the line_tension parameter. However, in the case of the hinge, initially all edges will have a tension equal to that of line_tension, but the influence of angle will increase until tension is completely determined by it (using the parameters edge_spatialmax_tension and edge_spatialmin_tension).
+0:0.0
+1:1.0
+2:0.0
+3:1.0
+<
+
+>>edge_temporal_angle_efect_min #between 0 and 1.  If vary_edge_tension_with_time, this is the influence that angle has on edge tension at the beginning of the simulation. This influence will progressively change until it reaches edge_temporal_angle_efect_max
+0:0.0
+1:0.0
+2:0.0
+3:0.0
+<
+
+>>spring_type_xlength_proportion # This is used to go from expansion to hinge contraction. It adds springs of the given type from the location in the wing (x axis) indicated by the numbers until the next location. For instance, in this case, springs of type 0 will be added from 60% to 70% of the wing length, springs of type 1 will be added from 70 to 80% of the length, etc. 
+0:0.6
+1:0.7
+2:0.8
+3:0.9
+<
+
+>add_static_to_hinge #This is also used to go automatically from a simulation of expansion (6-8h APF) to a hinge contraction simulation (e.g., in src/vertex_3steps.cpp). It indicates which proportion of P-D length set to static in the anterior border.
+0.6
+>spring_tension_mode # Method used to set tension in springs. 0: from parameter spring_tension; 1: A-P compartments; 2 P-D gradient; 3: A-P compartment and P-D gradient; 4: different gradients for A and P
+0
+>posterior_comparment_region  #If spring_tension_mode = 1 or 3, used to define the posterior compartment (by y <= this param*height)
+0.5
+>posterior_compartment_factor #If spring_tension_mode = 1 or 3, multiply posterior tension by this number
+0.5
+>spring_gradient_min_tension # If there is a tension gradient in springs, this is the minimal value of the gradient (if mode = 2, it affects the Anterior and Posterior compartments; if mode = 3, the posterior compartment will be multipled by posterior_compartment_factor. If mode = 4, it only affects the anterior compartment)
+5
+>spring_gradient_max_tension # If there is a gradient in springs, this is the maximal value (if mode = 2, it affects the Anterior and Posterior compartments; if mode = 3, the posterior compartment will be multipled by posterior_compartment_factor. If mode = 4, it only affects the anterior compartment)
+10
+>spring_gradient_exponent #Exponent of the spring gradient. 
+1
+>spring_gradient_min_tension_P # If spring_tension_mode == 4, like spring_gradient_min_tension but for posterior compartment gradient only
+0.1
+>spring_gradient_max_tension_P # If spring_tension_mode == 4, for posterior compartment gradient
+4.0
+>spring_gradient_exponent_P # If spring_tension_mode == 4, for posterior compartment gradient
+5
+>mode_to_order_springs_PD #In order to establish gradients, this determines how to establish the position of each vertex. If 1, use x position to determine tension. If 2, use vertex order along the x axis.
+1
+>include_hinge_in_spring_gradient #If true, springs in the hinge region will be part of the gradients; if false, they will be excluded and values from spring_type_tension parameter will be used. 
+1
+>active_t1_prob #If positive (between 0 and 1, it's a probability), it is used to produce T1 transitions randomly (even if they don't fit the edge.length < t1_transition_critical_distance criteria)
+-1
+>min_angle_for_active_t1 #Active (random) T1 transitions can be produced only with a given orientation if wanted. this value determines the minimal angle to produce it
+45
+>max_angle_for_active_t1 #Active (random) T1 transitions can be produced only with a given orientation if wanted. this value determines the max angle to produce it
+90
+>hinge_blade_interface_tension #Tension in edges at the blade-hinge frontier
+0.01
+>line_tension_interstatic #Tension between vertices that can move only in one direction (either  or Y axis; like the proximal vertices that are plotted in gray)
+-0.1
+>use_term_4 #Whether to use or not an extra term in the energy equation. This term is applied only to the border and uses differences in scalar products between adjacent vertices to prevent the border from bending. The function is actually similar to the use of "optimal_length" when calculating energy term 2 in the cuticle. 
+-1
+>>ENERGY_TERM4_anterior #(rigidity) #Strength of term 4 in anterior compartment
+0:0.6
+1:0.6
+2:0.6
+3:0.6
+<
+
+>>ENERGY_TERM4_posterior #(rigidity) #Strength of term 4 in posterior compartment
+0:0.01
+1:0.01
+2:0.01
+3:0.01
+<
+
+> string_edge_tension #Strings are edges in the cuticle. This is the tension that is applied to strings. 
+1
+>string_edge_tension_posterior_compartment_proportion. #Tension in the strings of the posterior compartment are multiplied by this factor (string_edge_tension*string_edge_tension_posterior_compartment_proportion)
+0.01
+>string_edge_tension_min #If there is a gradient in string tension, minimal (proximal) tension takes this value, whereas distal tension is string_edge_tension
+0.1
+>string_tension_exponent #If there is a gradient in string tension, this is the exponent of the gradient
+1
+>string_anterior_gradient #Whether or not to have a tension gradient in the anterior cuticle
+-1
+>string_posterior_gradient #Whether or not to have a tension gradient in the posterior cuticle
+-1
+>set_string_tension_hinge #boolean DEPRECATED
+-1
+>string_tension_hinge #tension value DEPRECATED
+800
+>string_distal_transition_tension #The "transition region" is a distal region, close to static vertices, that has a higher tension. It was used with 1-layer string cuticle, but with 2-layer cuticle and term2 calculated with optimal_length it is not needed. This parameter indicates the tension of that transition region.
+2000
+>string_distal_transition_lengthProportion #Proportion of the wing length at that is occupied by the transition region. -1 means that there is no such region. 
+-1
+>reference_for_gradient # Mode used to establish equilibrium_area and perim_contract gradients. 1=frontier hinge-blade; 2=max hinge position; 3=proportion of wing; 4=bare exponential; 5=from center_all; 6=from center_hinge
+5
+>wing_proportion_in_gradient # Proportion in gradient when reference_for_gradient == 3; proportion of central to lateral gradient when ref ==5 or 6 (i.e., influence of central-lateral gradient).
+0.2
+>string_equilibrium_distance #If true, term 2 in the cuticle is calculated as tension*(length - optimal_length)^2. If false, it is calculated as for the rest of the edges, tension*length.
+1
+>momentum_term_cuticle #DEPRECATED (code is commented, if you look for momentum you can easily re-use it)
+-1
+>momentum_term_tissue #DEPRECATED (code is commented, if you look for momentum you can easily re-use it)
+-1
+>momentum_ponderate_current #DEPRECATED (code is commented, if you look for momentum you can easily re-use it)
+0.1
+>random_seed 
+1234
