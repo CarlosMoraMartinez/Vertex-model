@@ -135,6 +135,7 @@ class WingWithCuticle:
                     cells_added_per_vertex[v] += 1
         return (cells_used, cells_added_per_vertex)
     def removeExtraVertices(self):        
+        """This method removes vertices in the border of the cuticle that only have 2 neighbours."""
         self.new_wing.setVertexCellIndex()
         vcount = [len(v[4]) for v in self.new_wing.vertices]
         #vcount = [0 for i in range(len(self.new_wing.vertices))]
@@ -151,16 +152,10 @@ class WingWithCuticle:
         self.new_wing.writeGrid()
     
 
-
-
-
-
-
-
 inputname = "wing.png"
 
 
-parser = argparse.ArgumentParser(description='Wing Drawer arguments.')
+parser = argparse.ArgumentParser(description='This script adds a cellular cuticle to a wing initial condition.')
 parser.add_argument('-o', '--Outname', metavar='outname', type=str, default = "hexgrid", 
                                         help='Identifier. Used as prefix of all output files. ')
 parser.add_argument('-i', '--Inputname', metavar='inputname', type=str, default = "", 
@@ -170,7 +165,7 @@ parser.add_argument('-w', '--Inputimage', metavar='inputimage', type=str, defaul
 parser.add_argument('-s', '--CuticleThickness', metavar='thickness', type=int, default = 2, 
                                         help='Number of cell layers of cuticle')
 parser.add_argument('-x', '--MinX', metavar='cuticle_start', type=int, default = 2, 
-                                        help='Proportion of the wing x axis at which the cuticle starts')                                        
+                                        help='Proportion of the wing x axis at which the cuticle starts (not implemented)')                                        
 #makeWingVoronoi()
 def main():
     args = parser.parse_args()

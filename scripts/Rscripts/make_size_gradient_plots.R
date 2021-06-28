@@ -2,10 +2,10 @@
 library(tidyverse)
 library(wesanderson)
 
-nums <- c(46, 47)
+nums <- c("_gradtest")
 wing <- "/cuttest2"
-sims <- c(0:2)
-timesteps <- c(0,20,60)
+sims <- c(0:40)
+timesteps <- c(0,2, 4,6)
 dirbase <- "/home/carmoma/vertex/Vertex-model/cut2layer%NUMBER%/cut2layer%NUMBER%_"
 WING_NAME="cuttest2_moved_"
 # names <- c("Only temporal gradient", "temporal + PD gradient", "temporal + AP gradient", 
